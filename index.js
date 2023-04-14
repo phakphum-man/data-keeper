@@ -1,12 +1,18 @@
 require('dotenv').config();
 const app = require('express')();
 const http = require('http');
+const fs = require('fs');
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./swagger_output.json');
 
 const port = process.env.PORT || 3000;
 const host = process.env.HOST || 'localhost';
 const protocol = process.env.HTTPS === 'true' ? "https" : "http";
+
+const pathServiceFiles = `${__dirname}/servicefiles/`;
+if (!fs.existsSync(pathServiceFiles)){
+    fs.mkdirSync(pathServiceFiles);
+}
 
 http.createServer(app).listen(port);
 console.log("Listening at: %s://%s:%s/", protocol, host, port);
