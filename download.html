@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <title>Downloading...</title>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" ></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js" integrity="sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+      <script>
+        function getUrlVars(){
+            var vars = [], hash;
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for(var i = 0; i < hashes.length; i++)
+            {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        }
+
+        $(document).ready(async function() {
+            
+            $.ajax({
+                url: `/file/split/${encodeURIComponent(getUrlVars()["f"])}`,
+                type: 'GET',
+                success: async (data) => {
+                    if(Array.isArray(data)){
+                        let lastFile = data[data.length-1];
+                        let blobs = await Promise.all(
+                            data.map(async (e) => 
+                                await fetch(`/file/${encodeURIComponent(e.download)}`)
+                                .then(res => res.blob())
+                            )
+                        );
+                        const finalBlob = new Blob(blobs);
+                        saveAs(finalBlob, lastFile.filename);
+                        $.get(`/file/delete/${encodeURIComponent(lastFile.download)}`);
+                        $("h1").text("Download Complete.");
+                    }
+                },
+                error: function(error) {
+                    document.write(`<h1>${error.responseJSON.data}</h1>`);
+                }
+            });
+
+        });
+      </script>
+   </head>
+   <body>
+      <h1>Downloading...</h1>
+   </body>
+</html>

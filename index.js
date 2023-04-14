@@ -11,8 +11,9 @@ const protocol = process.env.HTTPS === 'true' ? "https" : "http";
 http.createServer(app).listen(port);
 console.log("Listening at: %s://%s:%s/", protocol, host, port);
 
-app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
-
+if(process.env.NODE_ENV === 'development'){
+    app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+}
 require('./endpoints/index')(app);
 require('./endpoints/file')(app);
 require('./endpoints/user')(app);

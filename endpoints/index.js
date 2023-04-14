@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = function (app) {
 	
     app.get('/', (req, res) => {
@@ -12,7 +14,11 @@ module.exports = function (app) {
 
         if(!file)
             return res.status(404).send("Not Found");
+
+        const selfPath = path.dirname(__dirname);
+        const rootPath = selfPath.replace(`/${selfPath}`,"");
+
         // HTML jquery script download chunks
-        return res.status(200).send(`download = "${req.query.f}"`);
+        return res.sendFile(`${rootPath}/download.html`);
     });
 }
