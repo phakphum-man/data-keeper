@@ -1,5 +1,5 @@
 const path = require('path');
-const os = require('node:os');
+const os = require('node.os');
 
 module.exports = function (app) {
 	
