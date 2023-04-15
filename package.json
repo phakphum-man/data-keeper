@@ -17,11 +17,9 @@
   "license": "ISC",
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
-    "chrome": "^0.1.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
-    "got": "^11.8.3",
     "puppeteer": "^19.9.0",
     "split-file": "^2.3.0",
     "swagger-autogen": "^2.23.1",

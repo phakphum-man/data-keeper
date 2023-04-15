@@ -35,7 +35,10 @@ async function scrapingHtml(html){
 };
 
 async function webLaunch(outFileName){
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--use-gl=egl'],
+      });
 
     const page = await browser.newPage();
     await page.goto("https://www.krungsriproperty.com/ListPage.aspx");
