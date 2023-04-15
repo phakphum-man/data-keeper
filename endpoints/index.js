@@ -6,7 +6,7 @@ module.exports = function (app) {
     app.get('/', (req, res) => {
         // #swagger.ignore = true
 
-        return res.status(200).send(`Start API Keeper ${os.platform()}, ${os.type()} ${os.release()}`);
+        return res.status(200).send(`Start API Keeper ${os.platform()}, ${os.type()} ${os.version()}`);
     });
 
     app.get('/download', (req, res) => {
