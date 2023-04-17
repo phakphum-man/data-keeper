@@ -62,7 +62,8 @@ const doc = {
             about: ""
         },
         Generate: {
-            message: "processing..."
+            message: "processing...",
+            downloadlink: "/download?f=krungsriproperty_home2023-04-17.xlsx"
         }
     }
 };

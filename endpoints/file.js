@@ -55,9 +55,9 @@ module.exports = function (app) {
             if (!fs.existsSync(newPath)){
                 fs.mkdirSync(newPath);
             }
-
+            // Split file by 10 MB = 10240
             fs.rename(`${pathFile}${req.params.filename}`, `${newPath}/${req.params.filename}`, (error) => 
-                splitFile.splitFileBySize(`${newPath}/${req.params.filename}`, 5120)
+                splitFile.splitFileBySize(`${newPath}/${req.params.filename}`, 10240)
                 .then((names) => {
 
                     fs.unlink(`${newPath}/${req.params.filename}`, (err) => {

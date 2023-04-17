@@ -187,19 +187,7 @@
         ],
         "responses": {
           "200": {
-            "description": "expected result.",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string",
-                  "example": "success"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
+            "description": "OK"
           }
         }
       }
@@ -292,6 +280,10 @@
         "message": {
           "type": "string",
           "example": "processing..."
+        },
+        "downloadlink": {
+          "type": "string",
+          "example": "/download?f=krungsriproperty_home2023-04-17.xlsx"
         }
       }
     }

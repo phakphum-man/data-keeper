@@ -24,3 +24,4 @@ require('./endpoints/index')(app);
 require('./endpoints/file')(app);
 require('./endpoints/user')(app);
 require('./endpoints/krungsriprop')(app);
+require('./endpoints/livinginsider')(app);

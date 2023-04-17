@@ -1,3 +1,4 @@
+require('dotenv').config();
 require("../libraries/util.string");
 const asyncHandler = require('express-async-handler');
 const puppeteer = require("puppeteer");
@@ -37,12 +38,12 @@ async function scrapingHtml(html){
 async function webLaunch(outFileName){
     const browser = await puppeteer.launch({
         headless: true,
-        executablePath: '/usr/bin/chromium-browser',
+        executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
         args: [
             '--no-sandbox',
             '--disable-gpu'
         ],
-      });
+    });
 
     const page = await browser.newPage();
     await page.goto("https://www.krungsriproperty.com/ListPage.aspx");
@@ -139,11 +140,12 @@ module.exports = function (app) {
             // #swagger.tags = ['KrungsriProperty']
             // #swagger.description = 'Generate excel file.'
 
-            webLaunch(`servicefiles/krungsriproperty_home${excel.newDateFileName()}`);
+            const fileDownload = `krungsriproperty_home${excel.newDateFileName()}`;
+            webLaunch(`servicefiles/${fileDownload}`);
 
-            const data = { message: "processing..."};
+            const data = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileDownload}.xlsx" target="_blank">download</a>`;
             /* #swagger.responses[200] = { 
-                schema: { $ref: "#/definitions/Generate" },
+                content: { "text/plain": schema: { type: string} },
                 description: 'expected result.' 
             } */
             return res.status(200).send(data);
