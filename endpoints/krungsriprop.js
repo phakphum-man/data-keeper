@@ -37,7 +37,11 @@ async function scrapingHtml(html){
 async function webLaunch(outFileName){
     const browser = await puppeteer.launch({
         headless: true,
-        args: ['--use-gl=egl'],
+        args: [
+            '--use-gl=egl',
+            '--no-sandbox',
+            '--disable-gpu'
+        ],
       });
 
     const page = await browser.newPage();

@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: api-data-keeper-backend
+    env: docker
+    repo: https://github.com/phakphum-man/data-keeper.git
+    branch: master
+    rootDir: /app
