@@ -50,7 +50,7 @@ async function sellcost(outFileName){
     });
 
     const page = await browser.newPage();
-    await page.goto("https://www.livinginsider.com/sell_at_cost.php");
+    await page.goto("https://www.livinginsider.com/sell_at_cost.php", { waitUntil: 'load', timeout: 0 });
 
     const eval = await page.evaluate(() => {
         return {
@@ -104,7 +104,7 @@ async function rayong(outFileName){
     });
 
     const page = await browser.newPage();
-    await page.goto("https://www.livinginsider.com/living_zone/121/Land/Buysell/1/%E0%B8%A3%E0%B8%B0%E0%B8%A2%E0%B8%AD%E0%B8%87.html");
+    await page.goto("https://www.livinginsider.com/living_zone/121/Land/Buysell/1/%E0%B8%A3%E0%B8%B0%E0%B8%A2%E0%B8%AD%E0%B8%87.html"), { waitUntil: 'load', timeout: 0 };
 
     const eval = await page.evaluate(() => {
         return {
@@ -131,7 +131,7 @@ async function rayong(outFileName){
     for(let i = 1;i < parseInt(lastPage); i++){
         const navUrl = lastLink.replace(`${lastPage}${urlPage}`,`${i}${urlPage}`);
         
-        await page.goto(navUrl);
+        await page.goto(navUrl, { waitUntil: 'load', timeout: 0 });
 
         const eval = await page.evaluate(() => {
             return {
@@ -183,7 +183,7 @@ async function chonburi(outFileName){
     });
 
     const page = await browser.newPage();
-    await page.goto("https://www.livinginsider.com/living_zone/42/Land/Buysell/1/%E0%B8%9E%E0%B8%B1%E0%B8%97%E0%B8%A2%E0%B8%B2-%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%81%E0%B8%AA%E0%B8%99.html");
+    await page.goto("https://www.livinginsider.com/living_zone/42/Land/Buysell/1/%E0%B8%9E%E0%B8%B1%E0%B8%97%E0%B8%A2%E0%B8%B2-%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%81%E0%B8%AA%E0%B8%99.html", { waitUntil: 'load', timeout: 0 });
 
     const eval = await page.evaluate(() => {
         return {
@@ -212,7 +212,7 @@ async function chonburi(outFileName){
     for(let i = 1;i < parseInt(lastPage); i++){
         const navUrl = lastLink.replace(`${lastPage}${urlPage}`,`${i}${urlPage}`);
         
-        await page.goto(navUrl);
+        await page.goto(navUrl, { waitUntil: 'load', timeout: 0 });
 
         const eval = await page.evaluate(() => {
             return {

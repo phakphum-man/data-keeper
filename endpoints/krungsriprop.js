@@ -46,7 +46,7 @@ async function webLaunch(outFileName){
     });
 
     const page = await browser.newPage();
-    await page.goto("https://www.krungsriproperty.com/ListPage.aspx");
+    await page.goto("https://www.krungsriproperty.com/ListPage.aspx",{ waitUntil: 'load', timeout: 0 });
 
     const selectText  = async (element,text) => {
         const selectOption = (await page.$x(
