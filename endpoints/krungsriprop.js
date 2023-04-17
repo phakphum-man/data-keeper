@@ -37,8 +37,8 @@ async function scrapingHtml(html){
 async function webLaunch(outFileName){
     const browser = await puppeteer.launch({
         headless: true,
+        executablePath: '/usr/bin/chromium-browser',
         args: [
-            '--use-gl=egl',
             '--no-sandbox',
             '--disable-gpu'
         ],
