@@ -15,6 +15,8 @@ RUN apk update && apk add --no-cache nmap && \
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
+ENV NODE_ENV production
+
 COPY . /app
 
 RUN npm ci --only=production
