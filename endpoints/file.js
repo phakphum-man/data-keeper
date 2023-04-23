@@ -41,6 +41,39 @@ let rmdir = async (dirPath, options = {}) => {
 };
 
 module.exports = function (app) {
+  app.get('/files', (req, res) => {
+    // #swagger.tags = ['File']
+    // #swagger.description = 'split file.'
+
+    const selfPath = path.dirname(__dirname);
+    const rootPath = selfPath.replace(`/${selfPath}`,"");
+    const directoryPath = `${rootPath}/servicefiles/`;
+
+    if(fs.existsSync(directoryPath)){
+        
+      fs.readdir(directoryPath, function (err, files) {
+        //handling error
+        if (err) {
+            return console.log('Unable to scan directory: ' + err);
+        } 
+        return res.status(200).send({ data: files});
+      });
+    }
+    else
+    {
+        return res.status(404).send({ data: "File Not found!"});
+    }
+    /* #swagger.responses[200] = { 
+           schema: { type: 'array' },
+           description: 'expected result.' 
+    } 
+        #swagger.responses[404] = { 
+           schema: { data: 'string' },
+           description: 'File not found.' 
+    }
+    */
+});
+
 	app.get('/file/split/:filename', (req, res, next) => {
         // #swagger.tags = ['File']
         // #swagger.description = 'split file.'

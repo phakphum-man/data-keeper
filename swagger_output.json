@@ -101,6 +101,47 @@
         }
       }
     },
+    "/files": {
+      "get": {
+        "tags": [
+          "File"
+        ],
+        "description": "split file.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "expected result.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "File not found.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "example": "string"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
     "/file/split/{filename}": {
       "get": {
         "tags": [
@@ -187,7 +228,19 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "expected result.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "success"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
