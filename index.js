@@ -21,6 +21,11 @@ console.log("Listening at: %s://%s:%s/", protocol, host, port);
 if(process.env.NODE_ENV === 'development'){
     app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 }
+
+process.on('SIGTERM', () => {
+  console.info('SIGTERM signal received.');
+});
+
 require('./endpoints/index')(app);
 require('./endpoints/file')(app);
 require('./endpoints/user')(app);
