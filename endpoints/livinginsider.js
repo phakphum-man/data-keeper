@@ -98,8 +98,10 @@ async function rayong(outFileName){
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
+        timeout: 10000,
         args: [
             '--no-sandbox',
+            '--single-process',
             '--disable-gpu'
         ],
     });
@@ -179,8 +181,10 @@ async function chonburi(outFileName){
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
+        timeout: 10000,
         args: [
             '--no-sandbox',
+            '--single-process',
             '--disable-gpu'
         ],
     });
