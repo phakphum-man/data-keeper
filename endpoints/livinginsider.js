@@ -98,7 +98,6 @@ async function rayong(outFileName){
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
-        timeout: 10000,
         args: [
             '--no-sandbox',
             '--single-process',
@@ -181,7 +180,6 @@ async function chonburi(outFileName){
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
-        timeout: 10000,
         args: [
             '--no-sandbox',
             '--single-process',
@@ -192,9 +190,9 @@ async function chonburi(outFileName){
     const page = await browser.newPage();
     // Configure the navigation timeout
     await page.setDefaultNavigationTimeout(0);
-
+    console.log("start url chonburi");
     await page.goto("https://www.livinginsider.com/living_zone/42/Land/Buysell/1/%E0%B8%9E%E0%B8%B1%E0%B8%97%E0%B8%A2%E0%B8%B2-%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%81%E0%B8%AA%E0%B8%99.html");
-
+    console.log("evaluate chonburi");
     const eval = await page.evaluate(() => {
         return {
             html: document.documentElement.innerHTML,
@@ -221,7 +219,7 @@ async function chonburi(outFileName){
     
     for(let i = 1;i < parseInt(lastPage); i++){
         const navUrl = lastLink.replace(`${lastPage}${urlPage}`,`${i}${urlPage}`);
-        
+        console.log(`navUrl chonburi "${navUrl}"`);
         await page.goto(navUrl);
 
         const eval = await page.evaluate(() => {
