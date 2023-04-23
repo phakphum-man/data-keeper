@@ -6,7 +6,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./swagger_output.json');
 
 const port = process.env.PORT || 3000;
-const host = process.env.HOST || '127.0.0.1';
+const host = process.env.HOST || '0.0.0.0';
 const protocol = process.env.HTTPS === 'true' ? "https" : "http";
 
 const pathServiceFiles = `${__dirname}/servicefiles/`;
