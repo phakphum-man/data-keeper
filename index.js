@@ -15,6 +15,7 @@ if (!fs.existsSync(pathServiceFiles)){
 }
 
 http.createServer(app).listen(port);
+console.log("Environment is %s", ((process.env.NODE_ENV)? process.env.NODE_ENV : "Production"));
 console.log("Listening at: %s://%s:%s/", protocol, host, port);
 
 if(process.env.NODE_ENV === 'development'){
