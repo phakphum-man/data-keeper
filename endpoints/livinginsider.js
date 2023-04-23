@@ -101,7 +101,6 @@ async function rayong(outFileName){
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
         args: [
             '--no-sandbox',
-            '--single-process',
             '--disable-gpu'
         ],
     });
@@ -184,7 +183,6 @@ async function chonburi(outFileName){
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
         args: [
             '--no-sandbox',
-            '--single-process',
             '--disable-gpu'
         ],
     });
