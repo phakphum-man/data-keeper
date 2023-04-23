@@ -17,7 +17,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 COPY . /app
 
-RUN npm install
+RUN npm ci --only=production
 
 EXPOSE 3000
 
