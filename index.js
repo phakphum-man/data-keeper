@@ -14,17 +14,22 @@ if (!fs.existsSync(pathServiceFiles)){
     fs.mkdirSync(pathServiceFiles);
 }
 
-http.createServer(app).listen(port);
-console.log("Environment is %s", ((process.env.NODE_ENV)? process.env.NODE_ENV : "Production"));
-console.log("Listening at: %s://%s:%s/", protocol, host, port);
-
+const server = http.createServer(app);
+    
 if(process.env.NODE_ENV === 'development'){
     app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 }
 
 process.on('SIGTERM', () => {
   console.info('SIGTERM signal received.');
+  server.close(() => {
+    console.info('HTTP server closed')
+  })
 });
+
+server.listen(port);
+console.log("Environment is %s", ((process.env.NODE_ENV)? process.env.NODE_ENV : "Production"));
+console.log("Listening at: %s://%s:%s/", protocol, host, port);
 
 require('./endpoints/index')(app);
 require('./endpoints/file')(app);
