@@ -264,7 +264,7 @@ async function chonburi(outFileName, iv){
     excel.exportFileXlsx(wb, ws, fileName);
     console.log("Livinginsider chonburi generate file complete");
     
-    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileName}`);
+    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileName}.xlsx`);
     
     await browser.close();
 }
