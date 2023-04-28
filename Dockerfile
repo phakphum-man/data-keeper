@@ -20,9 +20,7 @@ ENV NODE_ENV production
 
 COPY . /app
 
-RUN --mount=type=secret,id=_algorithm,dst=/etc/secrets/ALGORITHM cat /etc/secrets/ALGORITHM
-RUN --mount=type=secret,id=_credential,dst=/etc/secrets/GDRIVE_CREDENTIAL cat /etc/secrets/GDRIVE_CREDENTIAL
-RUN --mount=type=secret,id=_privatekey,dst=/etc/secrets/PRIVATE_KEY cat /etc/secrets/PRIVATE_KEY
+RUN --mount=type=secret,id=_env,dst=/etc/secrets/.env cat /etc/secrets/.env
 
 RUN npm ci --omit=dev
 
