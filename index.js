@@ -2,7 +2,6 @@ require('dotenv').config();
 const app = require('express')();
 const http = require('http');
 const fs = require('fs');
-const terminus = require('@godaddy/terminus');
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./swagger_output.json');
 
@@ -28,33 +27,11 @@ if(process.env.NODE_ENV === 'development'){
     app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 }
 
-const onSigterm = () => {
-  console.info('server is starting cleanup')
-  return Promise.resolve();
-}
-
-const onShutdown = () => {
-  console.info('cleanup finished, server is shutting down');
-}
-
-const onHealthCheck = ({ state }) => Promise.resolve(`UP (state.isShuttingDown => ${state.isShuttingDown})`);
-
-terminus.createTerminus(server, {
-  // healtcheck options
-  healthChecks: {
-    '/healthcheck': onHealthCheck,
-    verbatim: true,
-    __unsafeExposeStackTraces: true,
-  },
-  headers: {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
-  },
-  // cleanup options
-  timeout: 1000,
-  onSigterm,
-  onShutdown,
-  logger: console.log,
+process.on('SIGTERM', () => {
+  console.info('SIGTERM signal received.');
+  server.close(() => {
+    console.info('HTTP server closed');
+  })
 });
 
 server.listen(port);
