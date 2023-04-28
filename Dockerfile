@@ -19,7 +19,7 @@ ENV NODE_ENV production
 
 COPY . /app
 
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 EXPOSE 3000
 
