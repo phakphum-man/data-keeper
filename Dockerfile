@@ -20,8 +20,6 @@ ENV NODE_ENV production
 
 COPY . /app
 
-RUN --mount=type=secret,id=_env,dst=/etc/secrets/.env cat /etc/secrets/.env
-
 RUN npm ci --omit=dev
 
 EXPOSE 3000
