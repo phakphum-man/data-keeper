@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:1.2
 FROM node:lts-alpine
 
 WORKDIR /app
@@ -18,6 +19,8 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV NODE_ENV production
 
 COPY . /app
+
+RUN --mount=type=secret,id=_env,dst=/etc/secrets/.env cat /etc/secrets/.env
 
 RUN npm ci --omit=dev
 

@@ -1,10 +1,11 @@
+require('dotenv').config();
 const path = require('path');
-const googleDrive = require("../libraries/googleDrive");
 
 module.exports = function (app) {
 	
     app.get('/', async (req, res) => {
         // #swagger.ignore = true
+        console.log(process.env.ALGORITHM);
         return res.status(200).send(`Start API Keeper`);
     });
 
