@@ -5,6 +5,7 @@ const puppeteer = require("puppeteer");
 const cheerio = require("cheerio");
 const xlsx = require('xlsx');
 const excel = require("../libraries/excel");
+const googleDrive = require("../libraries/googleDrive");
 
 async function scrapingHtml(html){
     // - part cheerio
@@ -39,7 +40,7 @@ async function scrapingHtml(html){
     return listResult;
 }
 
-async function sellcost(outFileName){
+async function sellcost(outFileName, iv){
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
@@ -92,10 +93,12 @@ async function sellcost(outFileName){
     excel.exportFileXlsx(wb, ws, fileName);
     console.log("Livinginsider sellcost generate file complete");
 
+    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+
     await browser.close();
 }
 
-async function rayong(outFileName){
+async function rayong(outFileName, iv){
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
@@ -173,11 +176,13 @@ async function rayong(outFileName){
     let fileName = outFileName || `servicefiles/${__filename.slice(__dirname.length + 1, -3)}${excel.newDateFileName()}`;
     excel.exportFileXlsx(wb, ws, fileName);
     console.log("Livinginsider rayong generate file complete");
-    
+
+    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+
     await browser.close();
 }
 
-async function chonburi(outFileName){
+async function chonburi(outFileName, iv){
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
@@ -259,6 +264,8 @@ async function chonburi(outFileName){
     excel.exportFileXlsx(wb, ws, fileName);
     console.log("Livinginsider chonburi generate file complete");
     
+    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    
     await browser.close();
 }
 
@@ -268,9 +275,9 @@ module.exports = function (app) {
         async (req, res) => {
             // #swagger.tags = ['KrungsriProperty']
             // #swagger.description = 'Generate excel file.'
-
+            let iv = req.query.iv;
             const fileDownload = `sell_at_cost${excel.newDateFileName()}`;
-            sellcost(`servicefiles/${fileDownload}`);
+            sellcost(`servicefiles/${fileDownload}`, iv);
 
             const data = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileDownload}.xlsx" target="_blank">download</a>`;
             /* #swagger.responses[200] = { 
@@ -286,9 +293,10 @@ module.exports = function (app) {
         async (req, res) => {
             // #swagger.tags = ['KrungsriProperty']
             // #swagger.description = 'Generate excel file.'
+            let iv = req.query.iv;
 
             const fileDownload = `rayong${excel.newDateFileName()}`;
-            rayong(`servicefiles/${fileDownload}`);
+            rayong(`servicefiles/${fileDownload}`, iv);
 
             const data = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileDownload}.xlsx" target="_blank">download</a>`;
             /* #swagger.responses[200] = { 
@@ -304,9 +312,10 @@ module.exports = function (app) {
         async (req, res) => {
             // #swagger.tags = ['KrungsriProperty']
             // #swagger.description = 'Generate excel file.'
+            let iv = req.query.iv;
 
             const fileDownload = `chonburi${excel.newDateFileName()}`;
-            chonburi(`servicefiles/${fileDownload}`);
+            chonburi(`servicefiles/${fileDownload}`, iv);
 
             const data = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileDownload}.xlsx" target="_blank">download</a>`;
             /* #swagger.responses[200] = { 
