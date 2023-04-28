@@ -28,13 +28,6 @@ if(process.env.NODE_ENV === 'development'){
     app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 }
 
-process.on('SIGTERM', () => {
-  console.info('SIGTERM signal received.');
-  server.close(() => {
-    console.info('HTTP server closed');
-  })
-});
-
 const onSigterm = () => {
   console.info('server is starting cleanup')
   return Promise.resolve();
