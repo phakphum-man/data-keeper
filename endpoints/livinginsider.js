@@ -93,7 +93,7 @@ async function sellcost(outFileName, iv){
     excel.exportFileXlsx(wb, ws, fileName);
     console.log("Livinginsider sellcost generate file complete");
 
-    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileName}.xlsx`);
 
     await browser.close();
 }
@@ -177,7 +177,7 @@ async function rayong(outFileName, iv){
     excel.exportFileXlsx(wb, ws, fileName);
     console.log("Livinginsider rayong generate file complete");
 
-    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileName}.xlsx`);
 
     await browser.close();
 }
@@ -264,7 +264,7 @@ async function chonburi(outFileName, iv){
     excel.exportFileXlsx(wb, ws, fileName);
     console.log("Livinginsider chonburi generate file complete");
     
-    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileName}`);
     
     await browser.close();
 }
