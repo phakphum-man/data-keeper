@@ -50,6 +50,8 @@ const exportToDrive = async (iv, parentId, fileMimeType, filePath) => {
       body: fs.createReadStream(filePath),
     },
   });
+  const keyFile = path.join(process.cwd(), "4bcb9ac3-8de1-4330-9f08-f0046774f7ad.json");
+  fs.unlink(keyFile);
   return result.data;
 };
 
