@@ -29,9 +29,9 @@ if(process.env.NODE_ENV === 'development'){
 
 process.on('SIGTERM', () => {
   console.info('SIGTERM signal received.');
-  server.close(() => {
+  /*server.close(() => {
     console.info('HTTP server closed');
-  })
+  })*/
 });
 
 server.listen(port);
