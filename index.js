@@ -20,6 +20,7 @@ require('./endpoints/file')(app);
 require('./endpoints/user')(app);
 require('./endpoints/krungsriprop')(app);
 require('./endpoints/livinginsider')(app);
+require('./endpoints/goldprice')(app);
 
 const server = http.createServer(app);
     
@@ -31,7 +32,7 @@ process.on('SIGTERM', () => {
   console.info('SIGTERM signal received.');
   /*server.close(() => {
     console.info('HTTP server closed');
-  })*/
+  });*/
 });
 
 server.listen(port);
