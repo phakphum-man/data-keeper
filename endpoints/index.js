@@ -5,8 +5,13 @@ module.exports = function (app) {
 	
     app.get('/', async (req, res) => {
         // #swagger.ignore = true
-	console.log("Start API Keeper");
         return res.status(200).send(`Start API Keeper`);
+    });
+
+    app.get('/wakeup', async (req, res) => {
+        // #swagger.ignore = true
+        console.log("Start Wake Up");
+        return res.status(200).send(`Wake Up`);
     });
 
     app.get('/download', (req, res) => {
