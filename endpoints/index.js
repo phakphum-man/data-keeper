@@ -5,6 +5,7 @@ module.exports = function (app) {
 	
     app.get('/', async (req, res) => {
         // #swagger.ignore = true
+	console.log("Start API Keeper");
         return res.status(200).send(`Start API Keeper`);
     });
 
