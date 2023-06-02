@@ -99,7 +99,6 @@ async function goldprice(outFileName, iv){
         }
     }
 
-    await mongodb.deleteMany("goldprice",{});
     for(let i = 0;i < listHtml.length; i++){
         // Html Scraping
         const jsonData = await scrapingHtml(listHtml[i]);
