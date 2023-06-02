@@ -3,13 +3,26 @@ const { MongoClient, MongoServerError } = require('mongodb');
 
 let client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true })
 
-async function get(collectionName, filter = {}){
+const getFields = (select = []) =>{
+    let fields = select.reduce((field,name)=> (field[name] = 1,field),{});
+    if(select.indexOf("_id") < 0){
+        fields["_id"] = 0;
+    }
+    return fields;
+}
+
+async function get(collectionName, select = [], filter = {}){
     let findResult = null;
     try
     {
         await client.connect();
         const collection = client.db().collection(collectionName);
-        findResult = await collection.findOne(filter).toArray();
+
+        if(select.length == 0){
+            findResult = await collection.findOne(filter).toArray();
+        }else{
+            findResult = await collection.findOne(filter).project(getFields(select)).toArray();
+        }
     } catch (error) {
         if (error instanceof MongoServerError) {
           console.log(`Error worth logging: ${error}`); // special case for some reason
@@ -23,13 +36,18 @@ async function get(collectionName, filter = {}){
     return findResult;
 }
 
-async function getAll(collectionName, filter = {}){
+async function getAll(collectionName, select = [], filter = {}){
     let findResult = null;
     try
     {
         await client.connect();
         const collection = client.db().collection(collectionName);
-        findResult = await collection.find(filter).toArray();
+
+        if(select.length == 0){
+            findResult = await collection.find(filter).toArray();
+        }else{
+            findResult = await collection.find(filter).project(getFields(select)).toArray();
+        }
     } catch (error) {
         if (error instanceof MongoServerError) {
           console.log(`Error worth logging: ${error}`); // special case for some reason

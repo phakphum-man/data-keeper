@@ -13,6 +13,14 @@ async function scrapingHtml(html){
     // - part cheerio
     const $ = cheerio.load(html);
 
+    const getIndicator = (className) => {
+        if(className == "i-d"){
+            return -1;
+        }else{
+            return 1;
+        }
+    };
+
     const findItem = (element) => {
         return {
             gold_date : moment(element.eq(0).text().cleanAll(), 'DD/MM/YYYY HH:mm').format('DD/MM/YYYY HH:mm'),
@@ -21,6 +29,9 @@ async function scrapingHtml(html){
             bar_sale : parseFloat(element.eq(3).text().cleanAll().replace(/,/g, '')),
             ornament_purchase : parseFloat(element.eq(4).text().cleanAll().replace(/,/g, '')),
             ornament_sale : parseFloat(element.eq(5).text().cleanAll().replace(/,/g, '')),
+            gold_spot : parseFloat(element.eq(6).text().cleanAll().replace(/,/g, '')),
+            bath_thai : parseFloat(element.eq(7).text().cleanAll().replace(/,/g, '')),
+            indicator : getIndicator(element.eq(8).find("span").attr("class")) * parseFloat(element.eq(8).text().cleanAll().replace(/,/g, '')),
         };
     };
 
@@ -88,12 +99,13 @@ async function goldprice(outFileName, iv){
         }
     }
 
+    await mongodb.deleteMany("goldprice",{});
     for(let i = 0;i < listHtml.length; i++){
         // Html Scraping
         const jsonData = await scrapingHtml(listHtml[i]);
 
         const listGolddate = jsonData.map((d) => (d.gold_date))
-        const oldData = await mongodb.getAll("goldprice", { gold_date: {$in: listGolddate}});
+        const oldData = await mongodb.getAll("goldprice", ["gold_date"], { gold_date: {$in: listGolddate}});
         const newData =  _.differenceBy(jsonData, oldData, "gold_date");
         if(newData.length > 0){
             await mongodb.insertArray("goldprice", newData);
@@ -101,10 +113,32 @@ async function goldprice(outFileName, iv){
         }
     }
 
-    const exportData = await mongodb.getAll("goldprice", {});
-    
+    const result = await mongodb.getAll("goldprice",["gold_date","no","bar_purchase","bar_sale","ornament_purchase","ornament_sale","gold_spot","bath_thai","indicator"]);
+    const allData = result.map((d)=>({
+        "gold date" : moment(d.gold_date, 'DD/MM/YYYY HH:mm').toDate(),
+        no : d.no,
+        bar_purchase : d.bar_purchase,
+        bar_sale : d.bar_sale,
+        ornament_purchase : d.ornament_purchase,
+        ornament_sale : d.ornament_sale,
+        gold_spot: d.gold_spot,
+        bath_thai: d.bath_thai,
+        indicator: d.indicator
+    }));
+
+    const exSorted = _.sortBy(allData, ['gold date', 'no']).map((d)=>({
+        "Gold Date" : moment(d["gold date"]).format('DD/MM/YYYY HH:mm'),
+        "No" : d.no,
+        "Bar Purchase" : d.bar_purchase,
+        "Bar Sale" : d.bar_sale,
+        "Ornament Purchase" : d.ornament_purchase,
+        "Ornament Sale" : d.ornament_sale,
+        "Gold Spot": d.gold_spot,
+        "Bath Thai": d.bath_thai,
+        "Indicator": d.indicator
+    }));
     let wb = excel.createNewWorkBook();
-    let ws = excel.createNewWorkSheet(exportData);
+    let ws = excel.createNewWorkSheet(exSorted);
 
     let fileName = outFileName || `servicefiles/${__filename.slice(__dirname.length + 1, -3)}${excel.newDateFileName()}`;
     excel.exportFileXlsx(wb, ws, fileName);
