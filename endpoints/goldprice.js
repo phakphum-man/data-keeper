@@ -135,7 +135,7 @@ async function goldprice(outFileName, iv){
 
     const allData = await mongodb.getAll("goldprice",["gold_date","no","bar_purchase","bar_sale","ornament_purchase","ornament_sale","gold_spot","bath_thai","indicator"]);
 
-    const exSorted = _.sortBy(allData, ['gold date', 'no']).map((d)=>({
+    const exSorted = _.sortBy(allData, ['gold_date', 'no']).map((d)=>({
         "Gold Date" : moment(d["gold_date"]).format('DD/MM/YYYY HH:mm'),
         "No" : d.no,
         "Bar Purchase" : d.bar_purchase,
