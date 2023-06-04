@@ -62,7 +62,7 @@ async function scrapingHtml(html){
         let targetItems = Array.from($(elItem).find('table > tbody').find('tr'));
         const letGo = (index === 0 )? 3 : 0; // start from -> อังคารที่ 9 พฤษภาคม 66
         for (let i = letGo; i < targetItems.length; i++) {
-            if($(targetItems[i]).find("td#tol").length === 0 && $(targetItems[i]).find("td").eq(0).text() != "" ){
+            if($(targetItems[i]).find("td#tol").length === 0 && $(targetItems[i]).find("td").eq(0).text() != "" && $(targetItems[i]).find("td").length > 8){
                 listResult.push(findItem($(targetItems[i]).find("td")));
             }
         }
@@ -81,10 +81,11 @@ async function goldprice(outFileName, iv){
         ],
     });
 
+    let year = "2566";
     const page = await browser.newPage();
     await page.setDefaultNavigationTimeout(0);
     console.log(`start url ${arguments.callee.name}`);
-    await page.goto("https://xn--42cah7d0cxcvbbb9x.com/%E0%B8%A3%E0%B8%B2%E0%B8%84%E0%B8%B2%E0%B8%97%E0%B8%AD%E0%B8%87%E0%B8%A2%E0%B9%89%E0%B8%AD%E0%B8%99%E0%B8%AB%E0%B8%A5%E0%B8%B1%E0%B8%87/");
+    await page.goto(`https://xn--42cah7d0cxcvbbb9x.com/%E0%B8%A3%E0%B8%B2%E0%B8%84%E0%B8%B2%E0%B8%97%E0%B8%AD%E0%B8%87%E0%B8%A2%E0%B9%89%E0%B8%AD%E0%B8%99%E0%B8%AB%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B9%80%E0%B8%94%E0%B8%B7%E0%B8%AD%E0%B8%99-%E0%B8%A1%E0%B8%81%E0%B8%A3%E0%B8%B2%E0%B8%84%E0%B8%A1-${year}/`);
     console.log(`evaluate ${arguments.callee.name}`);
     const eval = await page.evaluate(() => {
         return {
@@ -102,24 +103,26 @@ async function goldprice(outFileName, iv){
     
     let start = false;
     for(let i = 0;i < pageItem.length; i++){
+        if($(pageItem[i]).attr("title")){
+            start = ($(pageItem[i]).attr("title").indexOf(year) > -1);
+            const navUrl = $(pageItem[i]).attr("href");
+            if(start && navUrl != "#"){
+                console.log(`navUrl ${arguments.callee.name} "${navUrl}"`);
+                await page.goto(navUrl);
 
-        start = ($(pageItem[i]).attr("title").substring(0, "ราคาทองย้อนหลัง".length) === "ราคาทองย้อนหลัง");
-        const navUrl = $(pageItem[i]).attr("href");
-        if(start && navUrl != "#"){
-            console.log(`navUrl ${arguments.callee.name} "${navUrl}"`);
-            await page.goto(navUrl);
-
-            const eval = await page.evaluate(() => {
-                return {
-                    html: document.documentElement.innerHTML,
-                    width: document.documentElement.clientWidth,
-                    height: document.documentElement.clientHeight,
-                };
-            });
-            listHtml.push(eval.html);
+                const eval = await page.evaluate(() => {
+                    return {
+                        html: document.documentElement.innerHTML,
+                        width: document.documentElement.clientWidth,
+                        height: document.documentElement.clientHeight,
+                    };
+                });
+                listHtml.push(eval.html);
+            }
         }
     }
 
+    //await mongodb.deleteMany("goldprice", {});
     for(let i = 0;i < listHtml.length; i++){
         // Html Scraping
         const jsonData = await scrapingHtml(listHtml[i]);
@@ -134,8 +137,8 @@ async function goldprice(outFileName, iv){
     }
 
     const allData = await mongodb.getAll("goldprice",["gold_date","no","bar_purchase","bar_sale","ornament_purchase","ornament_sale","gold_spot","bath_thai","indicator"]);
-
-    const exSorted = _.sortBy(allData, ['gold date', 'no']).map((d)=>({
+    
+    const exSorted = _.sortBy(allData, ['gold_date', 'no']).map((d)=>({
         "Gold Date" : moment(d["gold_date"]).format('DD/MM/YYYY HH:mm'),
         "No" : d.no,
         "Bar Purchase" : d.bar_purchase,
@@ -162,7 +165,7 @@ async function goldprice(outFileName, iv){
 
 module.exports = function (app) {
 	
-    app.get('/goldprice/excel', asyncHandler( 
+    app.get('/goldprice2/excel', asyncHandler( 
         async (req, res) => {
             // #swagger.tags = ['KrungsriProperty']
             // #swagger.description = 'Generate excel file.'

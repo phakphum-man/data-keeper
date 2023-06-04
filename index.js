@@ -21,6 +21,7 @@ require('./endpoints/user')(app);
 require('./endpoints/krungsriprop')(app);
 require('./endpoints/livinginsider')(app);
 require('./endpoints/goldprice')(app);
+require('./endpoints/goldprice2')(app);
 
 const server = http.createServer(app);
     
