@@ -126,7 +126,7 @@ async function goldprice(outFileName, iv){
 
         const listGolddate = jsonData.map((d) => (d.gold_date))
         const oldData = await mongodb.getAll("goldprice", ["gold_date"], { gold_date: {$in: listGolddate}});
-        const newData =  _.differenceWith(jsonData, oldData, (a , b) => (a.gold_date !== b.gold_date));
+        const newData =  _.differenceWith(jsonData, oldData, (a , b) => (moment(a.gold_date).format('DD/MM/YYYY HH:mm') === moment(b.gold_date).format('DD/MM/YYYY HH:mm')));
         if(newData.length > 0){
             await mongodb.insertArray("goldprice", newData);
             console.log("save goldprice to mongodb complete");
