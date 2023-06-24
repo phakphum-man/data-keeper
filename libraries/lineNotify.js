@@ -2,7 +2,7 @@ const axios = require('axios');
 
 function sendMessage(access_token, message) {
     const formdata = {
-        message: `\n${message}`
+        message: message
     };
 
     axios.post('https://notify-api.line.me/api/notify', formdata,
