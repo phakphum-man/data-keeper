@@ -22,6 +22,7 @@ require('./endpoints/krungsriprop')(app);
 require('./endpoints/livinginsider')(app);
 require('./endpoints/goldprice')(app);
 require('./endpoints/goldprice2')(app);
+require('./endpoints/linenotify')(app);
 
 const server = http.createServer(app);
     

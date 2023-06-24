@@ -8,6 +8,7 @@ const cheerio = require("cheerio");
 const mongodb = require('../libraries/mongodb');
 const excel = require("../libraries/excel");
 const googleDrive = require("../libraries/googleDrive");
+const line = require("../libraries/lineNotify");
 
 let findYears = [];
 let replaceYears = [];
@@ -133,6 +134,7 @@ async function goldprice(outFileName, iv){
         }
     }
 
+    /*
     const allData = await mongodb.getAll("goldprice",["gold_date","no","bar_purchase","bar_sale","ornament_purchase","ornament_sale","gold_spot","bath_thai","indicator"]);
 
     const exSorted = _.sortBy(allData, ['gold_date', 'no']).map((d)=>({
@@ -151,11 +153,39 @@ async function goldprice(outFileName, iv){
 
     let fileName = outFileName || `servicefiles/${__filename.slice(__dirname.length + 1, -3)}${excel.newDateFileName()}`;
     excel.exportFileXlsx(wb, ws, fileName);
+
     console.log("goldprice generate file complete");
+    */
+    const access_token = process.env.LINE_TOKEN;
+    const today = moment().format('YYYY-MM-DD');//new Date("2022-06-23")
+    const todayData = await mongodb.getAll("goldprice",["gold_date","no","bar_purchase","bar_sale","ornament_purchase","ornament_sale","gold_spot","bath_thai","indicator"], { gold_date: { "$gte": new Date(`${today}T00:00:00.000Z`) , "$lt": new Date(`${today}T23:59:59.000Z`)}});
     
+    if(todayData.length > 0)
+    {
+        const max = 0;
+        for(let i=0;i<todayData.length;i++)
+        {
+            const no = parseInt(todayData[i].no);
+            if(no > max){
+                const infos = [
+                    `ราคาซื้อ ทองคำแท่ง ${todayData[i].bar_purchase.toString().formatCommas()}: บาท`,
+                    `ราคาขาย ทองคำแท่ง ${todayData[i].bar_sale.toString().formatCommas()}: บาท`,
+                    "\n",
+                    `ราคาซื้อ ทองรูปพรรณ ${todayData[i].ornament_purchase.toString().formatCommas()}: บาท`,
+                    `ราคาขาย ทองรูปพรรณ ${todayData[i].ornament_sale.toString().formatCommas()}: บาท`,
+                ];
+                if(todayData[i].indicator < 0){
+                    line.sendMessage(access_token, `ลดลง : ${todayData[i].indicator} จากเมื่อวาน\n\n${infos.join("\n")}`);
+                }else{
+                    line.sendMessage(access_token, `เพิ่มขึ้น : ${todayData[i].indicator} จากเมื่อวาน\n\n${infos.join("\n")}`);
+                }
+            }
+        }
+    }
+    /*
     if(iv){
         googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileName}.xlsx`);
-    }
+    }*/
 
     await browser.close();
 }
@@ -180,4 +210,21 @@ module.exports = function (app) {
         })
     );
 
+    app.get('/goldprice/line', asyncHandler( 
+        async (req, res) => {
+            // #swagger.tags = ['KrungsriProperty']
+            // #swagger.description = 'Generate excel file.'
+            
+            const fileDownload = `gold_price${excel.newDateFileName()}`;
+            goldprice(`servicefiles/${fileDownload}`, null);
+
+            const data = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileDownload}.xlsx" target="_blank">download</a>`;
+            /* #swagger.responses[200] = { 
+                content: { "text/plain": schema: { type: string} },
+                description: 'expected result.' 
+            } */
+            return res.status(200).send(data);
+
+        })
+    );
 }

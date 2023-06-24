@@ -11,11 +11,16 @@ String.prototype.cleanSpace = function () {
 };
 
 String.prototype.replaceArray = function(find, replace) {
-    var replaceString = this;
-    var regex; 
-    for (var i = 0; i < find.length; i++) {
+    let replaceString = this;
+    let regex; 
+    for (let i = 0; i < find.length; i++) {
         regex = new RegExp(find[i], "g");
         replaceString = replaceString.replace(regex, replace[i]);
     }
     return replaceString;
+};
+
+String.prototype.formatCommas = function() {
+    let x = this;
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
