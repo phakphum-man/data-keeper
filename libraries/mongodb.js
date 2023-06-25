@@ -61,6 +61,39 @@ async function getAll(collectionName, select = [], filter = {}){
     return findResult;
 }
 
+async function getAllWithSort(collectionName, sort = {}, select = [], filter = {}, limit = null){
+    let findResult = null;
+    try
+    {
+        await client.connect();
+        const collection = client.db().collection(collectionName);
+
+        if(limit == null){
+            if(select.length == 0){
+                findResult = await collection.find(filter).sort(sort).toArray();
+            }else{
+                findResult = await collection.find(filter).sort(sort).project(getFields(select)).toArray();
+            }
+        }else{
+            if(select.length == 0){
+                findResult = await collection.find(filter).sort(sort).limit(limit).toArray();
+            }else{
+                findResult = await collection.find(filter).sort(sort).limit(limit).project(getFields(select)).toArray();
+            }
+        }
+    } catch (error) {
+        if (error instanceof MongoServerError) {
+          console.log(`Error worth logging: ${error}`); // special case for some reason
+        }
+        throw error; // still want to crash
+    }
+    finally
+    {
+        await client.close();
+    }
+    return findResult;
+}
+
 async function insert(collectionName = "", data = { _id : "4bcb9ac3-8de1-4330-9f08-f0046774f7ad", message : "test message"}){
     let insertResult = null;
     try
@@ -184,6 +217,7 @@ async function deleteMany(collectionName = "", filter = { _id : "4bcb9ac3-8de1-4
 module.exports = {
     get,
     getAll,
+    getAllWithSort,
     insert,
     insertArray,
     update,

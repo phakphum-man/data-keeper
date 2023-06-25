@@ -72,7 +72,7 @@ async function scrapingHtml(html){
     return listResult;
 }
 
-async function goldprice(outFileName, iv){
+async function goldprice(iv){
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
@@ -156,36 +156,39 @@ async function goldprice(outFileName, iv){
 
     console.log("goldprice generate file complete");
     */
-    const access_token = process.env.LINE_TOKEN;
-    const today = moment().format('YYYY-MM-DD');//moment(new Date("2022-06-23")).format('YYYY-MM-DD');
-    const todayData = await mongodb.getAll("goldprice",["gold_date","no","bar_purchase","bar_sale","ornament_purchase","ornament_sale","gold_spot","bath_thai","indicator"], { gold_date: { "$gte": new Date(`${today}T00:00:00.000Z`) , "$lt": new Date(`${today}T23:59:59.000Z`)}});
-    
-    if(todayData.length > 0)
+    if(iv && iv === "last")
     {
-        const max = 2;
-        for(let i=0;i<todayData.length;i++)
+        const access_token = process.env.LINE_TOKEN;
+        const today = moment().format('YYYY-MM-DD');//moment(new Date("2022-06-23")).format('YYYY-MM-DD');
+        const todayData = await mongodb.getAllWithSort(
+            "goldprice",
+            { "no": -1},
+            ["gold_date","no","bar_purchase","bar_sale","ornament_purchase","ornament_sale","gold_spot","bath_thai","indicator"] , 
+            { gold_date: { "$gte": new Date(`${today}T00:00:00.000Z`) , "$lt": new Date(`${today}T23:59:59.000Z`)}} ,
+            1
+        );
+        
+        if(todayData.length > 0)
         {
-            const no = parseInt(todayData[i].no);
-            if(no > max){
-
+            for(let i=0;i<todayData.length;i++)
+            {
                 let ind = '';
                 if(todayData[i].indicator < 0){
-                    ind = `ลดลง : ${todayData[i].indicator} จากเมื่อวาน\n\n${infos.join("\n")}`;
+                    ind = `ลดลง : ${todayData[i].indicator} จากเมื่อวาน`;
                 }else{
-                    ind = `เพิ่มขึ้น : ${todayData[i].indicator} จากเมื่อวาน\n\n${infos.join("\n")}`;
+                    ind = `เพิ่มขึ้น : ${todayData[i].indicator} จากเมื่อวาน`;
                 }
                 const infos = [
                     ind,
-                    "\n",
+                    "",
                     `ราคาซื้อ ทองคำแท่ง ${todayData[i].bar_purchase.toString().formatCommas()}: บาท`,
                     `ราคาขาย ทองคำแท่ง ${todayData[i].bar_sale.toString().formatCommas()}: บาท`,
-                    "\n",
+                    "",
                     `ราคาซื้อ ทองรูปพรรณ ${todayData[i].ornament_purchase.toString().formatCommas()}: บาท`,
                     `ราคาขาย ทองรูปพรรณ ${todayData[i].ornament_sale.toString().formatCommas()}: บาท`,
                 ];
 
                 line.sendMessage(access_token, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
-
             }
         }
     }
@@ -205,7 +208,7 @@ module.exports = function (app) {
             // #swagger.description = 'Generate excel file.'
             let iv = req.query.iv;
             const fileDownload = `gold_price${excel.newDateFileName()}`;
-            goldprice(`servicefiles/${fileDownload}`, iv);
+            //goldprice(`servicefiles/${fileDownload}`, iv);
 
             const data = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileDownload}.xlsx" target="_blank">download</a>`;
             /* #swagger.responses[200] = { 
@@ -221,9 +224,10 @@ module.exports = function (app) {
         async (req, res) => {
             // #swagger.tags = ['KrungsriProperty']
             // #swagger.description = 'Generate excel file.'
-            
+            let iv = req.query.iv;
             const fileDownload = `gold_price${excel.newDateFileName()}`;
-            goldprice(`servicefiles/${fileDownload}`, null);
+            //goldprice(`servicefiles/${fileDownload}`, iv);
+            goldprice(iv);
 
             const data = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileDownload}.xlsx" target="_blank">download</a>`;
             /* #swagger.responses[200] = { 
