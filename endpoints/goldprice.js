@@ -162,34 +162,45 @@ async function goldprice(iv){
         const today = moment().format('YYYY-MM-DD');//moment(new Date("2022-06-23")).format('YYYY-MM-DD');
         const todayData = await mongodb.getAllWithSort(
             "goldprice",
-            { "no": -1},
+            { "no": 1},
             ["gold_date","no","bar_purchase","bar_sale","ornament_purchase","ornament_sale","gold_spot","bath_thai","indicator"] , 
-            { gold_date: { "$gte": new Date(`${today}T00:00:00.000Z`) , "$lt": new Date(`${today}T23:59:59.000Z`)}} ,
-            1
+            { gold_date: { "$gte": new Date(`${today}T00:00:00.000Z`) , "$lt": new Date(`${today}T23:59:59.000Z`)}}
         );
         
         if(todayData.length > 0)
         {
+            let indicator = 0;
+            let bar_purchase = 0;
+            let bar_sale = 0;
+            let ornament_purchase = 0;
+            let ornament_sale = 0;
             for(let i=0;i<todayData.length;i++)
             {
-                let ind = '';
-                if(todayData[i].indicator < 0){
-                    ind = ` *ลดลง* : ${todayData[i].indicator} จากเมื่อวาน`;
-                }else{
-                    ind = ` *เพิ่มขึ้น* : ${todayData[i].indicator} จากเมื่อวาน`;
-                }
-                const infos = [
-                    ind,
-                    "",
-                    `ราคาซื้อ ทองคำแท่ง \`${todayData[i].bar_purchase.toString().formatCommas()} บาท\` `,
-                    `ราคาขาย ทองคำแท่ง \`${todayData[i].bar_sale.toString().formatCommas()} บาท\` `,
-                    "",
-                    `ราคาซื้อ ทองรูปพรรณ \`${todayData[i].ornament_purchase.toString().formatCommas()} บาท\` `,
-                    `ราคาขาย ทองรูปพรรณ \`${todayData[i].ornament_sale.toString().formatCommas()} บาท\` `,
-                ];
-
-                line.sendMessage(access_token, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
+                indicator += todayData[i].indicator
+                bar_purchase = todayData[i].bar_purchase;
+                bar_sale = todayData[i].bar_sale;
+                ornament_purchase = todayData[i].ornament_purchase;
+                ornament_sale = todayData[i].ornament_sale;
             }
+
+            let ind = '';
+            if(indicator < 0){
+                ind = ` ลดลง : ${indicator} จากเมื่อวาน`;
+            }else{
+                ind = ` เพิ่มขึ้น : ${indicator} จากเมื่อวาน`;
+            }
+
+            const infos = [
+                ind,
+                "",
+                `ราคาซื้อ ทองคำแท่ง ${bar_purchase.toString().formatCommas()} บาท `,
+                `ราคาขาย ทองคำแท่ง ${bar_sale.toString().formatCommas()} บาท `,
+                "",
+                `ราคาซื้อ ทองรูปพรรณ ${ornament_purchase.toString().formatCommas()} บาท `,
+                `ราคาขาย ทองรูปพรรณ ${ornament_sale.toString().formatCommas()} บาท `,
+            ];
+
+            line.sendMessage(access_token, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
         }
     }
     /*
