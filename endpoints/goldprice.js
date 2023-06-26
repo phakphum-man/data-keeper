@@ -185,9 +185,9 @@ async function goldprice(iv){
 
             let ind = '';
             if(indicator < 0){
-                ind = ` ลดลง : ${indicator} จากเมื่อวาน`;
+                ind = ` ลดลง ${indicator} จากเมื่อวาน`;
             }else{
-                ind = ` เพิ่มขึ้น : ${indicator} จากเมื่อวาน`;
+                ind = ` เพิ่มขึ้น +${indicator} จากเมื่อวาน`;
             }
 
             const infos = [
