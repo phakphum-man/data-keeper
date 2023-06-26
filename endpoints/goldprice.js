@@ -174,18 +174,18 @@ async function goldprice(iv){
             {
                 let ind = '';
                 if(todayData[i].indicator < 0){
-                    ind = `ลดลง : ${todayData[i].indicator} จากเมื่อวาน`;
+                    ind = ` *ลดลง* : ${todayData[i].indicator} จากเมื่อวาน`;
                 }else{
-                    ind = `เพิ่มขึ้น : ${todayData[i].indicator} จากเมื่อวาน`;
+                    ind = ` *เพิ่มขึ้น* : ${todayData[i].indicator} จากเมื่อวาน`;
                 }
                 const infos = [
                     ind,
                     "",
-                    `ราคาซื้อ ทองคำแท่ง ${todayData[i].bar_purchase.toString().formatCommas()}: บาท`,
-                    `ราคาขาย ทองคำแท่ง ${todayData[i].bar_sale.toString().formatCommas()}: บาท`,
+                    `ราคาซื้อ ทองคำแท่ง \`${todayData[i].bar_purchase.toString().formatCommas()} บาท\` `,
+                    `ราคาขาย ทองคำแท่ง \`${todayData[i].bar_sale.toString().formatCommas()} บาท\` `,
                     "",
-                    `ราคาซื้อ ทองรูปพรรณ ${todayData[i].ornament_purchase.toString().formatCommas()}: บาท`,
-                    `ราคาขาย ทองรูปพรรณ ${todayData[i].ornament_sale.toString().formatCommas()}: บาท`,
+                    `ราคาซื้อ ทองรูปพรรณ \`${todayData[i].ornament_purchase.toString().formatCommas()} บาท\` `,
+                    `ราคาขาย ทองรูปพรรณ \`${todayData[i].ornament_sale.toString().formatCommas()} บาท\` `,
                 ];
 
                 line.sendMessage(access_token, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
