@@ -169,6 +169,7 @@ async function goldprice(iv){
         
         if(todayData.length > 0)
         {
+            moment.locale('th');
             let indicator = 0;
             let bar_purchase = 0;
             let bar_sale = 0;
@@ -200,7 +201,7 @@ async function goldprice(iv){
                 `ราคาขาย ทองรูปพรรณ ${ornament_sale.toString().formatCommas()} บาท `,
             ];
 
-            line.sendMessage(access_token, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
+            line.sendMessage(access_token, `${moment().add(543, 'year').format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
         }
     }
     /*
