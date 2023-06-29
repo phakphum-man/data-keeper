@@ -94,6 +94,29 @@ async function getAllWithSort(collectionName, sort = {}, select = [], filter = {
     return findResult;
 }
 
+async function getAggregate(collectionName, document = []){
+    let findResult = null;
+    try
+    {
+        await client.connect();
+        const collection = client.db().collection(collectionName);
+
+        if(document.length > 0){
+            findResult = await collection.aggregate(document).toArray();
+        }
+    } catch (error) {
+        if (error instanceof MongoServerError) {
+          console.log(`Error worth logging: ${error}`); // special case for some reason
+        }
+        throw error; // still want to crash
+    }
+    finally
+    {
+        await client.close();
+    }
+    return findResult;
+}
+
 async function insert(collectionName = "", data = { _id : "4bcb9ac3-8de1-4330-9f08-f0046774f7ad", message : "test message"}){
     let insertResult = null;
     try
@@ -218,6 +241,7 @@ module.exports = {
     get,
     getAll,
     getAllWithSort,
+    getAggregate,
     insert,
     insertArray,
     update,

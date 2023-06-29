@@ -156,9 +156,25 @@ async function goldprice(iv){
 
     console.log("goldprice generate file complete");
     */
+
     if(iv && iv === "last")
     {
         const access_token = process.env.LINE_TOKEN;
+
+        /*
+        const groupByMonths = await mongodb.getAggregate("goldprice",[{
+            $group : {
+                _id : {$substr: ['$gold_date', 0, 7]}, 
+                indicator : {$sum : "$indicator"}
+            }   
+        }]);
+    
+        const exSorted =_.sortBy(groupByMonths, ['_id' ]);
+        exSorted.forEach((d)=>{
+            console.log(`id:${d._id}, indicator:${d.indicator}`);
+        });
+        */
+       
         const today = moment().format('YYYY-MM-DD');//moment(new Date("2022-06-23")).format('YYYY-MM-DD');
         const todayData = await mongodb.getAllWithSort(
             "goldprice",
@@ -187,6 +203,8 @@ async function goldprice(iv){
             let ind = '';
             if(indicator < 0){
                 ind = ` ลดลง ${indicator} จากเมื่อวาน`;
+            }else if(indicator == 0){
+                ind = ` ไม่เคลื่อนไหวจากเมื่อวาน`;
             }else{
                 ind = ` เพิ่มขึ้น +${indicator} จากเมื่อวาน`;
             }
@@ -201,7 +219,7 @@ async function goldprice(iv){
                 `ราคาขาย ทองรูปพรรณ ${ornament_sale.toString().formatCommas()} บาท `,
             ];
 
-            line.sendMessage(access_token, `${moment().add(543, 'year').format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
+            line.sendMessage(access_token, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
         }
     }
     /*
