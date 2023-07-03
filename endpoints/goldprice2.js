@@ -72,55 +72,62 @@ async function scrapingHtml(html){
 }
 
 async function goldprice(outFileName, iv){
-    const browser = await puppeteer.launch({
+    let year = "2566";
+    let listHtml = [];
+    let funcName = arguments.callee.name;
+
+    await puppeteer.launch({
+        devtools:false,
         headless: true,
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
         args: [
             '--no-sandbox',
             '--disable-gpu'
         ],
-    });
+    }).then(async function(browser){
+        
+        const page = await browser.newPage();
 
-    let year = "2566";
-    const page = await browser.newPage();
-    await page.setDefaultNavigationTimeout(0);
-    console.log(`start url ${arguments.callee.name}`);
-    await page.goto(`https://xn--42cah7d0cxcvbbb9x.com/%E0%B8%A3%E0%B8%B2%E0%B8%84%E0%B8%B2%E0%B8%97%E0%B8%AD%E0%B8%87%E0%B8%A2%E0%B9%89%E0%B8%AD%E0%B8%99%E0%B8%AB%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B9%80%E0%B8%94%E0%B8%B7%E0%B8%AD%E0%B8%99-%E0%B8%A1%E0%B8%81%E0%B8%A3%E0%B8%B2%E0%B8%84%E0%B8%A1-${year}/`);
-    console.log(`evaluate ${arguments.callee.name}`);
-    const eval = await page.evaluate(() => {
-        return {
-            html: document.documentElement.innerHTML,
-            width: document.documentElement.clientWidth,
-            height: document.documentElement.clientHeight,
-        };
-    });
-    
-    let listHtml = [];
-    // - part cheerio
-    const $ = cheerio.load(eval.html);
-    //Pagenation
-    const pageItem = $('section#content > article > div.menu4').find('a');
-    
-    let start = false;
-    for(let i = 0;i < pageItem.length; i++){
-        if($(pageItem[i]).attr("title")){
-            start = ($(pageItem[i]).attr("title").indexOf(year) > -1);
-            const navUrl = $(pageItem[i]).attr("href");
-            if(start && navUrl != "#"){
-                console.log(`navUrl ${arguments.callee.name} "${navUrl}"`);
-                await page.goto(navUrl);
+        await page.setDefaultNavigationTimeout(0);
+        console.log(`start url ${funcName}`);
+        await page.goto(`https://xn--42cah7d0cxcvbbb9x.com/%E0%B8%A3%E0%B8%B2%E0%B8%84%E0%B8%B2%E0%B8%97%E0%B8%AD%E0%B8%87%E0%B8%A2%E0%B9%89%E0%B8%AD%E0%B8%99%E0%B8%AB%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B9%80%E0%B8%94%E0%B8%B7%E0%B8%AD%E0%B8%99-%E0%B8%A1%E0%B8%81%E0%B8%A3%E0%B8%B2%E0%B8%84%E0%B8%A1-${year}/`);
+        console.log(`evaluate ${funcName}`);
+        const eval = await page.evaluate(() => {
+            return {
+                html: document.documentElement.innerHTML,
+                width: document.documentElement.clientWidth,
+                height: document.documentElement.clientHeight,
+            };
+        });
 
-                const eval = await page.evaluate(() => {
-                    return {
-                        html: document.documentElement.innerHTML,
-                        width: document.documentElement.clientWidth,
-                        height: document.documentElement.clientHeight,
-                    };
-                });
-                listHtml.push(eval.html);
+        // - part cheerio
+        const $ = cheerio.load(eval.html);
+        //Pagenation
+        const pageItem = $('section#content > article > div.menu4').find('a');
+        
+        let start = false;
+        for(let i = 0;i < pageItem.length; i++){
+            if($(pageItem[i]).attr("title")){
+                start = ($(pageItem[i]).attr("title").indexOf(year) > -1);
+                const navUrl = $(pageItem[i]).attr("href");
+                if(start && navUrl != "#"){
+                    console.log(`navUrl ${funcName} "${navUrl}"`);
+                    await page.goto(navUrl);
+
+                    const eval = await page.evaluate(() => {
+                        return {
+                            html: document.documentElement.innerHTML,
+                            width: document.documentElement.clientWidth,
+                            height: document.documentElement.clientHeight,
+                        };
+                    });
+                    listHtml.push(eval.html);
+                }
             }
         }
-    }
+
+        await browser.close();
+    }).catch(console.error);
 
     //await mongodb.deleteMany("goldprice", {});
     for(let i = 0;i < listHtml.length; i++){
@@ -160,7 +167,6 @@ async function goldprice(outFileName, iv){
         googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileName}.xlsx`);
     }
 
-    await browser.close();
 }
 
 module.exports = function (app) {

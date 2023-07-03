@@ -73,53 +73,61 @@ async function scrapingHtml(html){
 }
 
 async function goldprice(iv){
-    const browser = await puppeteer.launch({
+    let listHtml = [];
+    let funcName = arguments.callee.name;
+
+    await puppeteer.launch({
+        devtools:false,
         headless: true,
         executablePath: process.env.NODE_ENV === 'development'? null : '/usr/bin/chromium-browser',
         args: [
             '--no-sandbox',
             '--disable-gpu'
         ],
-    });
+    }).then(async function(browser){
 
-    const page = await browser.newPage();
-    await page.setDefaultNavigationTimeout(0);
-    console.log(`start url ${arguments.callee.name}`);
-    await page.goto("https://xn--42cah7d0cxcvbbb9x.com/%E0%B8%A3%E0%B8%B2%E0%B8%84%E0%B8%B2%E0%B8%97%E0%B8%AD%E0%B8%87%E0%B8%A2%E0%B9%89%E0%B8%AD%E0%B8%99%E0%B8%AB%E0%B8%A5%E0%B8%B1%E0%B8%87/");
-    console.log(`evaluate ${arguments.callee.name}`);
-    const eval = await page.evaluate(() => {
-        return {
-            html: document.documentElement.innerHTML,
-            width: document.documentElement.clientWidth,
-            height: document.documentElement.clientHeight,
-        };
-    });
-    
-    let listHtml = [];
-    // - part cheerio
-    const $ = cheerio.load(eval.html);
-    //Pagenation
-    const pageItem = $('section#content > article > div.menu4').find('a');
-    
-    let start = false;
-    for(let i = 0;i < pageItem.length; i++){
+        const page = await browser.newPage();
+        
+        await page.setDefaultNavigationTimeout(0);
+        console.log(`start url ${funcName}`);
+        await page.goto("https://xn--42cah7d0cxcvbbb9x.com/%E0%B8%A3%E0%B8%B2%E0%B8%84%E0%B8%B2%E0%B8%97%E0%B8%AD%E0%B8%87%E0%B8%A2%E0%B9%89%E0%B8%AD%E0%B8%99%E0%B8%AB%E0%B8%A5%E0%B8%B1%E0%B8%87/");
+        console.log(`evaluate ${funcName}`);
+        const eval = await page.evaluate(() => {
+            return {
+                html: document.documentElement.innerHTML,
+                width: document.documentElement.clientWidth,
+                height: document.documentElement.clientHeight,
+            };
+        });
+        
+        // - part cheerio
+        const $ = cheerio.load(eval.html);
+        //Pagenation
+        const pageItem = $('section#content > article > div.menu4').find('a');
+        
+        let start = false;
+        for(let i = 0;i < pageItem.length; i++){
 
-        start = ($(pageItem[i]).attr("title").substring(0, "ราคาทองย้อนหลัง".length) === "ราคาทองย้อนหลัง");
-        const navUrl = $(pageItem[i]).attr("href");
-        if(start && navUrl != "#"){
-            console.log(`navUrl ${arguments.callee.name} "${navUrl}"`);
-            await page.goto(navUrl);
+            start = ($(pageItem[i]).attr("title").substring(0, "ราคาทองย้อนหลัง".length) === "ราคาทองย้อนหลัง");
+            const navUrl = $(pageItem[i]).attr("href");
+            if(start && navUrl != "#"){
+                console.log(`navUrl ${funcName} "${navUrl}"`);
+                await page.goto(navUrl);
 
-            const eval = await page.evaluate(() => {
-                return {
-                    html: document.documentElement.innerHTML,
-                    width: document.documentElement.clientWidth,
-                    height: document.documentElement.clientHeight,
-                };
-            });
-            listHtml.push(eval.html);
+                const eval = await page.evaluate(() => {
+                    return {
+                        html: document.documentElement.innerHTML,
+                        width: document.documentElement.clientWidth,
+                        height: document.documentElement.clientHeight,
+                    };
+                });
+                listHtml.push(eval.html);
+            }
         }
-    }
+
+        await browser.close();
+
+    }).catch(console.error);
 
     for(let i = 0;i < listHtml.length; i++){
         // Html Scraping
@@ -174,7 +182,7 @@ async function goldprice(iv){
             console.log(`id:${d._id}, indicator:${d.indicator}`);
         });
         */
-       
+    
         const today = moment().format('YYYY-MM-DD');//moment(new Date("2022-06-23")).format('YYYY-MM-DD');
         const todayData = await mongodb.getAllWithSort(
             "goldprice",
@@ -222,12 +230,11 @@ async function goldprice(iv){
             line.sendMessage(access_token, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
         }
     }
+
     /*
     if(iv){
         googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileName}.xlsx`);
     }*/
-
-    await browser.close();
 }
 
 module.exports = function (app) {
