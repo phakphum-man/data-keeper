@@ -1,4 +1,4 @@
-const { Queue, Worker } = require('bullmq');
+/*const { Queue, Worker } = require('bullmq');
 
 // Create a new connection in every instance
 const myQueue = new Queue('foo', { connection: {
@@ -28,4 +28,4 @@ async function addJobs() {
     await myQueue.add('myJobName', { qux: 'baz' });
 }
 
-module.exports = { addJobs }
+module.exports = { addJobs }*/
