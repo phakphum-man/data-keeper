@@ -4,17 +4,3 @@ services:
     env: docker
     repo: https://github.com/phakphum-man/data-keeper.git
     branch: master
-    envVars:
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: lightning
-          property: connectionString
-
-    # A Redis instance
-  - type: redis
-    name: lightning
-    ipAllowList: # required
-      - source: 0.0.0.0/0
-        description: everywhere
-    plan: free # optional (defaults to starter instance type)
