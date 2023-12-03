@@ -1,5 +1,6 @@
 require('dotenv').config();
 const path = require('path');
+const {addJobs} = require("../libraries/jobBullMq");
 
 module.exports = function (app) {
 	
@@ -26,5 +27,11 @@ module.exports = function (app) {
 
         // HTML jquery script download chunks
         return res.sendFile(`${rootPath}/download.html`);
+    });
+
+    app.get('/bullmq', async (req, res) => {
+        // #swagger.ignore = true
+        await addJobs();
+        return res.status(200).send(`Start Job`);
     });
 }

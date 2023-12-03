@@ -25,7 +25,7 @@ services:
         description: everywhere
     plan: free # optional (defaults to starter instance type)
     maxmemoryPolicy: noeviction # optional (defaults to allkeys-lru)
-    
+
 envVarGroups:
   - name: conc-settings
     envVars:
@@ -35,7 +35,3 @@ envVarGroups:
         generateValue: true
       - key: USER_PROVIDED_SECRET
         sync: false
-  - name: stripe
-    envVars:
-      - key: STRIPE_API_URL
-        value: https://api.stripe.com/v2
