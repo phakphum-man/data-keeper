@@ -5,10 +5,6 @@ services:
     repo: https://github.com/phakphum-man/data-keeper.git
     branch: master
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: data-keeper-db
-          property: connectionString
       - key: REDIS_URL
         fromService:
           type: redis
@@ -22,6 +18,3 @@ services:
       - source: 0.0.0.0/0
         description: everywhere
     plan: free # optional (defaults to starter instance type)
-
-databases:
-  - name: data-keeper-db
