@@ -4,7 +4,7 @@ const Redis = require('ioredis');
 const QUEUE_NAME = 'default';
 
 if(!process.env.REDIS_URL) console.warn('REDIS_URL is not defined');
-const connection = new Redis(process.env.REDIS_URL);
+const connection = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: null});
 
 // Create a new connection in every instance
 const myQueue = new Queue(QUEUE_NAME, { connection });
