@@ -4,7 +4,6 @@ services:
     env: docker
     repo: https://github.com/phakphum-man/data-keeper.git
     branch: master
-    rootDir: /app
     envVars:
       - key: DATABASE_URL
         fromDatabase:
