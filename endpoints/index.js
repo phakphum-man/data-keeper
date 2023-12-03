@@ -1,6 +1,6 @@
 require('dotenv').config();
 const path = require('path');
-//const {addJobs} = require("../libraries/jobBullMq");
+const { addJobs } = require("../libraries/jobBullMq");
 
 module.exports = function (app) {
 	
@@ -32,9 +32,7 @@ module.exports = function (app) {
     app.get('/bullmq', async (req, res) => {
         // #swagger.ignore = true
 
-        console.log(process.env.REDIS_HOST);
-        console.log(process.env.REDIS_PORT);
-        //await addJobs();
+        await addJobs();
         return res.status(200).send(`Start Job`);
     });
 }
