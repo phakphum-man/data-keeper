@@ -4,6 +4,7 @@ const Redis = require('ioredis');
 const moment = require('moment');
 const path = require('path');
 const fs = require('fs');
+const axios = require('axios');
 const csv = require('csvtojson');
 const { PDFDocument } = require('pdf-lib');
 const fontkit = require('@pdf-lib/fontkit');
@@ -22,9 +23,25 @@ const reportQueue = new Queue(QUEUE_NAME, { connection });
 const workBinding = new Worker(QUEUE_NAME, async (job)=>{
     const reportParams = job.data;
 
-    const jsonArray = await csv().fromFile(reportParams.fileData);
 
-    const formPdfBytes = fs.readFileSync(reportParams.fileTemplate);
+    let jsonArray = [];
+    let formPdfBytes = Buffer.from('');
+
+    if(!reportParams.isOnline){
+
+        jsonArray = await csv().fromFile(reportParams.fileData);
+        formPdfBytes = fs.readFileSync(reportParams.fileTemplate);
+
+    }else{
+        const resData = await axios.get(reportParams.fileData, {
+            responseType: 'stream'
+        });
+        const streamData = resData.data;
+        jsonArray = await csv().fromStream(streamData);
+
+        formPdfBytes = await axios.get(reportParams.fileTemplate, { responseType: 'arraybuffer' }).then((res) => res.data);
+    }
+
     let pdfsToMerge = [];
     await Promise.all(jsonArray.map(async (dataBinding, index) => {
 
@@ -145,8 +162,8 @@ workBinding.on('failed', async (job, err) => {
     console.log(`${job.id} has failed with ${err.message}`);
 });
    
-async function runPdfJobs(params = { fileData: 'data.csv', fileTemplate: 'template.pdf' }) {
-    const reportParams = Object.assign({ fileOutput: path.join('./reports','pdf','out', 'output.pdf')}, params);
+async function runPdfJobs(params = { fileData: 'data.csv', fileTemplate: 'template.pdf' }, isOnline = false) {
+    const reportParams = Object.assign({ fileOutput: path.join('./reports','pdf','out', 'output.pdf'), isOnline }, params);
     const jobPdf = await reportQueue.add('jobPdfBinding', reportParams, { removeOnComplete: true, removeOnFail: 1000 });
     const data = { 
         report_type: params.fileTemplate,
