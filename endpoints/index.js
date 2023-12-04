@@ -1,6 +1,6 @@
 require('dotenv').config();
 const path = require('path');
-const { addJobs } = require("../libraries/jobBullMq");
+const { runPdfJobs, removeAllJob } = require("../libraries/jobBullMq");
 
 module.exports = function (app) {
 	
@@ -29,10 +29,20 @@ module.exports = function (app) {
         return res.sendFile(`${rootPath}/download.html`);
     });
 
-    app.get('/bullmq', async (req, res) => {
+    app.get('/run-report/pdf', async (req, res) => {
+        // #swagger.ignore = true
+        const data = req.query.fd || './reports/pdf/data.csv';
+        const template = req.query.ft || './reports/pdf/ap203_form50_original.pdf';
+        await runPdfJobs({ fileData: data, fileTemplate: template });
+
+        return res.status(200).send(`Start Job`);
+    });
+
+    app.get('/run-report/clear', async (req, res) => {
         // #swagger.ignore = true
 
-        await addJobs();
-        return res.status(200).send(`Start Job`);
+        await removeAllJob();
+
+        return res.status(200).send(`clear`);
     });
 }

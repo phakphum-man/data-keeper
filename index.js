@@ -2,6 +2,7 @@ require('dotenv').config();
 const app = require('express')();
 const http = require('http');
 const fs = require('fs');
+const { MongoPool } = require('./libraries/mongodb');
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./swagger_output.json');
 
@@ -29,6 +30,8 @@ const server = http.createServer(app);
 if(process.env.NODE_ENV === 'development'){
     app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 }
+
+MongoPool.initPool();
 
 process.on('SIGTERM', () => {
   console.info('SIGTERM signal received.');
