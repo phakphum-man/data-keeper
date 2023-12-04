@@ -1,5 +1,6 @@
 require('dotenv').config();
 const path = require('path');
+const fs = require('fs');
 const { runPdfJobs, removeAllJob } = require("../libraries/jobBullMq");
 
 module.exports = function (app) {
@@ -36,6 +37,30 @@ module.exports = function (app) {
         await runPdfJobs({ fileData: data, fileTemplate: template });
 
         return res.status(200).send(`Start Job`);
+    });
+
+    app.get('/run-report/download', (req, res) => {
+        
+        const selfPath = path.dirname(__dirname);
+        const rootPath = selfPath.replace(`/${selfPath}`,"");
+
+        const file = req.query.f || 'output.pdf';
+        const sourcefile = `${rootPath}/reports/pdf/out/${file}`;
+
+        return res.download(sourcefile);
+    });
+
+    app.get('/run-report/remove', (req, res) => {
+        
+        const selfPath = path.dirname(__dirname);
+        const rootPath = selfPath.replace(`/${selfPath}`,"");
+
+        const file = req.query.f || 'output.pdf';
+        const sourcefile = `${rootPath}/reports/pdf/out/${file}`;
+        fs.unlink(sourcefile, (err) => {
+            if (err) throw err;
+        });
+        return res.status(200).send(`removed ${file}`);
     });
 
     app.get('/run-report/clear', async (req, res) => {
