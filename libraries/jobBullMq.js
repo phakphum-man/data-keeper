@@ -163,26 +163,27 @@ workBinding.on('failed', async (job, err) => {
     console.log(`${job.id} has failed with ${err.message}`);
 });
    
-async function runPdfJobs(params = { fileData: 'data.csv', fileTemplate: 'template.pdf' }, isOnline = false) {
+async function runPdfJobs(params = { fileData: 'data.csv', fileTemplate: 'template.pdf', createBy: "system-pdf" }, isOnline = false) {
     const extension = path.extname(reportParams.fileTemplate);
     const fileName = path.basename(reportParams.fileTemplate, extension);
     const reportParams = Object.assign({ fileOutput: path.join('./servicefiles', `${fileName}${excel.newDateFileName()}${extension}`), isOnline }, params);
     const jobPdf = await reportQueue.add('jobPdfBinding', reportParams, { removeOnComplete: true, removeOnFail: 1000 });
-    const data = { 
-        report_type: params.fileTemplate,
+    const logData = { 
+        report_type: fileName,
         start_datetime: moment().toDate(),
         end_datetime: null,
         status: 'queued',
         parameters:  JSON.stringify(params),
         job_id: jobPdf.id,
-        fileOutput: reportParams.fileOutput
+        fileOutput: reportParams.fileOutput,
+        createBy: reportParams.createBy
     };
 
     try
     {
         MongoPool.getInstance(async (clientJob) =>{
             const collection = clientJob.db().collection("bindreports");
-            await collection.insertOne(data);
+            await collection.insertOne(logData);
         });
         return reportParams;
     } catch (error) {

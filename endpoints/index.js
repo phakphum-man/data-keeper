@@ -1,6 +1,7 @@
 require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
+const mongodb = require('../libraries/mongodb');
 const { runPdfJobs, removeAllJob } = require("../libraries/jobBullMq");
 
 module.exports = function (app) {
@@ -34,20 +35,32 @@ module.exports = function (app) {
         // #swagger.ignore = true
         const data = req.params.filedata || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/data.csv';
         const template = req.params.template || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/ap203_form50_original.pdf';
-        const result = await runPdfJobs({ fileData: data, fileTemplate: template },true);
+        const result = await runPdfJobs({ fileData: data, fileTemplate: template, createBy: "system-online-pdf" },true);
         
         const fileName = path.basename(result.fileOutput);
         const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
         return res.status(200).send(output);
     });
 
+    app.get('/run-report/logs', async (req, res) => {
+        // #swagger.ignore = true
+        const type = req.query.type || '';
+        
+        const filter = (type === '')? {} :{ report_type: type}; 
+        const logData = await mongodb.getAll("bindreports", ["job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "fileOutput"],filter);
+
+        return res.status(200).send({ data: logData});
+    });
+
     app.get('/run-report/pdf', async (req, res) => {
         // #swagger.ignore = true
         const data = req.query.fd || './reports/pdf/data.csv';
         const template = req.query.ft || './reports/pdf/ap203_form50_original.pdf';
-        await runPdfJobs({ fileData: data, fileTemplate: template });
+        const result = await runPdfJobs({ fileData: data, fileTemplate: template, createBy: "system-pdf"});
 
-        return res.status(200).send(`Start Job`);
+        const fileName = path.basename(result.fileOutput);
+        const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        return res.status(200).send(output);
     });
 
     app.get('/run-report/remove', (req, res) => {
