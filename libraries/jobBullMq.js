@@ -68,6 +68,8 @@ const workBinding = new Worker(QUEUE_NAME, async (job)=>{
             textField.updateAppearances(customFont);
         });
         
+        form.flatten();
+        
         // Serialize the PDFDocument to bytes (a Uint8Array)
         const pdfBytesAtOnePage = await pdfDoc.save();
         // const dirPath = path.dirname(reportParams.fileOutput);
