@@ -164,8 +164,8 @@ workBinding.on('failed', async (job, err) => {
 });
    
 async function runPdfJobs(params = { fileData: 'data.csv', fileTemplate: 'template.pdf', createBy: "system-pdf" }, isOnline = false) {
-    const extension = path.extname(reportParams.fileTemplate);
-    const fileName = path.basename(reportParams.fileTemplate, extension);
+    const extension = path.extname(params.fileTemplate);
+    const fileName = path.basename(params.fileTemplate, extension);
     const reportParams = Object.assign({ fileOutput: path.join('./servicefiles', `${fileName}${excel.newDateFileName()}${extension}`), isOnline }, params);
     const jobPdf = await reportQueue.add('jobPdfBinding', reportParams, { removeOnComplete: true, removeOnFail: 1000 });
     const logData = { 
