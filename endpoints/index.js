@@ -34,9 +34,11 @@ module.exports = function (app) {
         // #swagger.ignore = true
         const data = req.query.fd || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/data.csv';
         const template = req.query.ft || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/ap203_form50_original.pdf';
-        await runPdfJobs({ fileData: data, fileTemplate: template },true);
-
-        return res.status(200).send(`Start Job`);
+        const result = await runPdfJobs({ fileData: data, fileTemplate: template },true);
+        
+        const fileName = path.basename(result.fileOutput);
+        const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        return res.status(200).send(output);
     });
 
     app.get('/run-report/pdf', async (req, res) => {
@@ -48,24 +50,13 @@ module.exports = function (app) {
         return res.status(200).send(`Start Job`);
     });
 
-    app.get('/run-report/download', (req, res) => {
-        
-        const selfPath = path.dirname(__dirname);
-        const rootPath = selfPath.replace(`/${selfPath}`,"");
-
-        const file = req.query.f || 'output.pdf';
-        const sourcefile = `${rootPath}/reports/pdf/out/${file}`;
-
-        return res.download(sourcefile);
-    });
-
     app.get('/run-report/remove', (req, res) => {
         
         const selfPath = path.dirname(__dirname);
         const rootPath = selfPath.replace(`/${selfPath}`,"");
 
         const file = req.query.f || 'output.pdf';
-        const sourcefile = `${rootPath}/reports/pdf/out/${file}`;
+        const sourcefile = `${rootPath}/servicefiles/${file}`;
         fs.unlink(sourcefile, (err) => {
             if (err) throw err;
         });

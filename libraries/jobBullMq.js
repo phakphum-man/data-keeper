@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const csv = require('csvtojson');
+const excel = require("../libraries/excel");
 const { PDFDocument } = require('pdf-lib');
 const fontkit = require('@pdf-lib/fontkit');
 const { MongoPool } = require('./mongodb');
@@ -163,7 +164,9 @@ workBinding.on('failed', async (job, err) => {
 });
    
 async function runPdfJobs(params = { fileData: 'data.csv', fileTemplate: 'template.pdf' }, isOnline = false) {
-    const reportParams = Object.assign({ fileOutput: path.join('./reports','pdf','out', 'output.pdf'), isOnline }, params);
+    const extension = path.extname(reportParams.fileTemplate);
+    const fileName = path.basename(reportParams.fileTemplate, extension);
+    const reportParams = Object.assign({ fileOutput: path.join('./servicefiles', `${fileName}${excel.newDateFileName()}${extension}`), isOnline }, params);
     const jobPdf = await reportQueue.add('jobPdfBinding', reportParams, { removeOnComplete: true, removeOnFail: 1000 });
     const data = { 
         report_type: params.fileTemplate,
@@ -181,6 +184,7 @@ async function runPdfJobs(params = { fileData: 'data.csv', fileTemplate: 'templa
             const collection = clientJob.db().collection("bindreports");
             await collection.insertOne(data);
         });
+        return reportParams;
     } catch (error) {
         if (error instanceof MongoServerError) {
           console.log(`Error worth logging: ${error}`); // special case for some reason
