@@ -45,9 +45,14 @@ module.exports = function (app) {
     app.get('/run-report/logs', async (req, res) => {
         // #swagger.ignore = true
         const type = req.query.type || '';
+        const by = req.query.by || '';
         
-        const filter = (type === '')? {} :{ report_type: type}; 
-        const logData = await mongodb.getAll("bindreports", ["job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "fileOutput"],filter);
+        let filter = (type === '')? {} :{ report_type: type};
+
+        if( by!=='' ) {
+            filter = Object.assign({ createBy: by }, filter);
+        }
+        const logData = await mongodb.getAll("bindreports", ["job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "fileOutput", "createBy"],filter);
 
         return res.status(200).send({ data: logData});
     });
