@@ -30,10 +30,10 @@ module.exports = function (app) {
         return res.sendFile(`${rootPath}/download.html`);
     });
 
-    app.get('/run-report/online-pdf', async (req, res) => {
+    app.post('/run-report/online-pdf', async (req, res) => {
         // #swagger.ignore = true
-        const data = req.query.fd || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/data.csv';
-        const template = req.query.ft || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/ap203_form50_original.pdf';
+        const data = req.params.filedata || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/data.csv';
+        const template = req.params.template || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/ap203_form50_original.pdf';
         const result = await runPdfJobs({ fileData: data, fileTemplate: template },true);
         
         const fileName = path.basename(result.fileOutput);
