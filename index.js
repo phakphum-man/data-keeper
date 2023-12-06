@@ -33,13 +33,6 @@ if(process.env.NODE_ENV === 'development'){
 
 MongoPool.initPool();
 
-process.on('SIGTERM', () => {
-  console.info('SIGTERM signal received.');
-  /*server.close(() => {
-    console.info('HTTP server closed');
-  });*/
-});
-
 server.listen(port);
 console.log("Environment is %s", ((process.env.NODE_ENV)? process.env.NODE_ENV : "Production"));
 console.log("Listening at: %s://%s:%s/", protocol, host, port);

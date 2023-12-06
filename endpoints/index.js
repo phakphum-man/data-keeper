@@ -2,7 +2,7 @@ require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
 const mongodb = require('../libraries/mongodb');
-const { runPdfJobs, removeAllJob } = require("../libraries/jobBullMq");
+const { runQueueJobs, removeAllJob } = require("../libraries/jobBullMq");
 
 module.exports = function (app) {
 	
@@ -35,8 +35,19 @@ module.exports = function (app) {
         // #swagger.ignore = true
         const data = req.params.filedata || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/data.csv';
         const template = req.params.template || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/ap203_form50_original.pdf';
-        const result = await runPdfJobs({ fileData: data, fileTemplate: template, createBy: "system-online-pdf" },true);
+        const result = await runQueueJobs({ fileData: data, fileTemplate: template, createBy: "system-online" },true);
         
+        const fileName = path.basename(result.fileOutput);
+        const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        return res.status(200).send(output);
+    });
+
+    app.get('/run-report/online-excel', async (req, res) => {
+        // #swagger.ignore = true
+        const data = req.query.fd || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/excel/data.csv';
+        const template = req.query.ft || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/excel/test-tables.xlsx';
+        const result = await runQueueJobs({ fileData: data, fileTemplate: template, createBy: "system"});
+
         const fileName = path.basename(result.fileOutput);
         const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
         return res.status(200).send(output);
@@ -57,11 +68,22 @@ module.exports = function (app) {
         return res.status(200).send({ data: logData});
     });
 
+    app.get('/run-report/excel', async (req, res) => {
+        // #swagger.ignore = true
+        const data = req.query.fd || './reports/excel/data.csv';
+        const template = req.query.ft || './reports/excel/test-tables.xlsx';
+        const result = await runQueueJobs({ fileData: data, fileTemplate: template, createBy: "system"});
+
+        const fileName = path.basename(result.fileOutput);
+        const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        return res.status(200).send(output);
+    });
+
     app.get('/run-report/pdf', async (req, res) => {
         // #swagger.ignore = true
         const data = req.query.fd || './reports/pdf/data.csv';
         const template = req.query.ft || './reports/pdf/ap203_form50_original.pdf';
-        const result = await runPdfJobs({ fileData: data, fileTemplate: template, createBy: "system-pdf"});
+        const result = await runQueueJobs({ fileData: data, fileTemplate: template, createBy: "system"});
 
         const fileName = path.basename(result.fileOutput);
         const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
