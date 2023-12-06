@@ -42,7 +42,7 @@ module.exports = function (app) {
         return res.status(200).send(output);
     });
 
-    app.get('/run-report/online-excel', async (req, res) => {
+    app.post('/run-report/online-excel', async (req, res) => {
         // #swagger.ignore = true
         const data = req.query.fd || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/excel/data.csv';
         const template = req.query.ft || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/excel/test-tables.xlsx';
