@@ -1,8 +1,0 @@
-name,age,image:url
-"นาย ทดสอบ หนังสือรับรอง1",29,"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=CODE1001"
-"นาย ทดสอบ หนังสือรับรอง2",35,"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=CODE1002"
-"นาย ทดสอบ หนังสือรับรอง3",40,"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=CODE1003"
-"นาย ทดสอบ หนังสือรับรอง4",37,"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=CODE1004"
-"นาย ทดสอบ หนังสือรับรอง5",25,"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=CODE1005"
-"นาย ทดสอบ หนังสือรับรอง6",19,"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=CODE1006"
-"นาย ทดสอบ หนังสือรับรอง7",47,"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=CODE1007"

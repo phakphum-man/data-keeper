@@ -20,13 +20,13 @@ const reportQueue = new Queue(QUEUE_NAME, { connection });
 
 const workBinding = new Worker(QUEUE_NAME, async (job)=>{
     const reportParams = job.data;
-    const extension = path.extname(reportParams.fileOutput);
+    const extension = reportParams.extension;
     try{
         switch(extension) {
-            case '.xlsx':
+            case 'xlsx':
                 reportExcel.dataBinding(reportParams);
                 break;
-            case '.pdf':
+            case 'pdf':
             default:
                 reportPdf.dataBinding(reportParams);
         }
@@ -110,11 +110,12 @@ workBinding.on('completed', async (job) => {
 workBinding.on('failed', async (job, err) => {
     try
     {
-        MongoPool.getInstance(async (clientJob) =>{
-            const collection = clientJob.db().collection('bindreports');
-            await collection.updateOne({job_id: job.id}, { $set: { status: 'failed', end_datetime: moment().toDate() } });
-        });
-        
+        if(job && job.id){
+            MongoPool.getInstance(async (clientJob) =>{
+                const collection = clientJob.db().collection('bindreports');
+                await collection.updateOne({job_id: job.id}, { $set: { status: 'failed', end_datetime: moment().toDate() } });
+            });
+        }
     } catch (error) {
         if (error instanceof MongoServerError) {
         console.log(`Error worth logging: ${error}`); // special case for some reason
@@ -122,7 +123,7 @@ workBinding.on('failed', async (job, err) => {
         throw error; // still want to crash
     }
     
-    console.log(`${job.id} has failed with ${err.message}`);
+    console.log(`job ${(job && job.id)?job.id:''} has failed with ${err.message}`);
 });
 
 const gracefulShutdown = async (signal) => {
@@ -132,13 +133,11 @@ const gracefulShutdown = async (signal) => {
     process.exit(0);
 }
 
-async function runQueueJobs(params = { fileData: 'data.csv', fileTemplate: 'template.pdf', createBy: "system-pdf" }, isOnline = false) {
-    const extension = path.extname(params.fileTemplate);
-    const fileName = path.basename(params.fileTemplate, extension);
-    const reportParams = Object.assign({ fileOutput: path.join('./servicefiles', `${fileName}${excel.newDateFileName()}${extension}`), isOnline }, params);
+async function runQueueJobs(params = { fileData: 'data.csv', extension: "pdf", fileTemplate: 'template.pdf', reportType: 'reportType', inputData: 'csv', createBy: "system-pdf" }, isOnline = false) {
+    const reportParams = Object.assign({ fileOutput: path.join('./servicefiles', `${params.reportType}${excel.newDateFileName()}.${params.extension}`), isOnline }, params);
     const job = await reportQueue.add('jobBinding', reportParams, { removeOnComplete: true, removeOnFail: true });
     const logData = { 
-        report_type: fileName,
+        report_type: reportParams.reportType,
         start_datetime: moment().toDate(),
         end_datetime: null,
         status: 'queued',

@@ -5,10 +5,10 @@ function MongoPool(){}
 var client;
 
 function initPool(cb){
-    client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
+    client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true, useNewUrlParser: true });
     client.connect(function(err, db) {
         if (err) throw err;
-
+        
         client = db;
 
         if(cb && typeof(cb) == 'function')

@@ -1,57 +1,86 @@
 const fs = require('fs');
 const axios = require('axios');
-const csv = require('csvtojson');
-const XlsxTemplate = require('xlsx-template');
+let BookWriter = require('xltpl');
+const dataReport = require('./dataReport');
 
 async function imgToBase64(urlImagePath) {
-    return await axios.get(urlImagePath, { responseType: 'arraybuffer' }).then((res) => Buffer.from(res.data, 'base64'));
+    const ext = urlImagePath.substring(0, 9);
+    const urlImage = urlImagePath.substring(9);
+    const result = await axios.get(urlImage, { responseType: 'arraybuffer' }).then((res) => Buffer.from(res.data, 'base64'));
+    let extension = "png";
+    switch(ext) {
+        case '$url#jpg:':
+            extension = "jpg";
+            break;
+        case '$url#png:':
+        default:
+            extension = "png"
+    }
+    return {buffer: result, extension: "png"};
 }
 
 async function dataBinding(reportParams){
-    try 
-    {
+    try {
+        let writer = new BookWriter();
+        let p = Promise.resolve();
         let jsonArray = [];
-        let excelBytes = Buffer.from('');
 
         if(!reportParams.isOnline){
-
-            jsonArray = await csv().fromFile(reportParams.fileData);
-            excelBytes = fs.readFileSync(reportParams.fileTemplate);
+            switch(reportParams.inputData) {
+                case 'json':
+                    jsonArray = dataReport.getJsonOffline(reportParams.fileData);
+                    break;
+                case 'csv':
+                default:
+                    const jsonTableCsv = await dataReport.getCsvToJsonOffline(reportParams.fileData);
+                    jsonArray = { templates: [{"sheet_index": 0, csv: jsonTableCsv}]};
+            }
+            
+            p = writer.readFile(reportParams.fileTemplate);
 
         }else{
-            const resData = await axios.get(reportParams.fileData, {
+
+            switch(reportParams.inputData) {
+                case 'json':
+                    jsonArray = await dataReport.getJsonOnline(reportParams.fileData);
+                    break;
+                case 'csv':
+                default:
+                    const jsonTableCsv = await dataReport.getCsvToJsonOnline(reportParams.fileData);
+                    jsonArray = { templates: [{"sheet_index": 0, csv: jsonTableCsv}]};
+            }
+
+            const resData = await axios.get(reportParams.fileTemplate, {
                 responseType: 'stream'
             });
             const streamData = resData.data;
-            jsonArray = await csv().fromStream(streamData);
+            p = writer.read(streamData);
 
-            excelBytes = await axios.get(reportParams.fileTemplate, { responseType: 'arraybuffer' }).then((res) => res.data);
         }
 
-        jsonArray = await Promise.all(jsonArray.map(async (item) => {
-            const obj = Object.assign({}, item);
-            const imgUrl = Object.keys(obj).filter(x => (x.indexOf(":url") > -1));
-            await Promise.all(imgUrl.map(async url => {
-                obj[url.replace(":","")] = await imgToBase64(obj[url]);
-                delete obj[url];
+        if(jsonArray.templates){
+            await Promise.all(jsonArray.templates.map(async data => { 
+                await dataReport.prepareData(data, imgToBase64);
+                return data;
             }));
-            
-            return obj; 
-        }));
-        
-        var t = new XlsxTemplate(excelBytes);
-        var data = {
-            csv: jsonArray
-        };
-        t.substitute(1, data);
-        var newData = t.generate();
-        
-        fs.writeFileSync(reportParams.fileOutput, newData, "binary");
+        }
+
+        await p.then(async() =>{
+
+            if(jsonArray.templates){
+                for(let i=0; i<jsonArray.templates.length; i++){
+                    writer.renderSheet(jsonArray.templates[i]);
+                }
+            }
+            //await writer.save(reportParams.fileOutput);
+            await writer.writeBuffer().then((buffer) => { 
+                fs.writeFileSync(reportParams.fileOutput, buffer, "binary");
+            });
+        });
 
     } catch (error) {
         console.log(`Error worth logging: ${error}`);
         throw error; // still want to crash
     }
 }
-
 module.exports = { dataBinding }

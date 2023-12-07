@@ -35,7 +35,9 @@ module.exports = function (app) {
         // #swagger.ignore = true
         const data = req.params.filedata || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/data.csv';
         const template = req.params.template || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/ap203_form50_original.pdf';
-        const result = await runQueueJobs({ fileData: data, fileTemplate: template, createBy: "system-online" }, true);
+        const reportType = req.params.reporttype || 'ap203_form50_original';
+        const inputData = req.params.inputdata || 'csv';
+        const result = await runQueueJobs({ fileData: data, extension: "pdf", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system-online" }, true);
         
         const fileName = path.basename(result.fileOutput);
         const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
@@ -46,7 +48,9 @@ module.exports = function (app) {
         // #swagger.ignore = true
         const data = req.query.fd || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/excel/data.csv';
         const template = req.query.ft || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/excel/test-tables.xlsx';
-        const result = await runQueueJobs({ fileData: data, fileTemplate: template, createBy: "system"}, true);
+        const reportType = req.params.reporttype || 'test-tables';
+        const inputData = req.params.inputdata || 'csv';
+        const result = await runQueueJobs({ fileData: data, extension: "xlsx", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system"}, true);
 
         const fileName = path.basename(result.fileOutput);
         const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
@@ -70,9 +74,11 @@ module.exports = function (app) {
 
     app.get('/run-report/excel', async (req, res) => {
         // #swagger.ignore = true
-        const data = req.query.fd || './reports/excel/data.csv';
-        const template = req.query.ft || './reports/excel/test-tables.xlsx';
-        const result = await runQueueJobs({ fileData: data, fileTemplate: template, createBy: "system"});
+        const data = req.query.fd || './reports/excel/icetax-form.json';
+        const template = req.query.ft || './reports/excel/icetax-form.xlsx';
+        const reportType = req.params.reporttype || 'icetax-form';
+        const inputData = req.params.inputdata || 'json';
+        const result = await runQueueJobs({ fileData: data, extension: "xlsx", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system"});
 
         const fileName = path.basename(result.fileOutput);
         const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
@@ -83,7 +89,9 @@ module.exports = function (app) {
         // #swagger.ignore = true
         const data = req.query.fd || './reports/pdf/data.csv';
         const template = req.query.ft || './reports/pdf/ap203_form50_original.pdf';
-        const result = await runQueueJobs({ fileData: data, fileTemplate: template, createBy: "system"});
+        const reportType = req.params.reporttype || 'ap203_form50_originals';
+        const inputData = req.params.inputdata || 'csv';
+        const result = await runQueueJobs({ fileData: data, extension: "pdf", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system"});
 
         const fileName = path.basename(result.fileOutput);
         const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
