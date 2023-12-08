@@ -7,9 +7,9 @@ const excel = require("./excel");
 const reportPdf = require("./reportPdf");
 const reportExcel = require("./reportExcel");
 const { MongoPool } = require('./mongodb');
+const line = require("./lineNotify");
 const os = require('os')
 const { MongoServerError } = require('mongodb');
-const { json } = require('express');
 
 const QueueNameBinding = `work${os.hostname()}`;
 
@@ -144,6 +144,17 @@ workBinding.on('completed', async ( job, returnvalue ) => {
                 if(findResult) {
                     const jobId = findResult.job_id;
                     await collection.updateOne({job_id: jobId}, { $set: { status: 'completed', end_datetime: moment().toDate() } });
+
+                    const params = JSON.parse(findResult.parameters);
+                    const result = { report_type : params.report_type, input_extension: params.extension, fileData: params.fileData, fileTemplate: params.fileTemplate };
+
+                    const infos = [
+                        "Job run with parameter:",
+                        `${JSON.stringify(result, 2)} `,
+                        "",
+                        "Result is Successful.",
+                    ];
+                    line.sendMessage(process.env.LINE_TOKEN, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
                 }
             });
         }else if(job && job.id && returnvalue === false) {
@@ -171,7 +182,25 @@ workBinding.on('failed', async ( job, err ) => {
         if(job && job.id) {
             MongoPool.getInstance(async (clientJob) =>{
                 const collection = clientJob.db().collection('bindreports');
-                await collection.updateOne({job_id: job.id}, { $set: { status: 'failed', failed_reason: err.message, end_datetime: moment().toDate() } });
+
+                const findResult = await collection.findOne({
+                    $or:[
+                        { job_id: job.id }, 
+                        { merge_job_id: job.id }
+                    ]
+                });
+
+                if(findResult) {
+                    await collection.updateOne({job_id: findResult.job_id}, { $set: { status: 'failed', failed_reason: err.message, end_datetime: moment().toDate() } });
+
+                    const infos = [
+                        "Job run with parameter:",
+                        `${JSON.stringify(result, 2)} `,
+                        "",
+                        "Result is failed.",
+                    ];
+                    line.sendMessage(process.env.LINE_TOKEN, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
+                }
             });
         }
     } catch (error) {

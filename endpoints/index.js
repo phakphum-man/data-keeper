@@ -61,7 +61,7 @@ module.exports = function (app) {
         }, true);
         
         const fileName = path.basename(result.fileOutput);
-        const output = `<h4 color="red">before running please give permission to access the file "Anyone with the link"</h4><br/>\r\n<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        const output = `<h4 style="color:red">Before running, Please give permission to access the file "Anyone with the link".</h4><br/>\r\n<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
         return res.status(200).send(output);
     });
 
@@ -95,7 +95,7 @@ module.exports = function (app) {
         }, true);
         
         const fileName = path.basename(result.fileOutput);
-        const output = `<h4 color="red">before running please give permission to access the file "Anyone with the link"</h4><br/>\r\n<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        const output = `<h4 style="color:red">Before running, Please give permission to access the file "Anyone with the link".</h4><br/>\r\n<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
         return res.status(200).send(output);
     });
 
