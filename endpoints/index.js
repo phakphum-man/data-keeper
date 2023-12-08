@@ -67,7 +67,7 @@ module.exports = function (app) {
         if( by!=='' ) {
             filter = Object.assign({ createBy: by }, filter);
         }
-        const logData = await mongodb.getAll("bindreports", ["job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "fileOutput", "createBy"],filter);
+        const logData = await mongodb.getAll("bindreports", ["job_id", "merge_job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "extension_file", "fileOutput", "createBy"],filter);
 
         return res.status(200).send({ data: logData});
     });

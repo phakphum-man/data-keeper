@@ -89,6 +89,26 @@ async function dataBinding(reportParams){
             
         }));
         
+    } catch (error) {
+        console.error(`Error worth logging: ${error}`);
+    }
+
+    return false;
+}
+
+async function mergePdf(reportParams){
+    try {
+        const dirPath = path.dirname(reportParams.fileOutput);
+        const extension = path.extname(reportParams.fileOutput);
+        const fileName = path.basename(reportParams.fileOutput, extension);
+        let jsonArray = [];
+
+        if(!reportParams.isOnline){
+            jsonArray = await dataReport.getCsvToJsonOffline(reportParams.fileData);
+        }else{
+            jsonArray = await dataReport.getCsvToJsonOnline(reportParams.fileData);
+        }
+
         const mergedPdf = await PDFDocument.create(); 
         for (let i = 0; i < jsonArray.length; i++) {
             const fileSavePath = path.join(dirPath, `${fileName}_${i}${extension}`);
@@ -102,13 +122,13 @@ async function dataBinding(reportParams){
         } 
 
         const pdfMergeBytes = await mergedPdf.save();
-
         fs.writeFileSync(reportParams.fileOutput, pdfMergeBytes);
+        return true;
 
     } catch (error) {
-        console.log(`Error worth logging: ${error}`);
-        throw error; // still want to crash
+        console.error(`Error worth logging: ${error}`);
+        return false;
     }
 }
 
-module.exports = { dataBinding }
+module.exports = { dataBinding, mergePdf }

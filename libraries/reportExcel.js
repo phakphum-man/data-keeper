@@ -78,9 +78,10 @@ async function dataBinding(reportParams){
             });
         });
 
+        return true;
     } catch (error) {
-        console.log(`Error worth logging: ${error}`);
-        throw error; // still want to crash
+        console.error(`Error worth logging: ${error}`);
+        return false;
     }
 }
 module.exports = { dataBinding }
