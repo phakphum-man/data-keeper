@@ -146,15 +146,7 @@ workBinding.on('completed', async ( job, returnvalue ) => {
                     await collection.updateOne({job_id: jobId}, { $set: { status: 'completed', end_datetime: moment().toDate() } });
 
                     const params = JSON.parse(findResult.parameters);
-                    const result = { report_type : params.report_type, input_extension: params.extension, fileData: params.fileData, fileTemplate: params.fileTemplate };
-
-                    const infos = [
-                        "Job run with parameter:",
-                        `${JSON.stringify(result, 2)} `,
-                        "",
-                        "Result is Successful.",
-                    ];
-                    line.sendMessage(process.env.LINE_TOKEN, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
+                    sendLineNotify(findResult, `Result is successful.\n(${params.referLink})`);
                 }
             });
         }else if(job && job.id && returnvalue === false) {
@@ -193,13 +185,7 @@ workBinding.on('failed', async ( job, err ) => {
                 if(findResult) {
                     await collection.updateOne({job_id: findResult.job_id}, { $set: { status: 'failed', failed_reason: err.message, end_datetime: moment().toDate() } });
 
-                    const infos = [
-                        "Job run with parameter:",
-                        `${JSON.stringify(result, 2)} `,
-                        "",
-                        "Result is failed.",
-                    ];
-                    line.sendMessage(process.env.LINE_TOKEN, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
+                    sendLineNotify(findResult, "Result is failed.");
                 }
             });
         }
@@ -211,16 +197,13 @@ workBinding.on('failed', async ( job, err ) => {
     console.log(`job ${job?.id} has failed with ${err.message}`);
 });
 
-const gracefulShutdown = async (signal) => {
-    console.log(`Received ${signal}, closing server...`);
-    await workBinding.close();
-    // Other asynchronous closings
-    process.exit(0);
-}
-
-async function runQueueJobs(params = { fileData: 'data.csv', extension: "pdf", fileTemplate: 'template.pdf', reportType: 'reportType', inputData: 'csv', createBy: "system-pdf" }, isOnline = false) {
-    const reportParams = Object.assign({ fileOutput: path.join('./servicefiles', `${params.reportType}${excel.newDateFileName()}.${params.extension}`), isOnline }, params);
+async function runQueueJobs(params = { fileData: 'data.csv', extension: "pdf", fileTemplate: 'template.pdf', reportType: 'reportType', inputData: 'csv', referLink: '', createBy: "system-pdf" }, isOnline = false) {
+    const fileOutput = path.join('./servicefiles', `${params.reportType}${excel.newDateFileName()}.${params.extension}`);
+    let reportParams = Object.assign({ fileOutput: fileOutput, isOnline }, params);
+    const fileName = path.basename(fileOutput);
+    reportParams.referLink = `${params.referLink}${fileName}`;
     const job = await bindingQueue.add('jobBinding', reportParams, { removeOnComplete: true, removeOnFail: true });
+
     const logData = { 
         report_type: reportParams.reportType,
         start_datetime: moment().toDate(),
@@ -260,6 +243,28 @@ async function removeAllJob(){
         await collection.deleteMany({});
     });
     await bindingQueue.obliterate();
+}
+
+const sendLineNotify = (findResult, message) => {
+    const params = JSON.parse(findResult.parameters);
+
+    const infos = [
+        "",
+        `Job(${findResult.job_id}) Report`,
+        "",
+        `Type : ${findResult.report_type} (${params.extension})`,
+        `At Time : ${moment(findResult.start_datetime).format('LTS')} - ${moment().format('LTS')}`,
+        "",
+        message,
+    ];
+    line.sendMessage(process.env.LINE_TOKEN, `${moment().format('dddd, Do MMMM YYYY')}\n${infos.join("\n")}`);
+};
+
+const gracefulShutdown = async (signal) => {
+    console.log(`Received ${signal}, closing server...`);
+    await workBinding.close();
+    // Other asynchronous closings
+    process.exit(0);
 }
 
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));

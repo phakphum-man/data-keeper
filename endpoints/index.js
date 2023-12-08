@@ -37,10 +37,11 @@ module.exports = function (app) {
         const template = req.body.template || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/ap203_form50_original.pdf';
         const reportType = req.body.report_type || 'ap203_form50_original';
         const inputData = req.body.input_extension || 'csv';
-        const result = await runQueueJobs({ fileData: data, extension: "pdf", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system-online" }, true);
-        
-        const fileName = path.basename(result.fileOutput);
-        const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+
+        const referLink = `${req.protocol}://${req.get('host')}/download?f=`;
+        const result = await runQueueJobs({ fileData: data, extension: "pdf", fileTemplate: template, reportType: reportType, inputData: inputData, referLink: referLink, createBy: "system-online" }, true);
+
+        const output = `<a href="${result.referLink}" target="_blank">download</a>`;
         return res.status(200).send(output);
     });
 
@@ -51,17 +52,18 @@ module.exports = function (app) {
         const reportType = req.body.report_type || 'ap203_form50_original';
         const inputData = req.body.input_extension || 'csv';
 
+        const referLink = `${req.protocol}://${req.get('host')}/download?f=`;
         const result = await runQueueJobs({ 
             fileData: `https://drive.google.com/uc?export=download&id=${file_id_data}`, 
             extension: "pdf", 
             fileTemplate: `https://drive.google.com/uc?export=download&id=${file_id_template}`, 
             reportType: reportType, 
-            inputData: inputData, 
+            inputData: inputData,
+            referLink: referLink,
             createBy: "system-online"
         }, true);
         
-        const fileName = path.basename(result.fileOutput);
-        const output = `<h4 style="color:red">Before running, Please give permission to access the file "Anyone with the link".</h4><br/>\r\n<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        const output = `<h4 style="color:red">Before running, Please give permission to access the file "Anyone with the link".</h4><br/>\r\n<a href="${result.referLink}" target="_blank">download</a>`;
         return res.status(200).send(output);
     });
 
@@ -71,10 +73,11 @@ module.exports = function (app) {
         const template = req.body.template || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/excel/test-tables.xlsx';
         const reportType = req.body.report_type || 'test-tables';
         const inputData = req.body.input_extension || 'csv';
-        const result = await runQueueJobs({ fileData: data, extension: "xlsx", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system"}, true);
 
-        const fileName = path.basename(result.fileOutput);
-        const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        const referLink = `${req.protocol}://${req.get('host')}/download?f=`;
+        const result = await runQueueJobs({ fileData: data, extension: "xlsx", fileTemplate: template, reportType: reportType, inputData: inputData, referLink: referLink, createBy: "system"}, true);
+
+        const output = `<a href="${result.referLink}" target="_blank">download</a>`;
         return res.status(200).send(output);
     });
 
@@ -85,17 +88,18 @@ module.exports = function (app) {
         const reportType = req.body.report_type || 'icetax-form';
         const inputData = req.body.input_extension || 'json';
 
+        const referLink = `${req.protocol}://${req.get('host')}/download?f=`;
         const result = await runQueueJobs({ 
             fileData: `https://drive.google.com/uc?export=download&id=${file_id_data}`, 
             extension: "xlsx", 
             fileTemplate: `https://drive.google.com/uc?export=download&id=${file_id_template}`, 
             reportType: reportType, 
             inputData: inputData, 
+            referLink: referLink,
             createBy: "system-online"
         }, true);
         
-        const fileName = path.basename(result.fileOutput);
-        const output = `<h4 style="color:red">Before running, Please give permission to access the file "Anyone with the link".</h4><br/>\r\n<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        const output = `<h4 style="color:red">Before running, Please give permission to access the file "Anyone with the link".</h4><br/>\r\n<a href="${result.referLink}" target="_blank">download</a>`;
         return res.status(200).send(output);
     });
 
@@ -120,10 +124,11 @@ module.exports = function (app) {
         const template = req.query.ft || './reports/excel/icetax-form.xlsx';
         const reportType = req.query.t || 'icetax-form';
         const inputData = req.query.ext || 'json';
-        const result = await runQueueJobs({ fileData: data, extension: "xlsx", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system"});
 
-        const fileName = path.basename(result.fileOutput);
-        const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        const referLink = `${req.protocol}://${req.get('host')}/download?f=`;
+        const result = await runQueueJobs({ fileData: data, extension: "xlsx", fileTemplate: template, reportType: reportType, inputData: inputData, referLink: referLink, createBy: "system"});
+
+        const output = `<a href="${result.referLink}" target="_blank">download</a>`;
         return res.status(200).send(output);
     });
 
@@ -133,10 +138,11 @@ module.exports = function (app) {
         const template = req.query.ft || './reports/pdf/ap203_form50_original.pdf';
         const reportType = req.query.t || 'ap203_form50_originals';
         const inputData = req.query.ext || 'csv';
-        const result = await runQueueJobs({ fileData: data, extension: "pdf", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system"});
 
-        const fileName = path.basename(result.fileOutput);
-        const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        const referLink = `${req.protocol}://${req.get('host')}/download?f=`;
+        const result = await runQueueJobs({ fileData: data, extension: "pdf", fileTemplate: template, reportType: reportType, inputData: inputData, referLink: referLink, createBy: "system"});
+
+        const output = `<a href="${result.referLink}" target="_blank">download</a>`;
         return res.status(200).send(output);
     });
 
