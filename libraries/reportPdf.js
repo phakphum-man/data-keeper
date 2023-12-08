@@ -91,6 +91,7 @@ async function dataBinding(reportParams){
         
     } catch (error) {
         console.error(`Error worth logging: ${error}`);
+        throw error;
     }
 
     return false;

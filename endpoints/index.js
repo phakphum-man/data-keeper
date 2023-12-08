@@ -33,10 +33,10 @@ module.exports = function (app) {
 
     app.post('/run-report/online-pdf', async (req, res) => {
         // #swagger.ignore = true
-        const data = req.params.filedata || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/data.csv';
-        const template = req.params.template || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/ap203_form50_original.pdf';
-        const reportType = req.params.reporttype || 'ap203_form50_original';
-        const inputData = req.params.inputdata || 'csv';
+        const data = req.body.filedata || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/data.csv';
+        const template = req.body.template || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/pdf/ap203_form50_original.pdf';
+        const reportType = req.body.report_type || 'ap203_form50_original';
+        const inputData = req.body.input_extension || 'csv';
         const result = await runQueueJobs({ fileData: data, extension: "pdf", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system-online" }, true);
         
         const fileName = path.basename(result.fileOutput);
@@ -44,16 +44,58 @@ module.exports = function (app) {
         return res.status(200).send(output);
     });
 
+    app.post('/run-report/gdrive-pdf', async (req, res) => {
+        // #swagger.ignore = true
+        const file_id_data = req.body.file_id_data || '1akFSZQOyk-XavCeu7Xi2bs0XeQfc6K3a';
+        const file_id_template = req.body.file_id_template || '1Tgkn-zXCGwGFSNi2THWx4XmAVwE7hm6G';
+        const reportType = req.body.report_type || 'ap203_form50_original';
+        const inputData = req.body.input_extension || 'csv';
+
+        const result = await runQueueJobs({ 
+            fileData: `https://drive.google.com/uc?export=download&id=${file_id_data}`, 
+            extension: "pdf", 
+            fileTemplate: `https://drive.google.com/uc?export=download&id=${file_id_template}`, 
+            reportType: reportType, 
+            inputData: inputData, 
+            createBy: "system-online"
+        }, true);
+        
+        const fileName = path.basename(result.fileOutput);
+        const output = `<h4 color="red">before running please give permission to access the file "Anyone with the link"</h4><br/>\r\n<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        return res.status(200).send(output);
+    });
+
     app.post('/run-report/online-excel', async (req, res) => {
         // #swagger.ignore = true
-        const data = req.query.fd || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/excel/data.csv';
-        const template = req.query.ft || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/excel/test-tables.xlsx';
-        const reportType = req.params.reporttype || 'test-tables';
-        const inputData = req.params.inputdata || 'csv';
+        const data = req.body.filedata || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/excel/data.csv';
+        const template = req.body.template || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/excel/test-tables.xlsx';
+        const reportType = req.body.report_type || 'test-tables';
+        const inputData = req.body.input_extension || 'csv';
         const result = await runQueueJobs({ fileData: data, extension: "xlsx", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system"}, true);
 
         const fileName = path.basename(result.fileOutput);
         const output = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
+        return res.status(200).send(output);
+    });
+
+    app.post('/run-report/gdrive-excel', async (req, res) => {
+        // #swagger.ignore = true
+        const file_id_data = req.body.file_id_data || '1T9A42OKbhx2cFEybonenSwf270PJFOg9';
+        const file_id_template = req.body.file_id_template || '1CeXeSFKnK_Pw_WsoYpwpUR7ewhk0fAu7';
+        const reportType = req.body.report_type || 'icetax-form';
+        const inputData = req.body.input_extension || 'json';
+
+        const result = await runQueueJobs({ 
+            fileData: `https://drive.google.com/uc?export=download&id=${file_id_data}`, 
+            extension: "xlsx", 
+            fileTemplate: `https://drive.google.com/uc?export=download&id=${file_id_template}`, 
+            reportType: reportType, 
+            inputData: inputData, 
+            createBy: "system-online"
+        }, true);
+        
+        const fileName = path.basename(result.fileOutput);
+        const output = `<h4 color="red">before running please give permission to access the file "Anyone with the link"</h4><br/>\r\n<a href="${req.protocol}://${req.get('host')}/download?f=${fileName}" target="_blank">download</a>`;
         return res.status(200).send(output);
     });
 
@@ -67,7 +109,7 @@ module.exports = function (app) {
         if( by!=='' ) {
             filter = Object.assign({ createBy: by }, filter);
         }
-        const logData = await mongodb.getAll("bindreports", ["job_id", "merge_job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "extension_file", "fileOutput", "createBy"],filter);
+        const logData = await mongodb.getAll("bindreports", ["job_id", "merge_job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "extension_file", "failed_reason", "fileOutput", "createBy"],filter);
 
         return res.status(200).send({ data: logData});
     });
@@ -76,8 +118,8 @@ module.exports = function (app) {
         // #swagger.ignore = true
         const data = req.query.fd || './reports/excel/icetax-form.json';
         const template = req.query.ft || './reports/excel/icetax-form.xlsx';
-        const reportType = req.params.reporttype || 'icetax-form';
-        const inputData = req.params.inputdata || 'json';
+        const reportType = req.query.t || 'icetax-form';
+        const inputData = req.query.ext || 'json';
         const result = await runQueueJobs({ fileData: data, extension: "xlsx", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system"});
 
         const fileName = path.basename(result.fileOutput);
@@ -89,8 +131,8 @@ module.exports = function (app) {
         // #swagger.ignore = true
         const data = req.query.fd || './reports/pdf/data.csv';
         const template = req.query.ft || './reports/pdf/ap203_form50_original.pdf';
-        const reportType = req.params.reporttype || 'ap203_form50_originals';
-        const inputData = req.params.inputdata || 'csv';
+        const reportType = req.query.t || 'ap203_form50_originals';
+        const inputData = req.query.ext || 'csv';
         const result = await runQueueJobs({ fileData: data, extension: "pdf", fileTemplate: template, reportType: reportType, inputData: inputData, createBy: "system"});
 
         const fileName = path.basename(result.fileOutput);

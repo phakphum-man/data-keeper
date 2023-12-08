@@ -1,4 +1,5 @@
 require('dotenv').config();
+const express = require('express')
 const app = require('express')();
 const http = require('http');
 const fs = require('fs');
@@ -16,6 +17,7 @@ if (!fs.existsSync(pathServiceFiles)){
 }
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 1;
 
+app.use(express.json());
 require('./endpoints/index')(app);
 require('./endpoints/file')(app);
 require('./endpoints/user')(app);

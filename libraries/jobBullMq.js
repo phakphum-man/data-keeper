@@ -171,7 +171,7 @@ workBinding.on('failed', async ( job, err ) => {
         if(job && job.id) {
             MongoPool.getInstance(async (clientJob) =>{
                 const collection = clientJob.db().collection('bindreports');
-                await collection.updateOne({job_id: job.id}, { $set: { status: 'failed', failed_reason: failedReason, end_datetime: moment().toDate() } });
+                await collection.updateOne({job_id: job.id}, { $set: { status: 'failed', failed_reason: err.message, end_datetime: moment().toDate() } });
             });
         }
     } catch (error) {

@@ -81,7 +81,7 @@ async function dataBinding(reportParams){
         return true;
     } catch (error) {
         console.error(`Error worth logging: ${error}`);
-        return false;
+        throw error;
     }
 }
 module.exports = { dataBinding }
