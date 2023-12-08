@@ -246,6 +246,7 @@ async function removeAllJob(){
 }
 
 const sendLineNotify = (findResult, message) => {
+    moment.locale('th');
     const params = JSON.parse(findResult.parameters);
 
     const infos = [
