@@ -50,7 +50,7 @@ async function dataBinding(reportParams){
             formDocxBytes = fs.readFileSync(reportParams.fileTemplate);
         } else {
             jsonArray = await dataReport.getJsonOnline(reportParams.fileData);
-            formDocxBytes = await axios.get(reportParams.fileTemplate, { responseType: 'blob' }).then((res) => res.data);
+            formDocxBytes = await axios.get(reportParams.fileTemplate, { responseType: 'arraybuffer' }).then((res) => res.data);
         }
 
         const dirPath = path.dirname(reportParams.fileOutput);
@@ -103,7 +103,7 @@ async function mergeDocx(reportParams){
             fs.writeFileSync(path.join(reportParams.fileOutput), doc);
         });
         return true;
-        
+
     } catch (error) {
         console.error(`Error worth logging: ${error}`);
         return false;

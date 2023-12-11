@@ -127,7 +127,7 @@ module.exports = function (app) {
         const referLink = `${req.protocol}://${req.get('host')}/download?f=`;
         const result = await runQueueJobs({ 
             fileData: `https://drive.google.com/uc?export=download&id=${file_id_data}`, 
-            extension: "pdf", 
+            extension: "docx", 
             fileTemplate: `https://drive.google.com/uc?export=download&id=${file_id_template}`, 
             reportType: reportType, 
             inputData: inputData,
