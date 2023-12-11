@@ -1,0 +1,28 @@
+{
+    "templates": [
+        {
+            "posts": [
+                { 
+                    "author": "Alon Bar", 
+                    "text": "Very important\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here! xxxxxxxxxxxxxxxx", 
+                    "imageurl": "$url#png#4x4:https://www.epbusinessjournal.com/wp-content/uploads/2020/11/starbucks-logo-png-transparent.png" },
+                { 
+                    "author": "Alon Bar", 
+                    "text": "Forgot to mention that...", 
+                    "imageurl": "$url#png#4x4:https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png" }
+            ]
+        },
+        {
+            "posts": [
+                { 
+                    "author": "Alon Bar2", 
+                    "text": "Very important\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here!\ntext here! 2", 
+                    "imageurl": "$url#png#4x4:https://www.epbusinessjournal.com/wp-content/uploads/2020/11/starbucks-logo-png-transparent.png" },
+                { 
+                    "author": "Alon Bar2", 
+                    "text": "Forgot to mention that...222222222", 
+                    "imageurl": "$url#png#4x4:https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png" }
+            ]
+        }
+    ]
+}

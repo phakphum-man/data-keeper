@@ -103,6 +103,42 @@ module.exports = function (app) {
         return res.status(200).send(output);
     });
 
+    app.post('/run-report/online-docx', async (req, res) => {
+        // #swagger.ignore = true
+        const data = req.body.filedata || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/docx/myTemplate.json';
+        const template = req.body.template || 'https://raw.githubusercontent.com/phakphum-man/data-keeper/main/reports/docx/myTemplate.docx';
+        const reportType = req.body.report_type || 'myTemplate';
+        const inputData = req.body.input_extension || 'json';
+
+        const referLink = `${req.protocol}://${req.get('host')}/download?f=`;
+        const result = await runQueueJobs({ fileData: data, extension: "docx", fileTemplate: template, reportType: reportType, inputData: inputData, referLink: referLink, createBy: "system-online" }, true);
+
+        const output = `<a href="${result.referLink}" target="_blank">download</a>`;
+        return res.status(200).send(output);
+    });
+
+    app.post('/run-report/gdrive-docx', async (req, res) => {
+        // #swagger.ignore = true
+        const file_id_data = req.body.file_id_data || '1FwaIKeS2ss9EakNE-8O2qbrO9fthvNPk';
+        const file_id_template = req.body.file_id_template || '1btb4Osz5U-Nx1RlK33t_C-obr_I1zxmb';
+        const reportType = req.body.report_type || 'myTemplate';
+        const inputData = req.body.input_extension || 'json';
+
+        const referLink = `${req.protocol}://${req.get('host')}/download?f=`;
+        const result = await runQueueJobs({ 
+            fileData: `https://drive.google.com/uc?export=download&id=${file_id_data}`, 
+            extension: "pdf", 
+            fileTemplate: `https://drive.google.com/uc?export=download&id=${file_id_template}`, 
+            reportType: reportType, 
+            inputData: inputData,
+            referLink: referLink,
+            createBy: "system-online"
+        }, true);
+        
+        const output = `<h4 style="color:red">Before running, Please give permission to access the file "Anyone with the link".</h4><br/>\r\n<a href="${result.referLink}" target="_blank">download</a>`;
+        return res.status(200).send(output);
+    });
+
     app.get('/run-report/logs', async (req, res) => {
         // #swagger.ignore = true
         const type = req.query.type || '';
@@ -142,6 +178,20 @@ module.exports = function (app) {
         const referLink = `${req.protocol}://${req.get('host')}/download?f=`;
         const result = await runQueueJobs({ fileData: data, extension: "pdf", fileTemplate: template, reportType: reportType, inputData: inputData, referLink: referLink, createBy: "system"});
 
+        const output = `<a href="${result.referLink}" target="_blank">download</a>`;
+        return res.status(200).send(output);
+    });
+
+    app.get('/run-report/docx', async (req, res) => {
+        // #swagger.ignore = true
+        const data = req.query.fd || './reports/docx/myTemplate.json';
+        const template = req.query.ft || './reports/docx/myTemplate.docx';
+        const reportType = req.query.t || 'myTemplate';
+        const inputData = req.query.ext || 'json';
+
+        const referLink = `${req.protocol}://${req.get('host')}/download?f=`;
+        const result = await runQueueJobs({ fileData: data, extension: "docx", fileTemplate: template, reportType: reportType, inputData: inputData, referLink: referLink, createBy: "system"});
+        
         const output = `<a href="${result.referLink}" target="_blank">download</a>`;
         return res.status(200).send(output);
     });

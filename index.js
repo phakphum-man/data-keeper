@@ -21,6 +21,7 @@ app.use(express.json());
 require('./endpoints/index')(app);
 require('./endpoints/file')(app);
 require('./endpoints/user')(app);
+require('./endpoints/pdf')(app);
 require('./endpoints/krungsriprop')(app);
 require('./endpoints/livinginsider')(app);
 require('./endpoints/goldprice')(app);

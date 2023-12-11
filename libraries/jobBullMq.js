@@ -6,6 +6,7 @@ const path = require('path');
 const excel = require("./excel");
 const reportPdf = require("./reportPdf");
 const reportExcel = require("./reportExcel");
+const reportDocx = require('./reportDocx');
 const { MongoPool } = require('./mongodb');
 const line = require("./lineNotify");
 const os = require('os')
@@ -29,11 +30,18 @@ const workBinding = new Worker(QueueNameBinding, async (job)=>{
             case 'xlsx':
                 return reportExcel.dataBinding(reportParams);
                 break;
+            case 'docx':
+                if(job.name === 'jobMergeFiles'){
+                    return reportDocx.mergeDocx(reportParams);
+                } else {
+                    return reportDocx.dataBinding(reportParams);
+                }
+                break;
             case 'pdf':
             default:
-                if(job.name === 'jobMergePdf'){
+                if(job.name === 'jobMergeFiles'){
                     return reportPdf.mergePdf(reportParams);
-                }else{
+                } else {
                     return reportPdf.dataBinding(reportParams);
                 }
         }
@@ -152,9 +160,12 @@ workBinding.on('completed', async ( job, returnvalue ) => {
         }else if(job && job.id && returnvalue === false) {
             MongoPool.getInstance(async (clientJob) =>{
                 const collection = clientJob.db().collection('bindreports');
-                const findResult = await collection.findOne({ job_id: job.id, extension_file: "pdf"});
+                const findResult = await collection.findOne({ job_id: job.id, $or:[ 
+                    {extension_file: "docx"},
+                    {extension_file: "pdf"}
+                ]});
                 if(findResult) {
-                    const jobId = await runMergePdfJobs(JSON.parse(findResult.parameters));
+                    const jobId = await runJobMergeFiles(JSON.parse(findResult.parameters));
                     await collection.updateOne({job_id: job.id}, { $set: { merge_job_id: jobId } });
                 }
             });
@@ -232,8 +243,8 @@ async function runQueueJobs(params = { fileData: 'data.csv', extension: "pdf", f
     
 }
 
-async function runMergePdfJobs(reportParams){
-    const job = await bindingQueue.add('jobMergePdf', reportParams, { removeOnComplete: true, removeOnFail: true });
+async function runJobMergeFiles(reportParams){
+    const job = await bindingQueue.add('jobMergeFiles', reportParams, { removeOnComplete: true, removeOnFail: true });
     return job.id;
 }
 
@@ -271,4 +282,4 @@ const gracefulShutdown = async (signal) => {
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
-module.exports = { runQueueJobs, runMergePdfJobs, removeAllJob }
+module.exports = { runQueueJobs, runJobMergeFiles, removeAllJob }
