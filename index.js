@@ -3,6 +3,7 @@ const express = require('express')
 const app = require('express')();
 const http = require('http');
 const fs = require('fs');
+const path = require('path');
 const { MongoPool } = require('./libraries/mongodb');
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./swagger_output.json');
@@ -22,11 +23,26 @@ require('./endpoints/index')(app);
 require('./endpoints/file')(app);
 require('./endpoints/user')(app);
 require('./endpoints/pdf')(app);
+require('./endpoints/runreport')(app);
 require('./endpoints/krungsriprop')(app);
 require('./endpoints/livinginsider')(app);
 require('./endpoints/goldprice')(app);
 require('./endpoints/goldprice2')(app);
 require('./endpoints/linenotify')(app);
+
+app.get('/public/*', (req, res) => {
+    // #swagger.ignore = true
+    const files = req.params;
+
+    if(!files || files.length <= 0)
+        return res.status(404).send("Not Found");
+
+    const file = files[0];
+    const filePath = path.join(__dirname, 'public', file);
+
+    // HTML jquery script download chunks
+    return res.sendFile(filePath);
+});
 
 const server = http.createServer(app);
     

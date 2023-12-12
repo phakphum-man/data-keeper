@@ -208,7 +208,7 @@ workBinding.on('failed', async ( job, err ) => {
     console.log(`job ${job?.id} has failed with ${err.message}`);
 });
 
-async function runQueueJobs(params = { fileData: 'data.csv', extension: "pdf", fileTemplate: 'template.pdf', reportType: 'reportType', inputData: 'csv', referLink: '', createBy: "system-pdf" }, isOnline = false) {
+async function runJobQueue(params = { fileData: 'data.csv', extension: "pdf", fileTemplate: 'template.pdf', reportType: 'reportType', inputData: 'csv', referLink: '', createBy: "system-pdf" }, isOnline = false) {
     const fileOutput = path.join('./servicefiles', `${params.reportType}${excel.newDateFileName()}.${params.extension}`);
     let reportParams = Object.assign({ fileOutput: fileOutput, isOnline }, params);
     const fileName = path.basename(fileOutput);
@@ -282,4 +282,4 @@ const gracefulShutdown = async (signal) => {
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
-module.exports = { runQueueJobs, runJobMergeFiles, removeAllJob }
+module.exports = { runJobQueue, runJobMergeFiles, removeAllJob }
