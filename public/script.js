@@ -167,7 +167,7 @@ pdfRun.addEventListener("click", () => {
             report_type : document.getElementById("pdf-file-type").value,
             file_id_data : document.getElementById("pdf-file-data-fid").innerText,
             file_id_template : document.getElementById("pdf-file-template-fid").innerText,
-            input_extension : 'pdf',
+            input_extension : 'csv',
         };
         
         postAjax("gdrive-pdf", data, (dataText) => {
