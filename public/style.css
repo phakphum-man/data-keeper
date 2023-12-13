@@ -80,6 +80,10 @@
   input[type="button"] {
     background-color: rgb(18, 38, 150);
     color: #fff;
+    cursor: pointer;
+  }
+  input[type="button"]:hover{
+    background-color: rgb(64, 85, 205);
   }
   select {
     width: 100%;

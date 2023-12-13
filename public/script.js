@@ -34,6 +34,16 @@ function getFileIdFromLinkGdrive(data) {
     return fileId;
 }
 
+function formBorderReset(select) {
+    const fileName = document.getElementById(`${select}-file-type`);
+    const fileTemplate = document.getElementById(`${select}-file-template`);
+    const fileData = document.getElementById(`${select}-file-data`);
+
+    fileName.style.borderColor = 'black';
+    fileTemplate.style.borderColor = 'black';
+    fileData.style.borderColor = 'black';
+}
+
 function formValidate(select){
     const fileName = document.getElementById(`${select}-file-type`);
     const fileTemplate = document.getElementById(`${select}-file-template-fid`);
@@ -43,12 +53,13 @@ function formValidate(select){
         return false;
     } else if(fileTemplate.innerText === "File ID") {
         fileName.style.borderColor = 'black';
+        document.getElementById(`${select}-file-template`).style.borderColor = 'red';
         return false;
     } else if(fileData.innerText === "File ID") {
         fileName.style.borderColor = 'black';
+        document.getElementById(`${select}-file-data`).style.borderColor = 'red';
         return false;
     }else{
-        fileName.style.borderColor = 'black';
         return true;
     }
 
@@ -162,6 +173,7 @@ const xlsxRun = document.getElementById("xlsx-run");
 const docxRun = document.getElementById("docx-run");
 
 pdfRun.addEventListener("click", () => {
+    formBorderReset("pdf");
     if(formValidate("pdf")){
         const data = {
             report_type : document.getElementById("pdf-file-type").value,
@@ -181,11 +193,14 @@ pdfRun.addEventListener("click", () => {
         });
 
         formReset();
+        return true;
     } else {
         alert("Please enter a value");
+        return false;
     }
 });
 xlsxRun.addEventListener("click", () => {
+    formBorderReset("xlsx");
     if(formValidate("xlsx")){
         const data = {
             report_type : document.getElementById("xlsx-file-type").value,
@@ -203,11 +218,14 @@ xlsxRun.addEventListener("click", () => {
             //console.log(dataText);
         });
         formReset();
+        return true;
     } else {
         alert("Please enter a value");
+        return false;
     }
 });
 docxRun.addEventListener("click", () => {
+    formBorderReset("docx");
     if(formValidate("docx")){
         const data = {
             report_type : document.getElementById("docx-file-type").value,
@@ -225,7 +243,37 @@ docxRun.addEventListener("click", () => {
             //console.log(dataText);
         });
         formReset();
+        return true;
     } else {
         alert("Please enter a value");
+        return false;
     }
 });
+
+window.onload = () =>{
+    let evtChange = new Event('input', {
+        'bubbles': true,
+        'cancelable': true
+    });
+
+    if(pdfFileTemplate.value !== ""){
+        pdfFileTemplate.dispatchEvent(evtChange);
+    }
+    if(pdfFileData.value !== ""){
+        pdfFileData.dispatchEvent(evtChange);
+    }
+
+    if(xlsxFileTemplate.value !== ""){
+        xlsxFileTemplate.dispatchEvent(evtChange);
+    }
+    if(xlsxFileData.value !== ""){
+        xlsxFileData.dispatchEvent(evtChange);
+    }
+
+    if(docxFileTemplate.value !== ""){
+        docxFileTemplate.dispatchEvent(evtChange);
+    }
+    if(docxFileData.value !== ""){
+        docxFileData.dispatchEvent(evtChange);
+    }
+}
