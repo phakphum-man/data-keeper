@@ -8,6 +8,7 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <!-- Stylesheet -->
     <link rel="stylesheet" href="/public/style.css" />
@@ -15,74 +16,83 @@
   </head>
   <body>
     <div class="container">
-      <div class="tabs">
-        <h3 class="active">PDF</h3>
-        <h3>Excel</h3>
-        <h3>Word</h3>
+      <div class="boxs">
+        <div class="tabs">
+          <h3 class="active">PDF</h3>
+          <h3>Excel</h3>
+          <h3>Word</h3>
+        </div>
+        <div class="tab-content">
+          <div class="active">
+            <h4>PDF Generation</h4>
+            <p>
+              <form>
+                <label for="pdf-file-type">*Type:</label>
+                <input type="text" id="pdf-file-type" placeholder="File Name" />
+                <label for="pdf-file-template">*Template(.pdf):</label>
+                <input type="text" id="pdf-file-template" placeholder="Paste the link from google drive" />
+                <span id="pdf-file-template-fid">File ID</span>
+                <label for="pdf-file-data">*File data(only csv):</label>
+                <input type="text" id="pdf-file-data" placeholder="Paste the link from google drive" />
+                <span id="pdf-file-data-fid">File ID</span>
+                <input type="button" id="pdf-run" value="Run output to file pdf" />
+              </form>
+            </p>
+          </div>
+
+          <div>
+            <h4>Excel Generation</h4>
+            <p>
+              <form>
+                <label for="xlsx-file-type">*Type:</label>
+                <input type="text" id="xlsx-file-type" placeholder="File Name" />
+                <label for="xlsx-file-template">*Template(.xlsx):</label>
+                <input type="text" id="xlsx-file-template" placeholder="Paste the link from google drive" />
+                <span id="xlsx-file-template-fid">File ID</span>
+                <label for="xlsx-file-data">*File data:</label>
+                <input type="text" id="xlsx-file-data" placeholder="Paste the link from google drive" />
+                <span id="xlsx-file-data-fid">File ID</span>
+                <label for="xlsx-file-data-extension">File data extension:</label>
+                <select id="xlsx-file-data-extension" name="xlsx-file-data-extension">
+                  <option value="json">JSON</option>
+                  <option value="csv">CSV</option>
+                </select>
+                <input type="button" id="xlsx-run" value="Run output to file xlsx" />
+              </form>
+            </p>
+          </div>
+
+          <div>
+            <h4>Word Generation</h4>
+            <p>
+              <form>
+                <label for="docx-file-type">*Type:</label>
+                <input type="text" id="docx-file-type" placeholder="File Name" />
+                <label for="docx-file-template">*Template(.docx):</label>
+                <input type="text" id="docx-file-template" placeholder="Paste the link from google drive" />
+                <span id="docx-file-template-fid">File ID</span>
+                <label for="docx-file-data">*File data:</label>
+                <input type="text" id="docx-file-data" placeholder="Paste the link from google drive" />
+                <span id="docx-file-data-fid">File ID</span>
+                <label for="docx-file-data-extension">File data extension:</label>
+                <select id="docx-file-data-extension" name="docx-file-data-extension">
+                  <option value="json">JSON</option>
+                  <option value="csv">CSV</option>
+                </select>
+                <input type="button" id="docx-run" value="Run output to file docx" />
+              </form>
+            </p>
+          </div>
+        </div>
       </div>
-      <div class="tab-content">
-        <div class="active">
-          <h4>PDF Generation</h4>
-          <p>
-            <form>
-              <label for="pdf-file-type">*Type:</label>
-              <input type="text" id="pdf-file-type" placeholder="File Name" />
-              <label for="pdf-file-template">*Template(.pdf):</label>
-              <input type="text" id="pdf-file-template" placeholder="Paste the link from google drive" />
-              <span id="pdf-file-template-fid">File ID</span>
-              <label for="pdf-file-data">*File data(only csv):</label>
-              <input type="text" id="pdf-file-data" placeholder="Paste the link from google drive" />
-              <span id="pdf-file-data-fid">File ID</span>
-              <input type="button" id="pdf-run" value="Run output to file pdf" />
-            </form>
-          </p>
-        </div>
-
-        <div>
-          <h4>Excel Generation</h4>
-          <p>
-            <form>
-              <label for="xlsx-file-type">*Type:</label>
-              <input type="text" id="xlsx-file-type" placeholder="File Name" />
-              <label for="xlsx-file-template">*Template(.xlsx):</label>
-              <input type="text" id="xlsx-file-template" placeholder="Paste the link from google drive" />
-              <span id="xlsx-file-template-fid">File ID</span>
-              <label for="xlsx-file-data">*File data:</label>
-              <input type="text" id="xlsx-file-data" placeholder="Paste the link from google drive" />
-              <span id="xlsx-file-data-fid">File ID</span>
-              <label for="xlsx-file-data-extension">File data extension:</label>
-              <select id="xlsx-file-data-extension" name="xlsx-file-data-extension">
-                <option value="json">JSON</option>
-                <option value="csv">CSV</option>
-              </select>
-              <input type="button" id="xlsx-run" value="Run output to file xlsx" />
-            </form>
-          </p>
-        </div>
-
-        <div>
-          <h4>Word Generation</h4>
-          <p>
-            <form>
-              <label for="docx-file-type">*Type:</label>
-              <input type="text" id="docx-file-type" placeholder="File Name" />
-              <label for="docx-file-template">*Template(.docx):</label>
-              <input type="text" id="docx-file-template" placeholder="Paste the link from google drive" />
-              <span id="docx-file-template-fid">File ID</span>
-              <label for="docx-file-data">*File data:</label>
-              <input type="text" id="docx-file-data" placeholder="Paste the link from google drive" />
-              <span id="docx-file-data-fid">File ID</span>
-              <label for="docx-file-data-extension">File data extension:</label>
-              <select id="docx-file-data-extension" name="docx-file-data-extension">
-                <option value="json">JSON</option>
-                <option value="csv">CSV</option>
-              </select>
-              <input type="button" id="docx-run" value="Run output to file docx" />
-            </form>
-          </p>
+      <div class="box-logs">
+        <div class="log">
+          <h2>Logs <a href="javascript:void(0);" id="reload"><i class="fa fa-refresh" aria-hidden="true"></i></a></h2>
+          <div id="view-logs"></div>
         </div>
       </div>
     </div>
+
     <!--Script-->
     <script src="/public/script.js"></script>
   </body>

@@ -154,6 +154,29 @@ docxFileData.addEventListener("input", () => {
     }
 });
 
+function getAjax(url, data, callback){
+    let xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            if(typeof callback === "function") {
+                callback(this.responseText);
+            }
+        }
+    };
+
+    let queryParams = [];
+    for (const [key, value] of Object.entries(data)) {
+        queryParams.push(`${key}=${value}`);
+    }
+
+    if(queryParams.length > 0){
+        url = `${url}?${queryParams.join("&")}`;
+    }
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/json;charset=UTF-8");
+    xhttp.send();
+}
+
 function postAjax(url, data, callback){
     let xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -187,8 +210,9 @@ pdfRun.addEventListener("click", () => {
                 position: "top-end",
                 icon: "success",
                 title: "Your work has been saved",
-                html: dataText
+                //html: dataText
             });
+            viewLogs();
             //console.log(dataText);
         });
 
@@ -213,8 +237,9 @@ xlsxRun.addEventListener("click", () => {
                 position: "top-end",
                 icon: "success",
                 title: "Your work has been saved",
-                html: dataText
+                //html: dataText
             });
+            viewLogs();
             //console.log(dataText);
         });
         formReset();
@@ -238,8 +263,9 @@ docxRun.addEventListener("click", () => {
                 position: "top-end",
                 icon: "success",
                 title: "Your work has been saved",
-                html: dataText
+                //html: dataText
             });
+            viewLogs();
             //console.log(dataText);
         });
         formReset();
@@ -249,6 +275,56 @@ docxRun.addEventListener("click", () => {
         return false;
     }
 });
+
+const reload = document.getElementById("reload");
+reload.addEventListener("click", () => {
+    viewLogs();
+});
+
+function displayDate(date) {
+    let s = date.substring(0,19);
+    return s.replace("T", " ");    
+}
+
+function viewLogs() {
+    const params = {
+        type: "",
+        by: ""
+    };
+
+    document.querySelector('#view-logs').innerHTML = '';
+    getAjax("logs", params, (dataText) => {
+        let result = JSON.parse(dataText);
+        if(result.data && Array.isArray(result.data)) {
+            result.data.forEach((item) => {
+                const jsParam = JSON.parse(item.parameters);
+                let linkDownload = '<div></div>';
+                if(item.status === 'completed'){
+                    linkDownload = `<div>
+                    <a href="${jsParam.referLink}" target="_blank">Download</a>
+                </div>`;
+                }
+                document.querySelector('#view-logs').innerHTML += `
+                    <div class="log-item">
+                        <div class="log-item-col">
+                            <label>Type:</label> ${item.report_type}
+                        </div>
+                        <div class="log-item-col">
+                            <label>Status:</label> ${item.status}
+                        </div>
+                        <div class="log-item-col">
+                            <label>Start:</label> ${displayDate(item.start_datetime)}
+                        </div>
+                        <div class="log-item-col">
+                            <label>Finish:</label> ${displayDate(item.end_datetime)}
+                        </div>
+                        ${linkDownload}
+                    </div>
+                `;
+            });
+        }
+    });
+}
 
 window.onload = () =>{
     let evtChange = new Event('input', {
@@ -276,4 +352,6 @@ window.onload = () =>{
     if(docxFileData.value !== ""){
         docxFileData.dispatchEvent(evtChange);
     }
+
+    viewLogs();
 }

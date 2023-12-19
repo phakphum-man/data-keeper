@@ -12,7 +12,20 @@
     position: absolute;
     transform: translateX(-50%);
     left: 50%;
-    top: 120px;
+    top: 15%;
+  }
+  .boxs {
+    position: relative;
+    width: 100%;
+    background-color: #ffffff;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  }
+  .box-logs {
+    position: relative;
+    padding: 30px 30px;
+    margin-top: 60px;
+    width: 100%;
+    border-radius: 10px;
     background-color: #ffffff;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   }
@@ -112,4 +125,34 @@
     background-color: #e4e9fd;
     color: red;
     margin-bottom: 1em;
+  }
+  .log-item {
+    background-color: #ffffff;
+    height: 50px;
+    padding: 5px 10px;
+    margin-top: 10px;
+    display: contents;
+  }
+  .log-item > div {
+    display: flex;
+    width: 100%;
+    padding: 10px 10px;
+  }
+  .log h2, .log-item div:is(:last-child) {
+    padding-bottom: 10px;
+    border-bottom: 2px solid #d1d3d4;
+  }
+  .log-item .log-item-col {
+    display: block;
+    float: left;
+    width: 50%;
+  }
+  .log-item label{
+    padding-right: 5px;
+    margin-bottom: 0;
+  }
+  input[type="button"].refresh{
+    width: 80px;
+    float: right;
+    padding: 5px 5px;
   }

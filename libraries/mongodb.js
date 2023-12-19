@@ -69,7 +69,7 @@ async function get(collectionName, select = [], filter = {}){
     return findResult;
 }
 
-async function getAll(collectionName, select = [], filter = {}){
+async function getAll(collectionName, select = [], filter = {}, sort = {}){
     let findResult = null;
     try
     {
@@ -80,9 +80,9 @@ async function getAll(collectionName, select = [], filter = {}){
         const collection = client.db().collection(collectionName);
 
         if(select.length == 0){
-            findResult = await collection.find(filter).toArray();
+            findResult = await collection.find(filter).sort(sort).toArray();
         }else{
-            findResult = await collection.find(filter).project(getFields(select)).toArray();
+            findResult = await collection.find(filter).project(getFields(select)).sort(sort).toArray();
         }
     } catch (error) {
         if (error instanceof MongoServerError) {
