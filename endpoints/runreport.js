@@ -179,9 +179,11 @@ module.exports = function(app) {
 
         let logData = await mongodb.getAll("bindreports", ["job_id", "merge_job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "extension_file", "failed_reason", "fileOutput", "createBy"],filter, { start_datetime: -1});
 
+        const dns = `${req.protocol}://${req.get('host')}`;
         let deleteJobIds = [];
         logData.forEach((x) => {
-            if(x.status == "completed" && fs.existsSync(x.fileOutput) === false) {
+            const p = JSON.parse(x.parameters);
+            if(p.referLink.startsWith(dns) && x.status == "completed" && fs.existsSync(x.fileOutput) === false) {
                 deleteJobIds.push(x.job_id);
             }
         });
