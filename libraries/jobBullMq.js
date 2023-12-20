@@ -117,7 +117,7 @@ workBinding.on('progress', async ( job, data ) => {
     console.log(`${job?.id} reported progress ${ JSON.stringify(data)}`);
 });
 
-workBinding.on('error', async (job) => {
+workBinding.on('error', async ( job, err ) => {
     try
     {
         if(job && job.id) {
@@ -127,12 +127,13 @@ workBinding.on('error', async (job) => {
             });
         }
     } catch (error) {
+        console.error(error);
         if (error instanceof MongoServerError) {
             console.log(`Error worth logging: ${error}`); // special case for some reason
         }
     }
     
-    console.log(`${job?.id} has error!`);
+    console.log(`${job?.id} has error! ${err}`);
 });
 
 workBinding.on('completed', async ( job, returnvalue ) => {
