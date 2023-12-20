@@ -16,6 +16,8 @@ const QueueNameBinding = `work${os.hostname()}`;
 if(!process.env.REDIS_URL) console.warn('REDIS_URL is not defined');
 const connection = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: null});
 
+console.log(`Create Queue name: ${QueueNameBinding}`);
+
 // Create a new connection in every instance
 const bindingQueue = new Queue(QueueNameBinding, { connection });
 
@@ -115,25 +117,6 @@ workBinding.on('progress', async ( job, data ) => {
     }
     
     console.log(`${job?.id} reported progress ${ JSON.stringify(data)}`);
-});
-
-workBinding.on('error', async ( job, err ) => {
-    try
-    {
-        if(job && job.id) {
-            MongoPool.getInstance(async (clientJob) =>{
-                const collection = clientJob.db().collection('bindreports');
-                await collection.updateOne({job_id: job.id}, { $set: { status: 'error', end_datetime: moment().toDate() } });
-            });
-        }
-    } catch (error) {
-        console.error(error);
-        if (error instanceof MongoServerError) {
-            console.log(`Error worth logging: ${error}`); // special case for some reason
-        }
-    }
-    
-    console.log(`${job?.id} has error! ${err}`);
 });
 
 workBinding.on('completed', async ( job, returnvalue ) => {
@@ -244,7 +227,7 @@ async function runJobQueue(params = { fileData: 'data.csv', extension: "pdf", fi
 }
 
 async function runJobMergeFiles(reportParams){
-    const job = await bindingQueue.add('jobMergeFiles', reportParams, { removeOnComplete: true, removeOnFail: true });
+    const job = await bindingQueue.add('jobMergeFiles', reportParams, { removeOnComplete: true, removeOnFail: 1000 });
     return job.id;
 }
 
