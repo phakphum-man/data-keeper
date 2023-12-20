@@ -227,7 +227,7 @@ async function runJobQueue(params = { fileData: 'data.csv', extension: "pdf", fi
 }
 
 async function runJobMergeFiles(reportParams){
-    const job = await bindingQueue.add('jobMergeFiles', reportParams, { removeOnComplete: true, removeOnFail: 1000 });
+    const job = await bindingQueue.add('jobMergeFiles', reportParams);
     return job.id;
 }
 
