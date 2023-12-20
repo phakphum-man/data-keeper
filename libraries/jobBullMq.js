@@ -51,7 +51,7 @@ const workBinding = new Worker(QueueNameBinding, async (job)=>{
         throw error; // still want to crash
     }
 
-},{ concurrency: 2, connection });
+},{ connection });
 
 workBinding.on('waiting', async (job) => {
     try
