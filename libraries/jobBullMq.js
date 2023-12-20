@@ -196,7 +196,7 @@ async function runJobQueue(params = { fileData: 'data.csv', extension: "pdf", fi
     let reportParams = Object.assign({ fileOutput: fileOutput, isOnline }, params);
     const fileName = path.basename(fileOutput);
     reportParams.referLink = `${params.referLink}${fileName}`;
-    const job = await bindingQueue.add('jobBinding', reportParams, { removeOnComplete: true, removeOnFail: true });
+    const job = await bindingQueue.add('jobBinding', reportParams);
 
     const logData = { 
         report_type: reportParams.reportType,
