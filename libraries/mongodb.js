@@ -52,12 +52,15 @@ async function get(collectionName, select = [], filter = {}){
         if(!client){
             initPool()
         }
-
+        
         const collection = client.db().collection(collectionName);
         if(select.length == 0){
-            findResult = await collection.findOne(filter).toArray();
+            findResult = await collection.findOne(filter);
         }else{
-            findResult = await collection.findOne(filter).project(getFields(select)).toArray();
+            const options = {
+                projection: getFields(select),
+            };
+            findResult = await collection.findOne(filter, options);
         }
         
     } catch (error) {

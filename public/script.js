@@ -34,35 +34,18 @@ function getFileIdFromLinkGdrive(data) {
     return fileId;
 }
 
-function formBorderReset(select) {
-    const fileName = document.getElementById(`${select}-file-type`);
-    const fileTemplate = document.getElementById(`${select}-file-template`);
-    const fileData = document.getElementById(`${select}-file-data`);
-
-    fileName.style.borderColor = 'black';
-    fileTemplate.style.borderColor = 'black';
-    fileData.style.borderColor = 'black';
-}
-
-function formValidate(select){
-    const fileName = document.getElementById(`${select}-file-type`);
-    const fileTemplate = document.getElementById(`${select}-file-template-fid`);
-    const fileData = document.getElementById(`${select}-file-data-fid`);
-    if(fileName.value === ""){
-        fileName.style.borderColor = 'red';
-        return false;
-    } else if(fileTemplate.innerText === "File ID") {
-        fileName.style.borderColor = 'black';
-        document.getElementById(`${select}-file-template`).style.borderColor = 'red';
-        return false;
-    } else if(fileData.innerText === "File ID") {
-        fileName.style.borderColor = 'black';
-        document.getElementById(`${select}-file-data`).style.borderColor = 'red';
-        return false;
-    }else{
-        return true;
-    }
-
+if(!alertify.errorAlert){
+    //define a new errorAlert base on alert
+    alertify.dialog('errorAlert',function factory(){
+        return{
+            build:function(){
+                var errorHeader = '<i class="fa fa-times-circle fa-2x" '
+                +    'style="vertical-align:middle;color:#e10000;">'
+                + '</i> Validate Error';
+                this.setHeader(errorHeader);
+            }
+        };
+    },true,'alert');
 }
 
 const pdfFileTemplate = document.getElementById("pdf-file-template");
@@ -72,28 +55,6 @@ const xlsxFileData = document.getElementById("xlsx-file-data");
 const docxFileTemplate = document.getElementById("docx-file-template");
 const docxFileData = document.getElementById("docx-file-data");
 
-function setEmtyValue(select) {
-    const fileName = document.getElementById(`${select}-file-type`);
-    const fileTemplate = document.getElementById(`${select}-file-template-fid`);
-    const fileData = document.getElementById(`${select}-file-data-fid`);
-    fileName.value = '';
-    fileTemplate.innerText = 'File ID';
-    fileData.innerText = 'File ID';
-}
-
-function formReset(){
-    setEmtyValue("pdf");
-    pdfFileTemplate.value = '';
-    pdfFileData.value = '';
-
-    setEmtyValue("xlsx");
-    xlsxFileTemplate.value  = '';
-    xlsxFileData.value = '';
-
-    setEmtyValue("docx");
-    docxFileTemplate.value = '';
-    docxFileData.value = '';
-}
 // PDF file
 pdfFileTemplate.addEventListener("input", () => {
     const spanFileId = document.getElementById(`${pdfFileTemplate.id}-fid`);
@@ -191,6 +152,62 @@ function postAjax(url, data, callback){
     xhttp.send(JSON.stringify(data));
 }
 
+function formBorderReset(select) {
+    const fileName = document.getElementById(`${select}-file-type`);
+    const fileTemplate = document.getElementById(`${select}-file-template`);
+    const fileData = document.getElementById(`${select}-file-data`);
+
+    fileName.style.borderColor = 'black';
+    fileTemplate.style.borderColor = 'black';
+    fileData.style.borderColor = 'black';
+}
+
+function formValidate(select){
+    const fileName = document.getElementById(`${select}-file-type`);
+    const fileTemplate = document.getElementById(`${select}-file-template-fid`);
+    const fileData = document.getElementById(`${select}-file-data-fid`);
+    if(fileName.value === ""){
+        fileName.style.borderColor = 'red';
+        return false;
+    } else if(fileTemplate.innerText === "File ID") {
+        fileName.style.borderColor = 'black';
+        document.getElementById(`${select}-file-template`).style.borderColor = 'red';
+        return false;
+    } else if(fileData.innerText === "File ID") {
+        fileName.style.borderColor = 'black';
+        document.getElementById(`${select}-file-data`).style.borderColor = 'red';
+        return false;
+    }else{
+        return true;
+    }
+
+}
+
+function setEmtyValue(select) {
+    const fileName = document.getElementById(`${select}-file-type`);
+    const fileTemplate = document.getElementById(`${select}-file-template-fid`);
+    const fileData = document.getElementById(`${select}-file-data-fid`);
+    fileName.value = '';
+    fileTemplate.innerText = 'File ID';
+    fileTemplate.style.color = 'red';
+    fileData.innerText = 'File ID';
+    fileData.style.color = 'red';
+}
+
+function formReset(){
+    setEmtyValue("pdf");
+    pdfFileTemplate.value = '';
+    pdfFileData.value = '';
+
+    setEmtyValue("xlsx");
+    xlsxFileTemplate.value  = '';
+    xlsxFileData.value = '';
+
+    setEmtyValue("docx");
+    docxFileTemplate.value = '';
+    docxFileData.value = '';
+}
+
 const pdfRun = document.getElementById("pdf-run");
 const xlsxRun = document.getElementById("xlsx-run");
 const docxRun = document.getElementById("docx-run");
@@ -206,20 +223,14 @@ pdfRun.addEventListener("click", () => {
         };
         
         postAjax("gdrive-pdf", data, (dataText) => {
-            Swal.fire({
-                position: "top-end",
-                icon: "success",
-                title: "Your work has been saved",
-                //html: dataText
-            });
+            alertify.success('Success has running');
             viewLogs();
             //console.log(dataText);
         });
 
-        formReset();
         return true;
     } else {
-        alert("Please enter a value");
+        alertify.errorAlert("Please enter a value");
         return false;
     }
 });
@@ -233,19 +244,14 @@ xlsxRun.addEventListener("click", () => {
             input_extension : document.getElementById("xlsx-file-data-extension").value,
         };
         postAjax("gdrive-xlsx", data, (dataText) => {
-            Swal.fire({
-                position: "top-end",
-                icon: "success",
-                title: "Your work has been saved",
-                //html: dataText
-            });
+            alertify.success('Success has running');
             viewLogs();
             //console.log(dataText);
         });
-        formReset();
+
         return true;
     } else {
-        alert("Please enter a value");
+        alertify.errorAlert("Please enter a value");
         return false;
     }
 });
@@ -259,19 +265,14 @@ docxRun.addEventListener("click", () => {
             input_extension : document.getElementById("docx-file-data-extension").value,
         };
         postAjax("gdrive-docx", data, (dataText) => {
-            Swal.fire({
-                position: "top-end",
-                icon: "success",
-                title: "Your work has been saved",
-                //html: dataText
-            });
+            alertify.success('Success has running');
             viewLogs();
             //console.log(dataText);
         });
-        formReset();
+ 
         return true;
     } else {
-        alert("Please enter a value");
+        alertify.errorAlert("Please enter a value");
         return false;
     }
 });
@@ -282,8 +283,11 @@ reload.addEventListener("click", () => {
 });
 
 function displayDate(date) {
-    let s = date.substring(0,19);
-    return s.replace("T", " ");    
+    if(date && date.length > 19){
+        let s = date.substring(0,19);
+        return s.replace("T", " "); 
+    }
+    return "...";   
 }
 
 function viewLogs() {
@@ -292,10 +296,11 @@ function viewLogs() {
         by: ""
     };
 
-    document.querySelector('#view-logs').innerHTML = '';
     getAjax("logs", params, (dataText) => {
         let result = JSON.parse(dataText);
         if(result.data && Array.isArray(result.data)) {
+            document.querySelector('#view-logs').innerHTML = '';
+
             result.data.forEach((item) => {
                 const jsParam = JSON.parse(item.parameters);
                 let linkDownload = '<div></div>';

@@ -3,7 +3,6 @@ const { Queue, Worker } = require('bullmq');
 const Redis = require('ioredis');
 const moment = require('moment');
 const path = require('path');
-const excel = require("./excel");
 const reportPdf = require("./reportPdf");
 const reportExcel = require("./reportExcel");
 const reportDocx = require('./reportDocx');
@@ -209,7 +208,7 @@ workBinding.on('failed', async ( job, err ) => {
 });
 
 async function runJobQueue(params = { fileData: 'data.csv', extension: "pdf", fileTemplate: 'template.pdf', reportType: 'reportType', inputData: 'csv', referLink: '', createBy: "system-pdf" }, isOnline = false) {
-    const fileOutput = path.join('./servicefiles', `${params.reportType}${excel.newDateFileName()}.${params.extension}`);
+    const fileOutput = path.join('./servicefiles', `${params.reportType}${moment().format("YYYY-MM-DD_HHmmss")}.${params.extension}`);
     let reportParams = Object.assign({ fileOutput: fileOutput, isOnline }, params);
     const fileName = path.basename(fileOutput);
     reportParams.referLink = `${params.referLink}${fileName}`;

@@ -1,18 +1,61 @@
 require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
+const mongo = require('mongodb');
 const mongodb = require('../libraries/mongodb');
 const { runJobQueue, removeAllJob } = require("../libraries/jobBullMq");
 
 module.exports = function(app) {
-    app.get('/run-report/gdrive', (req, res) => {
+    app.get('/run-report/gdrive', async(req, res) => {
         // #swagger.ignore = true
 
         const selfPath = path.dirname(__dirname);
         const rootPath = selfPath.replace(`/${selfPath}`,"");
 
+        let tabs = [{
+            id: 'pdf',
+            name: '',
+            tempate: '',
+            data: ''
+        },{
+            id: 'xlsx',
+            name: '',
+            tempate: '',
+            data: ''
+        },{
+            id: 'docx',
+            name: '',
+            tempate: '',
+            data: ''
+        }];
+
+        let data = fs.readFileSync(`${rootPath}/gdrive.html`, 'utf8');
+        if(req.query.tid){
+            const filter = { "_id": new mongo.ObjectId(req.query.tid) };
+            const temp = await mongodb.get("templates", ["type", "linkTemplate", "linkFileData", "extensionFile"],filter);
+
+            if(temp && temp.extensionFile){
+                let tab = tabs.find(t => t.id == temp.extensionFile);
+                if(temp.type){
+                    tab.name = temp.type;
+                }
+                if(temp.linkTemplate){
+                    tab.tempate = temp.linkTemplate;
+                }
+                if(temp.linkFileData){
+                    tab.data = temp.linkFileData;
+                }
+            }
+  
+        }
+
+        tabs.forEach((t) => {
+            data = data.replace(`{{${t.id}FileType}}`,t.name);
+            data = data.replace(`{{${t.id}FileTemplate}}`,t.tempate);
+            data = data.replace(`{{${t.id}FileData}}`,t.data);
+        });
         // HTML jquery script download chunks
-        return res.sendFile(`${rootPath}/gdrive.html`);
+        return res.send(data);
     });
 
     app.post('/run-report/online-pdf', async (req, res) => {
@@ -130,10 +173,26 @@ module.exports = function(app) {
         
         let filter = (type === '')? {} :{ report_type: type};
 
-        if( by!=='' ) {
+        if( by !== '' ) {
             filter = Object.assign({ createBy: by }, filter);
         }
-        const logData = await mongodb.getAll("bindreports", ["job_id", "merge_job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "extension_file", "failed_reason", "fileOutput", "createBy"],filter, { start_datetime: -1});
+
+        let logData = await mongodb.getAll("bindreports", ["job_id", "merge_job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "extension_file", "failed_reason", "fileOutput", "createBy"],filter, { start_datetime: -1});
+
+        let deleteJobIds = [];
+        logData.forEach((x) => {
+            if(x.status == "completed" && fs.existsSync(x.fileOutput) === false) {
+                deleteJobIds.push(x.job_id);
+            }
+        });
+
+        if(deleteJobIds.length > 0){
+            await mongodb.deleteOne("bindreports", { "job_id": {"$in": deleteJobIds}});
+
+            deleteJobIds.forEach((jobId)=>{
+                logData.splice(logData.findIndex(e => e.job_id === jobId), 1);
+            });
+        }
 
         return res.status(200).send({ data: logData});
     });
@@ -200,4 +259,5 @@ module.exports = function(app) {
 
         return res.status(200).send(`clear`);
     });
+
 }
