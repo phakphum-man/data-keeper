@@ -6,20 +6,22 @@ const path = require('path');
 const reportPdf = require("./reportPdf");
 const reportExcel = require("./reportExcel");
 const reportDocx = require('./reportDocx');
+const dataReport = require('./dataReport');
 const { MongoPool } = require('./mongodb');
 const line = require("./lineNotify");
-const os = require('os')
+const os = require('os');
+const { v4: uuidv4 } = require('uuid');
 const { MongoServerError } = require('mongodb');
 
 const QueueNameBinding = `work${os.hostname()}`;
 
 if(!process.env.REDIS_URL) console.warn('REDIS_URL is not defined');
-const connection = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: null});
+const connection = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false});
 
 console.log(`Create Queue name: ${QueueNameBinding}`);
 
 // Create a new connection in every instance
-const bindingQueue = new Queue(QueueNameBinding, { connection });
+const bindingQueue = new Queue(QueueNameBinding, { connection, defaultJobOptions: { attempts: 2,removeOnComplete: true, removeOnFail: true } });
 
 // Imprement Logic of Queue
 const workBinding = new Worker(QueueNameBinding, async (job)=>{
@@ -51,7 +53,7 @@ const workBinding = new Worker(QueueNameBinding, async (job)=>{
         throw error; // still want to crash
     }
 
-},{ connection });
+},{ connection, autorun: true, useWorkerThreads: true });
 
 workBinding.on('waiting', async (job) => {
     try
@@ -134,9 +136,12 @@ workBinding.on('completed', async ( job, returnvalue ) => {
                 });
                 if(findResult) {
                     const jobId = findResult.job_id;
-                    await collection.updateOne({job_id: jobId}, { $set: { status: 'completed', end_datetime: moment().toDate() } });
-
                     const params = JSON.parse(findResult.parameters);
+
+                    const fileSavePath = dataReport.getSavePath(params);
+                    await collection.updateOne({job_id: jobId}, { $set: { fileOutput: fileSavePath, status: 'completed', end_datetime: moment().toDate() } });
+
+                    
                     sendLineNotify(findResult, `Result is successful.\n(${params.referLink})`);
                 }
             });
@@ -192,9 +197,9 @@ workBinding.on('failed', async ( job, err ) => {
 });
 
 async function runJobQueue(params = { fileData: 'data.csv', extension: "pdf", fileTemplate: 'template.pdf', reportType: 'reportType', inputData: 'csv', referLink: '', createBy: "system-pdf" }, isOnline = false) {
-    const fileOutput = path.join('./servicefiles', `${params.reportType}${moment().format("YYYY-MM-DD_HHmmss")}.${params.extension}`);
+    const fileOutput = path.join('./servicefiles', `${uuidv4()}.${params.extension}`);
     let reportParams = Object.assign({ fileOutput: fileOutput, isOnline }, params);
-    const fileName = path.basename(fileOutput);
+    const fileName = `${params.reportType}${moment().format("YYYY-MM-DD_HHmmss")}`;
     reportParams.referLink = `${params.referLink}${fileName}`;
     const job = await bindingQueue.add('jobBinding', reportParams);
 

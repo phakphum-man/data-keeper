@@ -100,13 +100,13 @@ async function mergeDocx(reportParams){
         }
         const docx = new DocxMerger({}, bytesArray);
         docx.save('nodebuffer', (doc) => {
-            fs.writeFileSync(path.join(reportParams.fileOutput), doc);
+            fs.writeFileSync(dataReport.getSavePath(reportParams), doc);
         });
         return true;
 
     } catch (error) {
         console.error(`Error worth logging: ${error}`);
-        return false;
+        throw error;
     }
 }
 module.exports = { dataBinding, mergeDocx }

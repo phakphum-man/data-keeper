@@ -74,7 +74,7 @@ async function dataBinding(reportParams){
             }
             //await writer.save(reportParams.fileOutput);
             await writer.writeBuffer().then((buffer) => { 
-                fs.writeFileSync(reportParams.fileOutput, buffer, "binary");
+                fs.writeFileSync(dataReport.getSavePath(reportParams), buffer, "binary");
             });
         });
 

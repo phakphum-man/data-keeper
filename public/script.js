@@ -309,13 +309,30 @@ function viewLogs() {
                     <a href="${jsParam.referLink}" target="_blank">Download</a>
                 </div>`;
                 }
+                let htmlStatus = ``;
+                switch(item.status) {
+                    case 'queued':
+                        htmlStatus = `<label style="color:gray">${item.status}</label>`;
+                        break;
+                    case 'active':
+                        htmlStatus = `<label style="color:blue">${item.status}</label>`;
+                        break;
+                    case 'failed':
+                        htmlStatus = `<label style="color:red">${item.status}</label>`;
+                        break;
+                    case 'completed':
+                        htmlStatus = `<label style="color:green">${item.status}</label>`;
+                        break;
+                    default:
+                        htmlStatus = `<label>${item.status}</label>`;
+                }
                 document.querySelector('#view-logs').innerHTML += `
                     <div class="log-item">
                         <div class="log-item-col">
                             <label>Type:</label> ${item.report_type}
                         </div>
                         <div class="log-item-col">
-                            <label>Status:</label> ${item.status}
+                            ${htmlStatus}&nbsp;&nbsp;
                         </div>
                         <div class="log-item-col">
                             <label>Start:</label> ${displayDate(item.start_datetime)}

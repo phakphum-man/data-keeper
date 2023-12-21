@@ -90,7 +90,10 @@ async function dataBinding(reportParams){
         }));
         
     } catch (error) {
-        console.error(`Error worth logging: ${error}`);
+        console.error(`Error : ${error}`);
+        if(error.stack){
+            console.info(`Error : ${error.stack}`);
+        }
         throw error;
     }
 
@@ -123,12 +126,12 @@ async function mergePdf(reportParams){
         } 
 
         const pdfMergeBytes = await mergedPdf.save();
-        fs.writeFileSync(reportParams.fileOutput, pdfMergeBytes);
+        fs.writeFileSync(dataReport.getSavePath(reportParams), pdfMergeBytes);
         return true;
 
     } catch (error) {
         console.error(`Error worth logging: ${error}`);
-        return false;
+        throw error;
     }
 }
 

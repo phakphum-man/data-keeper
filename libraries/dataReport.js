@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const axios = require('axios');
 const csv = require('csvtojson');
 
@@ -48,4 +49,10 @@ const prepareData = async(data, funcPrepareImage) => {
     return data;
 };
 
-module.exports = { prepareData , getJsonOffline, getJsonOnline, getCsvToJsonOffline, getCsvToJsonOnline};
+const getSavePath = (reportParams) => {
+    const dirPath = path.dirname(reportParams.fileOutput);
+    const extension = path.extname(reportParams.fileOutput);
+    const saveFileName = path.basename(reportParams.referLink).replace("download?f=", "");
+    return path.join(dirPath, `${saveFileName}${extension}`);
+};
+module.exports = { prepareData , getJsonOffline, getJsonOnline, getCsvToJsonOffline, getCsvToJsonOnline, getSavePath};
