@@ -199,7 +199,7 @@ workBinding.on('failed', async ( job, err ) => {
 async function runJobQueue(params = { fileData: 'data.csv', extension: "pdf", fileTemplate: 'template.pdf', reportType: 'reportType', inputData: 'csv', referLink: '', createBy: "system-pdf" }, isOnline = false) {
     const fileOutput = path.join('./servicefiles', `${uuidv4()}.${params.extension}`);
     let reportParams = Object.assign({ fileOutput: fileOutput, isOnline }, params);
-    const fileName = `${params.reportType}${moment().format("YYYY-MM-DD_HHmmss")}`;
+    const fileName = `${params.reportType}${moment().format("YYYY-MM-DD_HHmmss")}.${params.extension}`;
     reportParams.referLink = `${params.referLink}${fileName}`;
     const job = await bindingQueue.add('jobBinding', reportParams);
 

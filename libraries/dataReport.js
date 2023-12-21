@@ -53,6 +53,6 @@ const getSavePath = (reportParams) => {
     const dirPath = path.dirname(reportParams.fileOutput);
     const extension = path.extname(reportParams.fileOutput);
     const saveFileName = path.basename(reportParams.referLink).replace("download?f=", "");
-    return path.join(dirPath, `${saveFileName}${extension}`);
+    return path.join(dirPath, `${saveFileName}`);
 };
 module.exports = { prepareData , getJsonOffline, getJsonOnline, getCsvToJsonOffline, getCsvToJsonOnline, getSavePath};
