@@ -6,6 +6,18 @@ const mongodb = require('../libraries/mongodb');
 const { runJobQueue, removeAllJob } = require("../libraries/jobBullMq");
 
 module.exports = function(app) {
+    app.get('/run-report/template', async(req, res) => {
+        // #swagger.ignore = true
+
+        const selfPath = path.dirname(__dirname);
+        const rootPath = selfPath.replace(`/${selfPath}`,"");
+
+        let data = fs.readFileSync(`${rootPath}/template.html`, 'utf8');
+        
+        // HTML Content
+        return res.send(data);
+    });
+
     app.get('/run-report/gdrive', async(req, res) => {
         // #swagger.ignore = true
 
@@ -16,17 +28,20 @@ module.exports = function(app) {
             id: 'pdf',
             name: '',
             tempate: '',
-            data: ''
+            data: '',
+            class: true
         },{
             id: 'xlsx',
             name: '',
             tempate: '',
-            data: ''
+            data: '',
+            class: false
         },{
             id: 'docx',
             name: '',
             tempate: '',
-            data: ''
+            data: '',
+            class: false
         }];
 
         let data = fs.readFileSync(`${rootPath}/gdrive.html`, 'utf8');
@@ -35,6 +50,9 @@ module.exports = function(app) {
             const temp = await mongodb.get("templates", ["type", "linkTemplate", "linkFileData", "extensionFile"],filter);
 
             if(temp && temp.extensionFile){
+                //set default to none select
+                tabs[0].class = false;
+
                 let tab = tabs.find(t => t.id == temp.extensionFile);
                 if(temp.type){
                     tab.name = temp.type;
@@ -45,16 +63,17 @@ module.exports = function(app) {
                 if(temp.linkFileData){
                     tab.data = temp.linkFileData;
                 }
+                tab.class = true;
             }
-  
         }
 
         tabs.forEach((t) => {
             data = data.replace(`{{${t.id}FileType}}`,t.name);
             data = data.replace(`{{${t.id}FileTemplate}}`,t.tempate);
             data = data.replace(`{{${t.id}FileData}}`,t.data);
+            data = data.replaceAll(`{{${t.id}ClassHtml}}`, t.class ? 'class="active"': '');
         });
-        // HTML jquery script download chunks
+        // HTML Content
         return res.send(data);
     });
 
@@ -197,6 +216,14 @@ module.exports = function(app) {
         }
 
         return res.status(200).send({ data: logData});
+    });
+
+    app.get('/run-report/getTemplates', async (req, res) => {
+        // #swagger.ignore = true
+
+        let list = await mongodb.getAll("templates", ["_id","type", "extensionFile", "description"]);
+
+        return res.status(200).send({ data: list});
     });
 
     app.get('/run-report/excel', async (req, res) => {

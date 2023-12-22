@@ -13,17 +13,19 @@
     <!-- Stylesheet -->
     <link rel="stylesheet" href="/public/style.css" />
     <link href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css" rel="stylesheet" />
+    <!-- Script -->
+    <script src="/public/ajax.js"></script>
   </head>
   <body>
     <div class="container">
       <div class="boxs">
         <div class="tabs">
-          <h3 class="active">PDF</h3>
-          <h3>Excel</h3>
-          <h3>Word</h3>
+          <h3 {{pdfClassHtml}}>PDF</h3>
+          <h3 {{xlsxClassHtml}}>Excel</h3>
+          <h3 {{docxClassHtml}}>Word</h3>
         </div>
         <div class="tab-content">
-          <div class="active">
+          <div {{pdfClassHtml}}>
             <h4>PDF Generation</h4>
             <p>
               <form>
@@ -40,7 +42,7 @@
             </p>
           </div>
 
-          <div>
+          <div {{xlsxClassHtml}}>
             <h4>Excel Generation</h4>
             <p>
               <form>
@@ -62,7 +64,7 @@
             </p>
           </div>
 
-          <div>
+          <div {{docxClassHtml}}>
             <h4>Word Generation</h4>
             <p>
               <form>
