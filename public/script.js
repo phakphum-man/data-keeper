@@ -206,7 +206,7 @@ xlsxRun.addEventListener("click", () => {
             file_id_template : document.getElementById("xlsx-file-template-fid").innerText,
             input_extension : document.getElementById("xlsx-file-data-extension").value,
         };
-        postAjax("gdrive-xlsx", data, (dataText) => {
+        postAjax("gdrive-excel", data, (dataText) => {
             alertify.success('Success has running');
             viewLogs();
             //console.log(dataText);
