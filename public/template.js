@@ -3,7 +3,7 @@ window.onload = () => {
 }
 
 function loadTemplates() {
-    getAjax("getTemplates",{}, (dataText) => {
+    getAjax("/run-report/getTemplates",{}, (dataText) => {
         let result = JSON.parse(dataText);
         if(result.data && Array.isArray(result.data)) {
             document.querySelector('#view-templates').innerHTML = '';
