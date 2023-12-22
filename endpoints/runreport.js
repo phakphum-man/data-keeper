@@ -6,7 +6,7 @@ const mongodb = require('../libraries/mongodb');
 const { runJobQueue, removeAllJob } = require("../libraries/jobBullMq");
 
 module.exports = function(app) {
-    app.get('/run-report/template', async(req, res) => {
+    app.get('/run-report', async(req, res) => {
         // #swagger.ignore = true
 
         const selfPath = path.dirname(__dirname);
