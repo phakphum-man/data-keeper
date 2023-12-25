@@ -4,9 +4,11 @@ const app = require('express')();
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const socket = require("socket.io");
 const { MongoPool } = require('./libraries/mongodb');
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./swagger_output.json');
+const { workQueue } = require("./libraries/jobBullMq");
 
 const port = process.env.PORT || 3000;
 const host = process.env.HOST || '0.0.0.0';
@@ -45,10 +47,27 @@ app.get('/public/*', (req, res) => {
 });
 
 const server = http.createServer(app);
+const io = socket(server);
     
 if(process.env.NODE_ENV === 'development'){
     app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 }
+
+io.on("connection", (socket) => {
+
+    console.log("Client connected to Socket!")
+  
+    workQueue.on("completed", (job, result) => {
+      if(job && job.id && result === true){
+        socket.emit("message", result);
+      }
+    });
+  
+    socket.on("disconnect", () => {
+      console.log("Client disconnected from Socket!")
+    });
+  
+});
 
 MongoPool.initPool();
 

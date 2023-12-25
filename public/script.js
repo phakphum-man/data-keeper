@@ -187,6 +187,7 @@ pdfRun.addEventListener("click", () => {
         
         postAjax("gdrive-pdf", data, (dataText) => {
             alertify.success('Success has running');
+            window.scrollTo(0, window.innerHeight);
             viewLogs();
             //console.log(dataText);
         });
@@ -208,6 +209,7 @@ xlsxRun.addEventListener("click", () => {
         };
         postAjax("gdrive-excel", data, (dataText) => {
             alertify.success('Success has running');
+            window.scrollTo(0, window.innerHeight);
             viewLogs();
             //console.log(dataText);
         });
@@ -229,6 +231,7 @@ docxRun.addEventListener("click", () => {
         };
         postAjax("gdrive-docx", data, (dataText) => {
             alertify.success('Success has running');
+            window.scrollTo(0, window.innerHeight);
             viewLogs();
             //console.log(dataText);
         });
@@ -310,6 +313,10 @@ function viewLogs() {
         }
     });
 }
+
+const socket = io();
+socket.on("connect", () => { console.log("Connected to socket."); });
+socket.on("message", (data) => { if(data){ setTimeout(() => { window.scrollTo(0, window.innerHeight);viewLogs(); }, 1000); }});
 
 window.onload = () =>{
     let evtChange = new Event('input', {

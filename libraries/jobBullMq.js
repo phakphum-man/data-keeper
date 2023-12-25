@@ -270,4 +270,4 @@ const gracefulShutdown = async (signal) => {
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
-module.exports = { runJobQueue, runJobMergeFiles, removeAllJob }
+module.exports = { runJobQueue, runJobMergeFiles, removeAllJob, workQueue: workBinding }
