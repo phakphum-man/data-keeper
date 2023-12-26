@@ -295,16 +295,16 @@ function viewLogs() {
                 document.querySelector('#view-logs').innerHTML += `
                     <div class="log-item">
                         <div class="log-item-col">
-                            <label>Type:</label> ${item.report_type}
+                            <label>Type:</label>${item.report_type}
+                        </div>
+                        <div class="log-item-col height70">
+                            ${htmlStatus}
                         </div>
                         <div class="log-item-col">
-                            ${htmlStatus}&nbsp;&nbsp;
+                            <label>Start:</label>${displayDate(item.start_datetime)}
                         </div>
                         <div class="log-item-col">
-                            <label>Start:</label> ${displayDate(item.start_datetime)}
-                        </div>
-                        <div class="log-item-col">
-                            <label>Finish:</label> ${displayDate(item.end_datetime)}
+                            <label>Finish:</label>${displayDate(item.end_datetime)}
                         </div>
                         ${linkDownload}
                     </div>
