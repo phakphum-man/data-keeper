@@ -1,8 +1,10 @@
 require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
-const mongo = require('mongodb');
-const mongodb = require('../libraries/mongodb');
+const moment = require('moment-timezone');
+const { db, sqlInParam, dbGetOnce, dbGetAll, migrateDefault } = require('../libraries/sqllitedb');
+// const mongo = require('mongodb');
+// const mongodb = require('../libraries/mongodb');
 const { runJobQueue, removeAllJob } = require("../libraries/jobBullMq");
 
 module.exports = function(app) {
@@ -46,8 +48,9 @@ module.exports = function(app) {
 
         let data = fs.readFileSync(`${rootPath}/gdrive.html`, 'utf8');
         if(req.query.tid){
-            const filter = { "_id": new mongo.ObjectId(req.query.tid) };
-            const temp = await mongodb.get("templates", ["type", "linkTemplate", "linkFileData", "extensionFile"],filter);
+            const temp = await dbGetOnce("SELECT * FROM templates WHERE id = ?",[req.query.tid]);
+            // const filter = { "_id": new mongo.ObjectId(req.query.tid) };
+            // const temp = await mongodb.get("templates", ["type", "linkTemplate", "linkFileData", "extensionFile"],filter);
 
             if(temp && temp.extensionFile){
                 //set default to none select
@@ -196,7 +199,8 @@ module.exports = function(app) {
             filter = Object.assign({ createBy: by }, filter);
         }
 
-        let logData = await mongodb.getAll("bindreports", ["job_id", "merge_job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "extension_file", "failed_reason", "fileOutput", "createBy"],filter, { start_datetime: -1});
+        let logData = await dbGetAll("SELECT job_id, merge_job_id, report_type, datetime(start_datetime,'LOCALTIME') start_datetime, COALESCE(datetime(end_datetime,'LOCALTIME'),'...') end_datetime, status, parameters, failed_reason, fileOutput, createBy extension_file FROM bindreports ORDER BY start_datetime DESC");
+        // let logData = await mongodb.getAll("bindreports", ["job_id", "merge_job_id", "report_type", "start_datetime", "end_datetime", "status", "parameters", "extension_file", "failed_reason", "fileOutput", "createBy"],filter, { start_datetime: -1});
 
         const dns = `${req.protocol}://${req.get('host')}`;
         let deleteJobIds = [];
@@ -208,7 +212,11 @@ module.exports = function(app) {
         });
 
         if(deleteJobIds.length > 0){
-            await mongodb.deleteOne("bindreports", { "job_id": {"$in": deleteJobIds}});
+            db.serialize(() => {
+                db.run(sqlInParam(`DELETE FROM bindreports WHERE job_id IN(?#)`, deleteJobIds),
+                deleteJobIds);
+            });
+            //await mongodb.deleteOne("bindreports", { "job_id": {"$in": deleteJobIds}});
 
             deleteJobIds.forEach((jobId)=>{
                 logData.splice(logData.findIndex(e => e.job_id === jobId), 1);
@@ -220,8 +228,8 @@ module.exports = function(app) {
 
     app.get('/run-report/getTemplates', async (req, res) => {
         // #swagger.ignore = true
-
-        let list = await mongodb.getAll("templates", ["_id","type", "extensionFile", "description"]);
+        let list = await dbGetAll("SELECT id as _id, type, extensionFile, description FROM templates");
+        //let list = await mongodb.getAll("templates", ["_id","type", "extensionFile", "description"]);
 
         return res.status(200).send({ data: list});
     });
@@ -289,4 +297,12 @@ module.exports = function(app) {
         return res.status(200).send(`clear`);
     });
 
+    app.get('/run-report/migrate', async (req, res) => {
+        // #swagger.ignore = true
+
+        db.serialize(async() => {
+            await migrateDefault();
+        });
+        return res.status(200).send(`database migrated.`);
+    });
 }

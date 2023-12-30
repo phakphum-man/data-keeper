@@ -5,7 +5,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const socket = require("socket.io");
-const { MongoPool } = require('./libraries/mongodb');
+//const { MongoPool } = require('./libraries/mongodb');
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./swagger_output.json');
 const { workQueue } = require("./libraries/jobBullMq");
@@ -69,7 +69,7 @@ io.on("connection", (socket) => {
   
 });
 
-MongoPool.initPool();
+//MongoPool.initPool();
 
 server.listen(port);
 console.log("Environment is %s", ((process.env.NODE_ENV)? process.env.NODE_ENV : "Production"));

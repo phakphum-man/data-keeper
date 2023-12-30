@@ -1,12 +1,13 @@
 require('dotenv').config();
 const { Queue, Worker } = require('bullmq');
 const Redis = require('ioredis');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const path = require('path');
 const reportPdf = require("./reportPdf");
 const reportExcel = require("./reportExcel");
 const reportDocx = require('./reportDocx');
 const dataReport = require('./dataReport');
+const { db, dbGetOnce } = require('./sqllitedb');
 const { MongoPool } = require('./mongodb');
 const line = require("./lineNotify");
 const os = require('os');
@@ -59,10 +60,24 @@ workBinding.on('waiting', async (job) => {
     try
     {
         if(job && job.id) {
-            MongoPool.getInstance(async (clientJob) =>{
-                const collection = clientJob.db().collection('bindreports');
-                await collection.updateOne({job_id: job.id}, { $set: { status: 'waiting' } });
+            db.serialize(() => {
+                db.run(`UPDATE bindreports set 
+                status = COALESCE(?,status)
+                WHERE job_id = ?`,
+                ['waiting', job.id],
+                (err, result) => {
+                    if (err){
+                        console.error(err);
+                        return;
+                    }
+                    console.log(`SQLite update success (status=waiting)`);
+                    return;
+                });
             });
+            // MongoPool.getInstance(async (clientJob) =>{
+            //     const collection = clientJob.db().collection('bindreports');
+            //     await collection.updateOne({job_id: job.id}, { $set: { status: 'waiting' } });
+            // });
         }
     } catch (error) {
         if (error instanceof MongoServerError) {
@@ -78,10 +93,24 @@ workBinding.on('active', async ( job, prev ) => {
     try
     {
         if(job && job.id) {
-            MongoPool.getInstance(async (clientJob) =>{
-                const collection = clientJob.db().collection('bindreports');
-                await collection.updateOne({job_id: job.id}, { $set: { status: 'active' } });
+            db.serialize(() => {
+                db.run(`UPDATE bindreports set 
+                status = COALESCE(?,status)
+                WHERE job_id = ?`,
+                ['active', job.id ],
+                (err, result) => {
+                    if (err){
+                        console.error(err);
+                        return;
+                    }
+                    console.log(`SQLite update success (status=active)`);
+                    return;
+                });
             });
+            // MongoPool.getInstance(async (clientJob) =>{
+            //     const collection = clientJob.db().collection('bindreports');
+            //     await collection.updateOne({job_id: job.id}, { $set: { status: 'active' } });
+            // });
         }
     } catch (error) {
         if (error instanceof MongoServerError) {
@@ -96,21 +125,34 @@ workBinding.on('progress', async ( job, data ) => {
     try
     {
         if(job && job.id) {
-            MongoPool.getInstance(async (clientJob) =>{
-                const collection = clientJob.db().collection('bindreports');
-
-                const findResult = await collection.findOne({
-                    $or:[
-                        { job_id: job.id }, 
-                        { merge_job_id: job.id }
-                    ]
+            db.serialize(() => {
+                db.run(`UPDATE bindreports set 
+                status = COALESCE(?,status)
+                WHERE (job_id = ? OR merge_job_id = ?)`,
+                [ data.status, job.id, job.id],
+                (err, result) => {
+                    if (err){
+                        console.error(err);
+                        return;
+                    }
+                    console.log(`SQLite update success (status=${data.status})`);
+                    return;
                 });
-                if(findResult) {
-                    const jobId = findResult.job_id;
-                    await collection.updateOne({ job_id: jobId }, { $set: { status: data.status } });
-                }
-                
             });
+
+            // MongoPool.getInstance(async (clientJob) =>{
+            //     const collection = clientJob.db().collection('bindreports');
+            //     const findResult = await collection.findOne({
+            //         $or:[
+            //             { job_id: job.id }, 
+            //             { merge_job_id: job.id }
+            //         ]
+            //     });
+            //     if(findResult) {
+            //         const jobId = findResult.job_id;
+            //         await collection.updateOne({ job_id: jobId }, { $set: { status: data.status } });
+            //     }
+            // });
         }
     } catch (error) {
         if (error instanceof MongoServerError) {
@@ -125,38 +167,83 @@ workBinding.on('completed', async ( job, returnvalue ) => {
     try
     {
         if(job && job.id && returnvalue) {
-            MongoPool.getInstance(async (clientJob) =>{
-                const collection = clientJob.db().collection('bindreports');
+            db.serialize(async() => {
+                let findResult = await dbGetOnce("SELECT job_id, parameters, report_type, start_datetime FROM bindreports WHERE (job_id = ? OR merge_job_id = ?)", [ job.id, job.id]);
 
-                const findResult = await collection.findOne({
-                    $or:[
-                        { job_id: job.id }, 
-                        { merge_job_id: job.id }
-                    ]
-                });
                 if(findResult) {
                     const jobId = findResult.job_id;
                     const params = JSON.parse(findResult.parameters);
-
                     const fileSavePath = dataReport.getSavePath(params);
-                    await collection.updateOne({job_id: jobId}, { $set: { fileOutput: fileSavePath, status: 'completed', end_datetime: moment().toDate() } });
 
-                    
+                    findResult.end_datetime = moment().toISOString();
+                    db.run(`UPDATE bindreports set 
+                    status = COALESCE(?,status),
+                    fileOutput = COALESCE(?,fileOutput),
+                    end_datetime = COALESCE(?,end_datetime)
+                    WHERE job_id = ?`,
+                    ['completed', fileSavePath, findResult.end_datetime, jobId ],
+                    (err, result) => {
+                        if (err){
+                            console.error(err);
+                            return;
+                        }
+                        console.log(`SQLite update success (status=completed)`);
+                        return;
+                    });
+
                     sendLineNotify(findResult, `Result is successful.\n(${params.referLink})`);
                 }
             });
+
+            // MongoPool.getInstance(async (clientJob) =>{
+            //     const collection = clientJob.db().collection('bindreports');
+            //     const findResult = await collection.findOne({
+            //         $or:[
+            //             { job_id: job.id }, 
+            //             { merge_job_id: job.id }
+            //         ]
+            //     });
+            //     if(findResult) {
+            //         const jobId = findResult.job_id;
+            //         const params = JSON.parse(findResult.parameters);
+            //         const fileSavePath = dataReport.getSavePath(params);
+            //         await collection.updateOne({job_id: jobId}, { $set: { fileOutput: fileSavePath, status: 'completed', end_datetime: moment().toDate() } });
+            //         sendLineNotify(findResult, `Result is successful.\n(${params.referLink})`);
+            //     }
+            // });
         }else if(job && job.id && returnvalue === false) {
-            MongoPool.getInstance(async (clientJob) =>{
-                const collection = clientJob.db().collection('bindreports');
-                const findResult = await collection.findOne({ job_id: job.id, $or:[ 
-                    {extension_file: "docx"},
-                    {extension_file: "pdf"}
-                ]});
+            db.serialize(async() => {
+                const findResult = await dbGetOnce("SELECT parameters FROM bindreports WHERE job_id = ? AND extension_file IN('docx','pdf')", [job.id]);
+
                 if(findResult) {
-                    const jobId = await runJobMergeFiles(JSON.parse(findResult.parameters));
-                    await collection.updateOne({job_id: job.id}, { $set: { merge_job_id: jobId } });
+                    const reportParams = JSON.parse(findResult.parameters);
+                    const jobId = await runJobMergeFiles(reportParams);
+
+                    db.run(`UPDATE bindreports set 
+                    merge_job_id = COALESCE(?, merge_job_id)
+                    WHERE job_id = ?`,
+                    [ jobId , job.id ],
+                    (err, result) => {
+                        if (err){
+                            console.error(err);
+                            return;
+                        }
+                        console.log(`SQLite update success (merge_job_id = ${jobId})`);
+                        return;
+                    });
                 }
             });
+            // MongoPool.getInstance(async (clientJob) =>{
+            //     const collection = clientJob.db().collection('bindreports');
+            //     const findResult = await collection.findOne({ job_id: job.id, $or:[ 
+            //         {extension_file: "docx"},
+            //         {extension_file: "pdf"}
+            //     ]});
+            //     if(findResult) {
+            //         const jobId = await runJobMergeFiles(JSON.parse(findResult.parameters));
+            //         await collection.updateOne({job_id: job.id}, { $set: { merge_job_id: jobId } });
+            //     }
+            // });
         }
     } catch (error) {
         if (error instanceof MongoServerError) {
@@ -171,22 +258,43 @@ workBinding.on('failed', async ( job, err ) => {
     try
     {
         if(job && job.id) {
-            MongoPool.getInstance(async (clientJob) =>{
-                const collection = clientJob.db().collection('bindreports');
-
-                const findResult = await collection.findOne({
-                    $or:[
-                        { job_id: job.id }, 
-                        { merge_job_id: job.id }
-                    ]
-                });
+            db.serialize(async() => {
+                const findResult = await dbGetOnce("SELECT job_id, parameters, report_type, start_datetime FROM bindreports WHERE (job_id = ? OR merge_job_id = ?)", [ job.id, job.id ]);
 
                 if(findResult) {
-                    await collection.updateOne({job_id: findResult.job_id}, { $set: { status: 'failed', failed_reason: err.message, end_datetime: moment().toDate() } });
+                    const jobId = findResult.job_id;
+                    findResult.end_datetime = moment().toISOString();
+                    db.run(`UPDATE bindreports set 
+                    status = COALESCE(?,status),
+                    failed_reason = COALESCE(?,failed_reason),
+                    end_datetime = COALESCE(?,end_datetime)
+                    WHERE job_id = ?`,
+                    ['failed', err.message, findResult.end_datetime, jobId ],
+                    (err, result) => {
+                        if (err){
+                            console.error(err);
+                            return;
+                        }
+                        console.log(`SQLite update success (status=failed)`);
+                        return;
+                    });
 
                     sendLineNotify(findResult, "Result is failed.");
                 }
             });
+            // MongoPool.getInstance(async (clientJob) =>{
+            //     const collection = clientJob.db().collection('bindreports');
+            //     const findResult = await collection.findOne({
+            //         $or:[
+            //             { job_id: job.id }, 
+            //             { merge_job_id: job.id }
+            //         ]
+            //     });
+            //     if(findResult) {
+            //         await collection.updateOne({job_id: findResult.job_id}, { $set: { status: 'failed', failed_reason: err.message, end_datetime: moment().toDate() } });
+            //         sendLineNotify(findResult, "Result is failed.");
+            //     }
+            // });
         }
     } catch (error) {
         if (error instanceof MongoServerError) {
@@ -217,10 +325,24 @@ async function runJobQueue(params = { fileData: 'data.csv', extension: "pdf", fi
 
     try
     {
-        MongoPool.getInstance(async (clientJob) =>{
-            const collection = clientJob.db().collection("bindreports");
-            await collection.insertOne(logData);
+        db.serialize(() => {
+            db.run(`INSERT INTO bindreports (report_type, start_datetime, end_datetime, status, parameters, job_id, extension_file, fileOutput, createBy) 
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [logData.report_type, logData.start_datetime.toISOString(), logData.end_datetime, logData.status, logData.parameters, logData.job_id, logData.extension_file, logData.fileOutput, logData.createBy],
+            (err, result) => {
+                if (err){
+                    console.error(err);
+                    return;
+                }
+                console.log(`SQLite update success (status=queue)`);
+                return;
+            });
         });
+
+        // MongoPool.getInstance(async (clientJob) =>{
+        //     const collection = clientJob.db().collection("bindreports");
+        //     await collection.insertOne(logData);
+        // });
         return reportParams;
     } catch (error) {
         if (error instanceof MongoServerError) {
@@ -237,10 +359,22 @@ async function runJobMergeFiles(reportParams){
 }
 
 async function removeAllJob(){
-    MongoPool.getInstance(async (clientJob) =>{
-        const collection = clientJob.db().collection("bindreports");
-        await collection.deleteMany({});
+    db.serialize(() => {
+        db.run(`DELETE FROM bindreports`,
+        (err, result) => {
+            if (err){
+                console.error(err);
+                return;
+            }
+            console.log(`SQLite delete success (removeAllJob)`);
+            return;
+        });
+        db.run(`DELETE FROM SQLITE_SEQUENCE WHERE name='bindreports'`);
     });
+    // MongoPool.getInstance(async (clientJob) =>{
+    //     const collection = clientJob.db().collection("bindreports");
+    //     await collection.deleteMany({});
+    // });
     await bindingQueue.obliterate();
 }
 
@@ -253,7 +387,7 @@ const sendLineNotify = (findResult, message) => {
         `Job(${findResult.job_id}) Report`,
         "",
         `Type : ${findResult.report_type} (${params.extension})`,
-        `At Time : ${moment(findResult.start_datetime).format('LTS')} - ${moment().format('LTS')}`,
+        `At Time : ${moment(findResult.start_datetime).tz(process.env.TZ).format('LTS')} - ${moment(findResult.end_datetime).tz(process.env.TZ).format('LTS')}`,
         "",
         message,
     ];
@@ -262,6 +396,10 @@ const sendLineNotify = (findResult, message) => {
 
 const gracefulShutdown = async (signal) => {
     console.log(`Received ${signal}, closing server...`);
+    db.close((err) => {
+        if (err) console.error(err.message);
+        console.log('Close the SQlite database connection.');
+    });
     await workBinding.close();
     // Other asynchronous closings
     process.exit(0);

@@ -253,7 +253,7 @@ function displayDate(date) {
         let s = date.substring(0,19);
         return s.replace("T", " "); 
     }
-    return "...";   
+    return date;   
 }
 
 function viewLogs() {
