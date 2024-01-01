@@ -6,7 +6,11 @@ const { JWT } = require("google-auth-library");
 
 const googleDrive = async () => {
   //const keyFile = "credentials.json";
-
+  let keyContent = process.env.GDRIVE_CREDENTIAL;
+  if(process.env.NODE_ENV === "production"){
+    keyContent = fs.readFileSync("/etc/secrets/gdrive_private_key", "utf8");
+    console.log(keyContent);
+  }
   const auth = new JWT({
     email: process.env.GG_CLIENT_EMAIL,
     key: process.env.GDRIVE_CREDENTIAL,
@@ -62,6 +66,7 @@ const getMimeType = (filePath) => {
 }
 
 const exportToDrive = async ( parentId, filePath) => {
+  if(!fs.existsSync(filePath)) return;
   const { googleDriveV3 } = await googleDrive();
 
   const mimeType = getMimeType(filePath);
@@ -81,6 +86,7 @@ const exportToDrive = async ( parentId, filePath) => {
 };
 
 const exportToDriveAndShare = async ( parentId, filePath, setPermission = { "role": "reader", "type": "anyone" }) => {
+  if(!fs.existsSync(filePath)) return;
   const { googleDriveV3 } = await googleDrive();
 
   const mimeType = getMimeType(filePath);
