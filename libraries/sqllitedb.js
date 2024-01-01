@@ -1,7 +1,13 @@
 require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
+const DBSOURCE = `${(process.env.NODE_ENV !== 'production')? process.cwd():''}${process.env.SQLITE_DB_PATH}`
 
-const DBSOURCE = `${(process.env.NODE_ENV !== 'production')?'.':''}${process.env.SQLITE_DB_PATH}`
+const databasePath = path.dirname(DBSOURCE);
+if (!fs.existsSync(databasePath)){
+    fs.mkdirSync(databasePath, {recursive: true});
+}
 
 const db = new sqlite3.Database(DBSOURCE, (err) => {
     if (err) {
