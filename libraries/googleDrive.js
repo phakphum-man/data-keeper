@@ -9,11 +9,11 @@ const googleDrive = async () => {
   let keyContent = process.env.GDRIVE_CREDENTIAL;
   if(process.env.NODE_ENV === "production"){
     keyContent = fs.readFileSync("/etc/secrets/gdrive_private_key", "utf8");
-    console.log(keyContent);
+    //console.log(keyContent);
   }
   const auth = new JWT({
     email: process.env.GG_CLIENT_EMAIL,
-    key: process.env.GDRIVE_CREDENTIAL,
+    key: keyContent,
     scopes: [
         "https://www.googleapis.com/auth/drive",
         "https://www.googleapis.com/auth/drive.file"
