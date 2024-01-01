@@ -1,7 +1,7 @@
 require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
-const moment = require('moment-timezone');
+const googleDrive = require('../libraries/googleDrive');
 const { db, sqlInParam, dbGetOnce, dbGetAll, migrateDefault } = require('../libraries/sqllitedb');
 // const mongo = require('mongodb');
 // const mongodb = require('../libraries/mongodb');
@@ -278,11 +278,8 @@ module.exports = function(app) {
 
     app.get('/run-report/remove', (req, res) => {
         
-        const selfPath = path.dirname(__dirname);
-        const rootPath = selfPath.replace(`/${selfPath}`,"");
-
         const file = req.query.f || 'output.pdf';
-        const sourcefile = `${rootPath}/servicefiles/${file}`;
+        const sourcefile = `${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/${file}`;
         fs.unlink(sourcefile, (err) => {
             if (err) throw err;
         });
@@ -304,5 +301,13 @@ module.exports = function(app) {
             await migrateDefault();
         });
         return res.status(200).send(`database migrated.`);
+    });
+
+    app.get('/run-report/up-gdrive', async(req, res) => {
+        
+        const file = req.query.f || 'ใบสั่งซื้อ2024-01-01_115027.pdf';
+        const sourcefile = `${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/${file}`;
+        const upload = await googleDrive.exportToDriveAndShare("1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", sourcefile);
+        return res.status(200).send(`upload file <a href="https://drive.google.com/uc?export=download&id=${upload.id}">${file}</a> to gdrive.`);
     });
 }

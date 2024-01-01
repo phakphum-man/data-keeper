@@ -17,7 +17,7 @@ async function getFields(filePath, isOnline =false) {
                         if(page && page.Fields && (page.Fields instanceof Array) && typeof page.Fields == 'object')
                         {
                             const fields = page.Fields.map(field => field.id.Id);
-                            const saveFilePath = path.join('./servicefiles', `fields_page${i}.csv`);
+                            const saveFilePath = path.join((process.env.NODE_ENV !== 'production')?'./mnt':'/mnt', 'servicefiles', `fields_page${i}.csv`);
                             fs.writeFileSync(saveFilePath, fields.join(","));
                             output.push(saveFilePath);
                         }

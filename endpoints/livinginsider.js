@@ -89,11 +89,11 @@ async function sellcost(outFileName, iv){
           })].l = { Target: jsonData[i-1].referLink };
     }
 
-    let fileName = outFileName || `servicefiles/${__filename.slice(__dirname.length + 1, -3)}${excel.newDateFileName()}`;
+    let fileName = outFileName || `${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/${__filename.slice(__dirname.length + 1, -3)}${excel.newDateFileName()}`;
     excel.exportFileXlsx(wb, ws, fileName);
     console.log("Livinginsider sellcost generate file complete");
 
-    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileName}.xlsx`);
+    googleDrive.exportToDrive("1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", `${fileName}.xlsx`);
 
     await browser.close();
 }
@@ -173,11 +173,11 @@ async function rayong(outFileName, iv){
           })].l = { Target: jsonData[i-1].referLink };
     }
 
-    let fileName = outFileName || `servicefiles/${__filename.slice(__dirname.length + 1, -3)}${excel.newDateFileName()}`;
+    let fileName = outFileName || `${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/${__filename.slice(__dirname.length + 1, -3)}${excel.newDateFileName()}`;
     excel.exportFileXlsx(wb, ws, fileName);
     console.log("Livinginsider rayong generate file complete");
 
-    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileName}.xlsx`);
+    googleDrive.exportToDrive("1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", `${fileName}.xlsx`);
 
     await browser.close();
 }
@@ -260,11 +260,11 @@ async function chonburi(outFileName, iv){
           })].l = { Target: jsonData[i-1].referLink };
     }
 
-    let fileName = outFileName || `servicefiles/${__filename.slice(__dirname.length + 1, -3)}${excel.newDateFileName()}`;
+    let fileName = outFileName || `${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/${__filename.slice(__dirname.length + 1, -3)}${excel.newDateFileName()}`;
     excel.exportFileXlsx(wb, ws, fileName);
     console.log("Livinginsider chonburi generate file complete");
     
-    googleDrive.exportToDrive(iv,"1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileName}.xlsx`);
+    googleDrive.exportToDrive("1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", `${fileName}.xlsx`);
     
     await browser.close();
 }
@@ -277,7 +277,7 @@ module.exports = function (app) {
             // #swagger.description = 'Generate excel file.'
             let iv = req.query.iv;
             const fileDownload = `sell_at_cost${excel.newDateFileName()}`;
-            sellcost(`servicefiles/${fileDownload}`, iv);
+            sellcost(`${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/${fileDownload}`, iv);
 
             const data = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileDownload}.xlsx" target="_blank">download</a>`;
             /* #swagger.responses[200] = { 
@@ -296,7 +296,7 @@ module.exports = function (app) {
             let iv = req.query.iv;
 
             const fileDownload = `rayong${excel.newDateFileName()}`;
-            rayong(`servicefiles/${fileDownload}`, iv);
+            rayong(`${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/${fileDownload}`, iv);
 
             const data = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileDownload}.xlsx" target="_blank">download</a>`;
             /* #swagger.responses[200] = { 
@@ -315,7 +315,7 @@ module.exports = function (app) {
             let iv = req.query.iv;
 
             const fileDownload = `chonburi${excel.newDateFileName()}`;
-            chonburi(`servicefiles/${fileDownload}`, iv);
+            chonburi(`${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/${fileDownload}`, iv);
 
             const data = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileDownload}.xlsx" target="_blank">download</a>`;
             /* #swagger.responses[200] = { 

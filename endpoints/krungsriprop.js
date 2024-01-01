@@ -141,7 +141,7 @@ module.exports = function (app) {
             // #swagger.description = 'Generate excel file.'
 
             const fileDownload = `krungsriproperty_home${excel.newDateFileName()}`;
-            webLaunch(`servicefiles/${fileDownload}`);
+            webLaunch(`${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/${fileDownload}`);
 
             const data = `<a href="${req.protocol}://${req.get('host')}/download?f=${fileDownload}.xlsx" target="_blank">download</a>`;
             /* #swagger.responses[200] = { 

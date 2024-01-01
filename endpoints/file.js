@@ -45,9 +45,7 @@ module.exports = function (app) {
     // #swagger.tags = ['File']
     // #swagger.description = 'split file.'
 
-    const selfPath = path.dirname(__dirname);
-    const rootPath = selfPath.replace(`/${selfPath}`,"");
-    const directoryPath = `${rootPath}/servicefiles/`;
+    const directoryPath = `${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/`;
 
     if(fs.existsSync(directoryPath)){
         
@@ -78,9 +76,7 @@ module.exports = function (app) {
         // #swagger.tags = ['File']
         // #swagger.description = 'split file.'
 
-        const selfPath = path.dirname(__dirname);
-        const rootPath = selfPath.replace(`/${selfPath}`,"");
-        const pathFile = `${rootPath}/servicefiles/`;
+        const pathFile = `${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/`;
 
         if(fs.existsSync(`${pathFile}${req.params.filename}`)){
             
@@ -123,10 +119,7 @@ module.exports = function (app) {
         // #swagger.description = 'Endpoint download file.'
         // #swagger.parameters['name'] = { type: 'string', description: 'name is required.' }
 
-        const selfPath = path.dirname(__dirname);
-        const rootPath = selfPath.replace(`/${selfPath}`,"");
-
-        const sourcefile = `${rootPath}/servicefiles/${req.params.name}`;
+        const sourcefile = `${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/${req.params.name}`;
 
         /* #swagger.responses[200] = { 
                description: 'File Content.' 
@@ -138,9 +131,7 @@ module.exports = function (app) {
         // #swagger.tags = ['File']
         // #swagger.description = 'clear temp files.'
 
-        const selfPath = path.dirname(__dirname);
-        const rootPath = selfPath.replace(`/${selfPath}`,"");
-        const pathFile = `${rootPath}/servicefiles/`;
+        const pathFile = `${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/`;
 
         const filename = path.basename(req.params.pathfile);
         const dirTarget = req.params.pathfile.replace(`/${filename}`, "");

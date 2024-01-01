@@ -1,7 +1,8 @@
 .env
 .git/
 node_modules/
-servicefiles/
+mnt/data/
+mnt/servicefiles/
 
 credentials.json
 4bcb9ac3-8de1-4330-9f08-f0046774f7ad.json

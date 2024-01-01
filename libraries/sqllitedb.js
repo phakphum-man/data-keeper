@@ -1,7 +1,7 @@
 require('dotenv').config();
 const sqlite3 = require('sqlite3').verbose();
 
-const DBSOURCE = `${process.env.SQLITE_DB_PATH}`
+const DBSOURCE = `${(process.env.NODE_ENV !== 'production')?'.':''}${process.env.SQLITE_DB_PATH}`
 
 const db = new sqlite3.Database(DBSOURCE, (err) => {
     if (err) {

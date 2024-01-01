@@ -14,7 +14,7 @@ const port = process.env.PORT || 3000;
 const host = process.env.HOST || '0.0.0.0';
 const protocol = process.env.HTTPS === 'true' ? "https" : "http";
 
-const pathServiceFiles = `${__dirname}/servicefiles/`;
+const pathServiceFiles = path.join((process.env.NODE_ENV !== 'production')?__dirname:'/mnt', 'servicefiles');
 if (!fs.existsSync(pathServiceFiles)){
     fs.mkdirSync(pathServiceFiles);
 }

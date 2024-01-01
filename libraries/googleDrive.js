@@ -1,58 +1,108 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const crypto = require("crypto");
 const { google } = require("googleapis");
+const { JWT } = require("google-auth-library");
 
-const googleDrive = async (iv) => {
+const googleDrive = async () => {
   //const keyFile = "credentials.json";
-  const algorithm = process.env.ALGORITHM;
-  const key = process.env.PRIVATE_KEY;
-  const credentials =  process.env.GDRIVE_CREDENTIAL;
 
-  const keyFile = path.join(process.cwd(), "4bcb9ac3-8de1-4330-9f08-f0046774f7ad.json");
-  const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key, 'base64'), Buffer.from(iv, 'base64'));
-  let decryptedData = decipher.update(credentials, "hex", "utf-8")
-  decryptedData += decipher.final("utf8");
-  
-  fs.writeFileSync(keyFile, decryptedData, {
-      encoding: "utf-8",
-      mode: 0o600
-  });
-
-  const auth = new google.auth.GoogleAuth({
-    keyFile,
+  const auth = new JWT({
+    email: process.env.GG_CLIENT_EMAIL,
+    key: process.env.GDRIVE_CREDENTIAL,
     scopes: [
-      "https://www.googleapis.com/auth/drive",
-      "https://www.googleapis.com/auth/drive.file"
-    ],
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/drive.file"
+    ]
   });
-
-  // Create client instance
-  const client = await auth.getClient();
 
   // Instance of google Drive
-  const googleDriveV3 = google.drive({ version: "v3", auth: client });
+  const googleDriveV3 = google.drive({ version: "v3", auth: auth });
   return { googleDriveV3, auth };
 };
 
-const exportToDrive = async (iv, parentId, fileMimeType, filePath) => {
-  const { googleDriveV3 } = await googleDrive(iv);
+const getMimeType = (filePath) => {
+  let fileMimeType = null;
+  const ext = path.extname(filePath);
+  switch (ext) {
+    case ".pdf":
+      fileMimeType = "application/pdf";
+      break;
+    case ".docx":
+      fileMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      break;
+    case ".xls":
+        fileMimeType = "application/vnd.ms-excel";
+        break;
+    case ".xlsx":
+      fileMimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      break;
+    case ".ppt":
+      fileMimeType = "application/vnd.ms-powerpoint";
+      break;
+    case ".pptx":
+      fileMimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+      break;
+    case ".zip":
+      fileMimeType = "application/zip";
+      break;
+    case ".rtf":
+      fileMimeType = "application/rtf";
+      break;
+    case ".csv":
+      fileMimeType = "text/csv";
+      break;
+    case ".json":
+      fileMimeType = "application/json";
+      break;
+    default:
+      fileMimeType = null;
+  }
+  return fileMimeType;
+}
 
+const exportToDrive = async ( parentId, filePath) => {
+  const { googleDriveV3 } = await googleDrive();
+
+  const mimeType = getMimeType(filePath);
   const result = await googleDriveV3.files.create({
     requestBody: {
       name: path.basename(filePath),
-      mimeType: fileMimeType,
+      mimeType: mimeType,
       parents: [parentId],
     },
     media: {
-      mimeType: fileMimeType,
+      mimeType: mimeType,
       body: fs.createReadStream(filePath),
     },
   });
-  const keyFile = path.join(process.cwd(), "4bcb9ac3-8de1-4330-9f08-f0046774f7ad.json");
-  fs.unlinkSync(keyFile);
+  console.log(`${(new Date()).toISOString()}: Upload GDrive complete.`);
   return result.data;
 };
 
-module.exports = { googleDrive, exportToDrive };
+const exportToDriveAndShare = async ( parentId, filePath, setPermission = { "role": "reader", "type": "anyone" }) => {
+  const { googleDriveV3 } = await googleDrive();
+
+  const mimeType = getMimeType(filePath);
+  const result = await googleDriveV3.files.create({
+    requestBody: {
+      name: path.basename(filePath),
+      mimeType: mimeType,
+      parents: [parentId],
+    },
+    media: {
+      mimeType: mimeType,
+      body: fs.createReadStream(filePath),
+    },
+  });
+  console.log(`${(new Date()).toISOString()}: Upload GDrive complete.`);
+
+  const permResult = await googleDriveV3.permissions.create({fileId: result.data.id, resource: setPermission});
+  if(permResult.status === 200){
+    console.log(`${(new Date()).toISOString()}: Set permission successfully.`);
+  }
+
+  return result.data;
+};
+
+module.exports = { googleDrive, exportToDrive, exportToDriveAndShare };
