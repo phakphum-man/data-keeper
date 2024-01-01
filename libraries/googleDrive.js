@@ -11,14 +11,17 @@ const googleDrive = async () => {
     keyContent = fs.readFileSync("/etc/secrets/gdrive_private_key", "utf8");
     //console.log(keyContent);
   }
-  const auth = new JWT({
+  const optionJwt = {
     email: process.env.GG_CLIENT_EMAIL,
     key: keyContent,
     scopes: [
         "https://www.googleapis.com/auth/drive",
         "https://www.googleapis.com/auth/drive.file"
     ]
-  });
+  };
+  console.log(`email => ${optionJwt.email}`);
+  console.log(`key => "${optionJwt.key}"`);
+  const auth = new JWT(optionJwt);
 
   // Instance of google Drive
   const googleDriveV3 = google.drive({ version: "v3", auth: auth });
