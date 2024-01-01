@@ -7,7 +7,7 @@ const { JWT } = require("google-auth-library");
 const googleDrive = async () => {
   //const keyFile = "credentials.json";
   let keyContent = process.env.GDRIVE_CREDENTIAL;
-  if(process.env.NODE_ENV === "production"){
+  if(process.env.NODE_ENV === "production" && fs.existsSync("/etc/secrets/gdrive_private_key")){
     keyContent = fs.readFileSync("/etc/secrets/gdrive_private_key", "utf8");
     //console.log(keyContent);
   }
@@ -19,8 +19,7 @@ const googleDrive = async () => {
         "https://www.googleapis.com/auth/drive.file"
     ]
   };
-  console.log(`email => ${optionJwt.email}`);
-  console.log(`key => "${optionJwt.key}"`);
+ 
   const auth = new JWT(optionJwt);
 
   // Instance of google Drive
