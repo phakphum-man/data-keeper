@@ -13,7 +13,7 @@ const googleDrive = async () => {
   }
   const optionJwt = {
     email: process.env.GG_CLIENT_EMAIL,
-    key: keyContent,
+    key: `-----BEGIN PRIVATE KEY-----\n${keyContent.replace(/\\n/g, "\n")}\n-----END PRIVATE KEY-----\n`,
     scopes: [
         "https://www.googleapis.com/auth/drive",
         "https://www.googleapis.com/auth/drive.file"
