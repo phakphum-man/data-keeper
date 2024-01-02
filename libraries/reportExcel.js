@@ -78,7 +78,7 @@ async function dataBinding(reportParams){
             });
         });
 
-        return true;
+        return false;
     } catch (error) {
         console.error(`Error worth logging: ${error}`);
         throw error;

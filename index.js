@@ -62,6 +62,12 @@ io.on("connection", (socket) => {
         socket.emit("message", result);
       }
     });
+
+    workQueue.on("failed", (job, err) => {
+      if(job && job.id){
+        socket.emit("message", true);
+      }
+    });
   
     socket.on("disconnect", () => {
       console.log("Client disconnected from Socket!")

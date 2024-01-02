@@ -29,7 +29,8 @@ db.serialize(() => {
         failed_reason TEXT,
         fileOutput TEXT,
         createBy TEXT,
-        merge_job_id INTEGER DEFAULT null
+        merge_job_id INTEGER DEFAULT null,
+        final_job_id INTEGER DEFAULT null
         )`);
 
     db.run(`CREATE TABLE IF NOT EXISTS templates (

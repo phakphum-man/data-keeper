@@ -87,20 +87,20 @@ const exportToDrive = async ( parentId, filePath) => {
   return result.data;
 };
 
-const exportToDriveAndShare = async ( parentId, filePath, setPermission = { "role": "reader", "type": "anyone" }) => {
-  if(!fs.existsSync(filePath)) return;
+const exportToDriveAndShare = async ( fromFilePath, saveToGdriveParentId, setPermission = { "role": "reader", "type": "anyone" }) => {
+  if(!fs.existsSync(fromFilePath)) return;
   const { googleDriveV3 } = await googleDrive();
 
-  const mimeType = getMimeType(filePath);
+  const mimeType = getMimeType(fromFilePath);
   const result = await googleDriveV3.files.create({
     requestBody: {
-      name: path.basename(filePath),
+      name: path.basename(fromFilePath),
       mimeType: mimeType,
-      parents: [parentId],
+      parents: [saveToGdriveParentId],
     },
     media: {
       mimeType: mimeType,
-      body: fs.createReadStream(filePath),
+      body: fs.createReadStream(fromFilePath),
     },
   });
   console.log(`${(new Date()).toISOString()}: Upload GDrive complete.`);

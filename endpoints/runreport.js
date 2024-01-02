@@ -307,7 +307,7 @@ module.exports = function(app) {
         //http://data-keeper.onrender.com/download?f=%E0%B9%83%E0%B8%9A%E0%B8%AA%E0%B8%B1%E0%B9%88%E0%B8%87%E0%B8%8B%E0%B8%B7%E0%B9%89%E0%B8%AD2024-01-01_144441.pdf
         const file = req.query.f || 'ใบสั่งซื้อ2024-01-01_115027.pdf';
         const sourcefile = `${(process.env.NODE_ENV !== 'production')?'./mnt':'/mnt'}/servicefiles/${file}`;
-        const upload = await googleDrive.exportToDriveAndShare("1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc", sourcefile);
+        const upload = await googleDrive.exportToDriveAndShare(sourcefile, "1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc");
         if(upload && upload.id){
             return res.status(200).send(`upload file <a href="https://drive.google.com/uc?export=download&id=${upload.id}">${file}</a> to gdrive.`);
         }

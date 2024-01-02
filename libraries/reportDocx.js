@@ -102,7 +102,7 @@ async function mergeDocx(reportParams){
         docx.save('nodebuffer', (doc) => {
             fs.writeFileSync(dataReport.getSavePath(reportParams), doc);
         });
-        return true;
+        return false;
 
     } catch (error) {
         console.error(`Error worth logging: ${error}`);

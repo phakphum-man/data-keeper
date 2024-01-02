@@ -3,16 +3,17 @@ const { Queue, Worker } = require('bullmq');
 const Redis = require('ioredis');
 const moment = require('moment-timezone');
 const path = require('path');
+const googleDrive = require('./googleDrive');
 const reportPdf = require("./reportPdf");
 const reportExcel = require("./reportExcel");
 const reportDocx = require('./reportDocx');
 const dataReport = require('./dataReport');
 const { db, dbGetOnce } = require('./sqllitedb');
-const { MongoPool } = require('./mongodb');
+//const { MongoPool } = require('./mongodb');
 const line = require("./lineNotify");
 const os = require('os');
 const { v4: uuidv4 } = require('uuid');
-const { MongoServerError } = require('mongodb');
+//const { MongoServerError } = require('mongodb');
 const QueueNameBinding = `work${os.hostname()}`;
 
 if(!process.env.REDIS_URL) console.warn('REDIS_URL is not defined');
@@ -29,24 +30,46 @@ const workBinding = new Worker(QueueNameBinding, async (job)=>{
     const extension = reportParams.extension;
     try{
         await job.updateProgress({ status: 'running' });
-        switch(extension) {
-            case 'xlsx':
-                return reportExcel.dataBinding(reportParams);
-                break;
-            case 'docx':
-                if(job.name === 'jobMergeFiles'){
-                    return reportDocx.mergeDocx(reportParams);
-                } else {
-                    return reportDocx.dataBinding(reportParams);
-                }
-                break;
-            case 'pdf':
-            default:
-                if(job.name === 'jobMergeFiles'){
-                    return reportPdf.mergePdf(reportParams);
-                } else {
-                    return reportPdf.dataBinding(reportParams);
-                }
+        if(job.name === 'jobExportGDrive'){
+            const sourcefile = dataReport.getSavePath(reportParams);
+            const uploadResult = await googleDrive.exportToDriveAndShare(sourcefile, process.env.GDRIVE_PARENT_ID);
+
+            if(uploadResult && uploadResult.id){
+                let upParams = reportParams;
+                upParams.referLink = `https://drive.google.com/uc?export=download&id=${uploadResult.id}`;
+                db.run(`UPDATE bindreports set
+                    parameters = ?
+                    WHERE final_job_id = ?`,
+                    [JSON.stringify(upParams), job.id ],
+                    (err, result) => {
+                        if (err){
+                            console.error(err);
+                            return;
+                        }
+                        console.log(`SQLite update success (status=completed)`);
+                        return;
+                    });
+                //return res.status(200).send(`upload file <a href="https://drive.google.com/uc?export=download&id=${uploadResult.id}">${file}</a> to gdrive.`);
+            }
+            return true;
+        } else {
+            switch(extension) {
+                case 'xlsx':
+                    return reportExcel.dataBinding(reportParams);
+                case 'docx':
+                    if(job.name === 'jobMergeFiles'){
+                        return reportDocx.mergeDocx(reportParams);
+                    } else {
+                        return reportDocx.dataBinding(reportParams);
+                    }
+                case 'pdf':
+                default:
+                    if(job.name === 'jobMergeFiles'){
+                        return reportPdf.mergePdf(reportParams);
+                    } else {
+                        return reportPdf.dataBinding(reportParams);
+                    }
+            }
         }
     }catch (error) {
         console.log(`Error worth logging: ${error}`);
@@ -79,9 +102,9 @@ workBinding.on('waiting', async (job) => {
             // });
         }
     } catch (error) {
-        if (error instanceof MongoServerError) {
-        console.log(`Error worth logging: ${error}`); // special case for some reason
-        }
+        // if (error instanceof MongoServerError) {
+        //     console.log(`Error worth logging: ${error}`); // special case for some reason
+        // }
         throw error; // still want to crash
     }
     
@@ -112,9 +135,10 @@ workBinding.on('active', async ( job, prev ) => {
             // });
         }
     } catch (error) {
-        if (error instanceof MongoServerError) {
-            console.log(`Error worth logging: ${error}`); // special case for some reason
-        }
+        // if (error instanceof MongoServerError) {
+        //     console.log(`Error worth logging: ${error}`); // special case for some reason
+        // }
+        throw error;
     }
     
     console.log(`${job?.id} has active`);
@@ -154,9 +178,10 @@ workBinding.on('progress', async ( job, data ) => {
             // });
         }
     } catch (error) {
-        if (error instanceof MongoServerError) {
-            console.log(`Error worth logging: ${error}`); // special case for some reason
-        }
+        // if (error instanceof MongoServerError) {
+        //     console.log(`Error worth logging: ${error}`); // special case for some reason
+        // }
+        throw error;
     }
     
     console.log(`${job?.id} reported progress ${ JSON.stringify(data)}`);
@@ -167,20 +192,19 @@ workBinding.on('completed', async ( job, returnvalue ) => {
     {
         if(job && job.id && returnvalue) {
             db.serialize(async() => {
-                let findResult = await dbGetOnce("SELECT job_id, parameters, report_type, start_datetime FROM bindreports WHERE (job_id = ? OR merge_job_id = ?)", [ job.id, job.id]);
+                let findResult = await dbGetOnce("SELECT job_id, parameters, report_type, start_datetime FROM bindreports WHERE final_job_id = ?", [job.id]);
 
                 if(findResult) {
-                    const jobId = findResult.job_id;
                     const params = JSON.parse(findResult.parameters);
-                    const fileSavePath = dataReport.getSavePath(params);
+                    const fileSavePath = params.referLink;//dataReport.getSavePath(params);
 
                     findResult.end_datetime = moment().toISOString();
                     db.run(`UPDATE bindreports set 
                     status = COALESCE(?,status),
                     fileOutput = COALESCE(?,fileOutput),
                     end_datetime = COALESCE(?,end_datetime)
-                    WHERE job_id = ?`,
-                    ['completed', fileSavePath, findResult.end_datetime, jobId ],
+                    WHERE final_job_id = ?`,
+                    ['completed', fileSavePath, findResult.end_datetime, job.id ],
                     (err, result) => {
                         if (err){
                             console.error(err);
@@ -212,9 +236,9 @@ workBinding.on('completed', async ( job, returnvalue ) => {
             // });
         }else if(job && job.id && returnvalue === false) {
             db.serialize(async() => {
-                const findResult = await dbGetOnce("SELECT parameters FROM bindreports WHERE job_id = ? AND extension_file IN('docx','pdf')", [job.id]);
+                const findResult = await dbGetOnce("SELECT parameters, extension_file, merge_job_id FROM bindreports WHERE (job_id = ? OR merge_job_id = ?)", [job.id, job.id]);
 
-                if(findResult) {
+                if(findResult && findResult.merge_job_id === null && (findResult.extension_file === 'docx' || findResult.extension_file === "pdf")) {
                     const reportParams = JSON.parse(findResult.parameters);
                     const jobId = await runJobMergeFiles(reportParams);
 
@@ -228,6 +252,22 @@ workBinding.on('completed', async ( job, returnvalue ) => {
                             return;
                         }
                         console.log(`SQLite update success (merge_job_id = ${jobId})`);
+                        return;
+                    });
+                }else if(findResult){
+                    const reportParams = JSON.parse(findResult.parameters);
+                    const jobId = await runJobExportGDrive(reportParams);
+
+                    db.run(`UPDATE bindreports set 
+                    final_job_id = COALESCE(?, final_job_id)
+                    WHERE (job_id = ? OR merge_job_id = ?)`,
+                    [ jobId, job.id , job.id ],
+                    (err, result) => {
+                        if (err){
+                            console.error(err);
+                            return;
+                        }
+                        console.log(`SQLite update success (final_job_id = ${jobId})`);
                         return;
                     });
                 }
@@ -245,9 +285,10 @@ workBinding.on('completed', async ( job, returnvalue ) => {
             // });
         }
     } catch (error) {
-        if (error instanceof MongoServerError) {
-            console.log(`Error worth logging: ${error}`); // special case for some reason
-        }
+        // if (error instanceof MongoServerError) {
+        //     console.log(`Error worth logging: ${error}`); // special case for some reason
+        // }
+        throw error;
     }
     
     console.log(`${job?.id} has completed!`);
@@ -258,7 +299,7 @@ workBinding.on('failed', async ( job, err ) => {
     {
         if(job && job.id) {
             db.serialize(async() => {
-                const findResult = await dbGetOnce("SELECT job_id, parameters, report_type, start_datetime FROM bindreports WHERE (job_id = ? OR merge_job_id = ?)", [ job.id, job.id ]);
+                const findResult = await dbGetOnce("SELECT job_id, parameters, report_type, start_datetime FROM bindreports WHERE (job_id = ? OR merge_job_id = ? OR final_job_id = ?)", [ job.id, job.id, job.id ]);
 
                 if(findResult) {
                     const jobId = findResult.job_id;
@@ -296,9 +337,10 @@ workBinding.on('failed', async ( job, err ) => {
             // });
         }
     } catch (error) {
-        if (error instanceof MongoServerError) {
-            console.log(`Error worth logging: ${error}`); // special case for some reason
-        }
+        // if (error instanceof MongoServerError) {
+        //     console.log(`Error worth logging: ${error}`); // special case for some reason
+        // }
+        throw error;
     }
     console.log(`job ${job?.id} has failed with ${err.message}`);
 });
@@ -344,9 +386,9 @@ async function runJobQueue(params = { fileData: 'data.csv', extension: "pdf", fi
         // });
         return reportParams;
     } catch (error) {
-        if (error instanceof MongoServerError) {
-          console.log(`Error worth logging: ${error}`); // special case for some reason
-        }
+        // if (error instanceof MongoServerError) {
+        //   console.log(`Error worth logging: ${error}`); // special case for some reason
+        // }
         throw error; // still want to crash
     }
     
@@ -354,6 +396,11 @@ async function runJobQueue(params = { fileData: 'data.csv', extension: "pdf", fi
 
 async function runJobMergeFiles(reportParams){
     const job = await bindingQueue.add('jobMergeFiles', reportParams);
+    return job.id;
+}
+
+async function runJobExportGDrive(reportParams){
+    const job = await bindingQueue.add('jobExportGDrive', reportParams);
     return job.id;
 }
 

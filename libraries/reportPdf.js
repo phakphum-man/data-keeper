@@ -127,7 +127,7 @@ async function mergePdf(reportParams){
 
         const pdfMergeBytes = await mergedPdf.save();
         fs.writeFileSync(dataReport.getSavePath(reportParams), pdfMergeBytes);
-        return true;
+        return false;
 
     } catch (error) {
         console.error(`Error worth logging: ${error}`);

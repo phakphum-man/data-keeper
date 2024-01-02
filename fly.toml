@@ -13,6 +13,7 @@ kill_timeout = 5
   HOST='0.0.0.0'
   NODE_ENV='production'
   GG_CLIENT_EMAIL='maintenance-fee@central-kit-310709.iam.gserviceaccount.com'
+  GDRIVE_PARENT_ID='1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc'
   LINE_CALLBACK_URI='https://pov.fly.dev/linenotify/callback'
   TZ='Asia/Bangkok'
 
