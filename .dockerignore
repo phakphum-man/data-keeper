@@ -1,6 +1,7 @@
 .env
 .git/
 node_modules/
+.fly/
 mnt/data/
 mnt/servicefiles/
 

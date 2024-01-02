@@ -314,7 +314,13 @@ function viewLogs() {
     });
 }
 
-const socket = io();
+const socket = io('', {
+    // Send auth token on connection, you will need to DI the Auth service above
+    // 'query': 'token=' + Auth.getToken()
+    path: '/socket.io',
+    transports: ['websocket', 'polling'],
+    secure: true,
+});
 socket.on("connect", () => { console.log("Connected to socket."); });
 socket.on("message", (data) => { if(data){ setTimeout(() => { window.scrollTo(0, window.innerHeight);viewLogs(); }, 1000); }});
 

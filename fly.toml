@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for data-pov on 2024-01-01T23:02:02+07:00
+# fly.toml app configuration file generated for pov on 2024-01-02T12:32:58+07:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = "data-pov"
+app = "pov"
 primary_region = "sin"
 kill_signal = "SIGINT"
 kill_timeout = 5
@@ -13,8 +13,7 @@ kill_timeout = 5
   HOST='0.0.0.0'
   NODE_ENV='production'
   GG_CLIENT_EMAIL='maintenance-fee@central-kit-310709.iam.gserviceaccount.com'
-  LINE_CLIENT_ID='JiSmzTInCEWgeDWxhZPr2T'
-  LINE_CALLBACK_URI='https://data-pov.fly.dev/linenotify/callback'
+  LINE_CALLBACK_URI='https://pov.fly.dev/linenotify/callback'
   TZ='Asia/Bangkok'
 
 [build]
@@ -32,4 +31,4 @@ kill_timeout = 5
 [[vm]]
   cpu_kind = "shared"
   cpus = 1
-  memory_mb = 1024
+  memory_mb = 512

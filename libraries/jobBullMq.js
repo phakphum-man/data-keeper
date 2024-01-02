@@ -13,7 +13,6 @@ const line = require("./lineNotify");
 const os = require('os');
 const { v4: uuidv4 } = require('uuid');
 const { MongoServerError } = require('mongodb');
-
 const QueueNameBinding = `work${os.hostname()}`;
 
 if(!process.env.REDIS_URL) console.warn('REDIS_URL is not defined');
@@ -400,7 +399,12 @@ const gracefulShutdown = async (signal) => {
         if (err) console.error(err.message);
         console.log('Close the SQlite database connection.');
     });
+
+    await bindingQueue.close();
+    await bindingQueue.disconnect();
+
     await workBinding.close();
+    await workBinding.disconnect();
     // Other asynchronous closings
     process.exit(0);
 }

@@ -19,7 +19,7 @@ if (!fs.existsSync(pathServiceFiles)){
     fs.mkdirSync(pathServiceFiles);
 }
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 1;
-
+process.traceProcessWarnings = true;
 app.use(express.json());
 require('./endpoints/index')(app);
 require('./endpoints/file')(app);
