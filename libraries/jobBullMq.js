@@ -3,6 +3,7 @@ const { Queue, Worker } = require('bullmq');
 const Redis = require('ioredis');
 const moment = require('moment-timezone');
 const path = require('path');
+const fs = require('fs');
 const googleDrive = require('./googleDrive');
 const reportPdf = require("./reportPdf");
 const reportExcel = require("./reportExcel");
@@ -49,7 +50,9 @@ const workBinding = new Worker(QueueNameBinding, async (job)=>{
                         console.log(`SQLite update success (status=completed)`);
                         return;
                     });
-                //return res.status(200).send(`upload file <a href="https://drive.google.com/uc?export=download&id=${uploadResult.id}">${file}</a> to gdrive.`);
+                fs.unlink(sourcefile, (err) => {
+                    if (err) throw err;
+                });
             }
             return true;
         } else {
