@@ -16,6 +16,7 @@ kill_timeout = 5
   GDRIVE_PARENT_ID='1dY1s1gMMHShjlsmiqA6DnzWjRK7DZQpc'
   LINE_CALLBACK_URI='https://open.fly.dev/linenotify/callback'
   TZ='Asia/Bangkok'
+  NOTION_TEMPLATE_DB_ID='de7d7110100645708f0720cc20b9fe03'
 
 [build]
   dockerfile = "Dockerfile"

@@ -32,7 +32,7 @@ db.serialize(() => {
         merge_job_id INTEGER DEFAULT null,
         final_job_id INTEGER DEFAULT null
         )`);
-
+    /*
     db.run(`CREATE TABLE IF NOT EXISTS templates (
         id TEXT PRIMARY KEY,
         type TEXT,
@@ -40,12 +40,12 @@ db.serialize(() => {
         linkFileData TEXT,
         extensionFile TEXT,
         description TEXT
-    )`);
+    )`);*/
 
 });
 
 const migrateDefault = async() => {
-    const data = [
+    /*const data = [
         ['6582a8822f834ed8271122a7', 'ap203_form50_original', 'https://drive.google.com/file/d/1Tgkn-zXCGwGFSNi2THWx4XmAVwE7hm6G/view?usp=drive_link', 'https://drive.google.com/file/d/1akFSZQOyk-XavCeu7Xi2bs0XeQfc6K3a/view?usp=drive_link', 'pdf', 'Generate pdf online from link google drive.'],
         ['6585710d1422d8611dd58163', 'icetax-form', 'https://drive.google.com/file/d/1CeXeSFKnK_Pw_WsoYpwpUR7ewhk0fAu7/view?usp=drive_link', 'https://drive.google.com/file/d/1T9A42OKbhx2cFEybonenSwf270PJFOg9/view?usp=drive_link', 'xlsx', 'Generate excel online from link google drive.'],
         ['6585880848712060136f136e', 'myTemplate', 'https://drive.google.com/file/d/1btb4Osz5U-Nx1RlK33t_C-obr_I1zxmb/view?usp=sharing', 'https://drive.google.com/file/d/1FwaIKeS2ss9EakNE-8O2qbrO9fthvNPk/view?usp=sharing', 'docx', 'Generate word online from link google drive.'],
@@ -59,7 +59,7 @@ const migrateDefault = async() => {
             stmt.run(row[0], row[1], row[2], row[3], row[4], row[5]);
         }
     }
-    stmt.finalize();
+    stmt.finalize();*/
 };
 
 const sqlInParam =(sql, arr) => sql.replace('?#', arr.map(()=> '?' ).join(','));

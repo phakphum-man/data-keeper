@@ -2,6 +2,7 @@ require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
 const googleDrive = require('../libraries/googleDrive');
+const notionQuery = require('../libraries/notionQuery');
 const { db, sqlInParam, dbGetOnce, dbGetAll, migrateDefault } = require('../libraries/sqllitedb');
 // const mongo = require('mongodb');
 // const mongodb = require('../libraries/mongodb');
@@ -48,7 +49,15 @@ module.exports = function(app) {
 
         let data = fs.readFileSync(`${rootPath}/gdrive.html`, 'utf8');
         if(req.query.tid){
-            const temp = await dbGetOnce("SELECT * FROM templates WHERE id = ?",[req.query.tid]);
+            //const temp = await dbGetOnce("SELECT * FROM templates WHERE id = ?",[req.query.tid]);
+            const filter = {
+                property: "_id",
+                rich_text: {
+                    equals: req.query.tid,
+                },
+            }
+            const temp = await notionQuery.getOnce(process.env.NOTION_TEMPLATE_DB_ID, filter);
+
             // const filter = { "_id": new mongo.ObjectId(req.query.tid) };
             // const temp = await mongodb.get("templates", ["type", "linkTemplate", "linkFileData", "extensionFile"],filter);
 
@@ -228,7 +237,14 @@ module.exports = function(app) {
 
     app.get('/run-report/getTemplates', async (req, res) => {
         // #swagger.ignore = true
-        let list = await dbGetAll("SELECT id as _id, type, extensionFile, description FROM templates");
+        //let list = await dbGetAll("SELECT id as _id, type, extensionFile, description FROM templates");
+        const sorts = [
+            {
+                "property": "seq",
+                "direction": "ascending"
+            }
+        ];
+        const list = await notionQuery.getAll(process.env.NOTION_TEMPLATE_DB_ID, undefined, sorts);
         //let list = await mongodb.getAll("templates", ["_id","type", "extensionFile", "description"]);
 
         return res.status(200).send({ data: list});
