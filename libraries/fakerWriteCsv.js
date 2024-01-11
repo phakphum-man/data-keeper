@@ -231,7 +231,7 @@ function generateFakeData(targets) {
                 data[i] = faker.vehicle.vrm();// 'MF56UPA' (vehicle registration number)
                 break;
             default:
-                faker.helpers.fake(targets[i]);// 'Hi, my name is {{person.firstName}} {{person.lastName}}!
+                data[i] = faker.helpers.fake(targets[i]);// 'Hi, my name is {{person.firstName}} {{person.lastName}}!
         }
     }
     return data;
