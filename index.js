@@ -31,6 +31,7 @@ require('./endpoints/livinginsider')(app);
 require('./endpoints/goldprice')(app);
 require('./endpoints/goldprice2')(app);
 require('./endpoints/linenotify')(app);
+require('./endpoints/manga')(app);
 
 app.get('/public/*', (req, res) => {
     // #swagger.ignore = true
