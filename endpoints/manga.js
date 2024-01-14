@@ -16,7 +16,7 @@ module.exports = function (app) {
         let url = document.getElementById('url').value;
         let l = document.createElement("a");
         l.href = url;
-        window.location.href=\`/manga/$\{l.hostname.replace(".","-")\}?q=$\{l.pathname\}\`;
+        window.location.href=\`/manga/$\{l.hostname.replaceAll(".","-")\}?q=$\{l.pathname\}\`;
       }</script>
       <style type="text/css">
       input[type="text"] { min-width: 600px;}
@@ -167,7 +167,7 @@ module.exports = function (app) {
 
         // Set Image lazy loading
         contentBody = contentBody.replaceAll("<img src=","<img class=\"lazy\" data-src=");
-        
+
         htmlContent = htmlContent.replace("<%=LIST_IMG_MANGA%>", contentBody);
 
         return res.status(200).send(htmlContent);
