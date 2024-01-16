@@ -24,3 +24,33 @@ String.prototype.formatCommas = function() {
     let x = this;
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
+
+String.prototype.toUnicode = function() {
+    let str = this;
+	return str.split('').map(function (value, index, array) {
+		var temp = value.charCodeAt(0).toString(16).toUpperCase();
+		if (temp.length > 2) {
+			return '\\u' + temp;
+		}
+		return value;
+	}).join('');
+}
+
+String.prototype.cleanText = function() {
+    let str = this;
+	return str.replace(/(\t|\n)/g,"").trim();
+}
+
+String.prototype.getDomain = function() {
+    let str = this;
+	return str.replace(/(http\:\/\/|https\:\/\/|\/)/g,"");
+}
+
+String.prototype.getOnlyNumber = function() {
+    let str = this;
+	const matches = str.match(/(\d+)/);
+    if (matches && matches.length > 0) {
+        return matches[0];
+    }
+    return null;
+}

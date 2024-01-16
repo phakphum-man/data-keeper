@@ -1,31 +1,319 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title><%=TITLE%></title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <style type="text/css" >
-            body{ background: #666; }
-            h4{ text-align: center; color: #fff;}
-            .container{display: block;text-align:center;}
-            .row{display: grid; height: 100%; margin: 10px auto;position: relative;}
-            img {background: #F1F1FA; display: block; margin: 0px auto; border: 0;max-width: 100%;overflow-clip-margin: content-box; overflow: clip;}
-            img.lazy{background: url("/public/images/loading.gif");background-repeat: no-repeat; background-size: 60px 60px; width: 60px; height: 60px; border:0; }
-            .btn{ font-size: 16px; padding: 5px; border-radius: 4px; background-color: red; color: white; cursor: pointer; border: none; outline: none; margin: 5px; }
-            .btn:hover { background-color: #555; }
-          </style>
-        <script type="text/javascript">
-            document.addEventListener("DOMContentLoaded",(function(e){var n;function t(){let e=document.querySelectorAll("img.lazy");n&&clearTimeout(n),n=setTimeout((function(){var n=window.pageYOffset;e.forEach((function(e){e.offsetTop<window.innerHeight+n&&(e.src=e.dataset.src,e.classList.remove("lazy"))})),0==e.length&&(document.removeEventListener("scroll",t),window.removeEventListener("resize",t),window.removeEventListener("orientationChange",t))}),20)}document.addEventListener("scroll",t),window.addEventListener("resize",t),window.addEventListener("orientationChange",t)})),window.onload=function(){let e=document.querySelector("h4").clientHeight;document.querySelectorAll("img.lazy").forEach((function(n){let t=document.getElementById("tmpImg");t.src=n.dataset.src,e<window.innerHeight&&(n.src=n.dataset.src,n.classList.remove("lazy"),e+=t.height);document.querySelector("div.row").style=`max-width:${window.innerHeight}px`}))};
-        </script>
-    </head>
-    <body>
-        <h4><%=BTN_PREV%><%=TITLE%><%=BTN_NEXT%></h4>
+    <title>
+        <%=TITLE%>
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type="text/css">
+        * {
+        padding: 0;
+        margin: 0;
+        }
+        body {
+            background: #F8F4EC;
+        }
+
+        h1 {
+            font-size: 18px;
+        }
+
+        h4 {
+            font-size: 14px;
+        }
+
+        h1,
+        h4 {
+            text-align: center;
+            color: #555;
+        }
+
+        .container {
+            display: block;
+            text-align: center;
+        }
+
+        .row {
+            display: grid;
+            height: 100%;
+            margin: 10px auto;
+            position: relative;
+        }
+
+        img {
+            background: #183445;
+            display: block;
+            margin: 0px auto;
+            border: 0;
+            max-width: 100%;
+            overflow-clip-margin: content-box;
+            overflow: clip;
+        }
+
+        img.lazy {
+            background: url("/public/images/loading.gif");
+            background-repeat: no-repeat;
+            background-size: 60px 60px;
+            width: 60px;
+            height: 60px;
+            border: 0;
+        }
+
+        .btn {
+            font-size: 16px;
+            padding: 8px;
+            border-radius: 4px;
+            background-color: red;
+            color: white;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background-color: #555;
+        }
+
+        .readmore {
+            display: block;
+            text-align: center
+        }
+
+        a.read-more {
+            color: red;
+        }
+
+        nav {
+            background-color: #80482a;
+            height: 50px;
+            padding: 0 16px;
+            display: -ms-flexbox;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            /* fade in checked menu */
+        }
+
+        nav .m-menu__checkbox {
+            display: none;
+        }
+
+        nav label.m-menu__toggle {
+            cursor: pointer;
+        }
+
+        nav .m-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            max-width: 450px;
+            width: calc(100vw - 30px);
+            /* height: 100%; */
+            height: 100vh;
+            -moz-transform: translate3d(-450px, 0, 0);
+            -o-transform: translate3d(-450px, 0, 0);
+            -ms-transform: translate3d(-450px, 0, 0);
+            -webkit-transform: translate3d(-450px, 0, 0);
+            transform: translate3d(-450px, 0, 0);
+            -moz-transition: transform 0.35s;
+            -o-transition: transform 0.35s;
+            -webkit-transition: transform 0.35s;
+            transition: transform 0.35s;
+            z-index: 1;
+            /* overflow: hidden; */
+            overflow-y: scroll;
+            background-color: #fff;
+        }
+
+        nav .m-menu__overlay {
+            background-color: rgba(103, 103, 103, 0.5);
+            position: absolute;
+            top: 0;
+            width: 100%;
+            bottom: 0;
+            z-index: 1;
+            display: none;
+        }
+
+        nav .m-menu__header {
+            padding: 0 16px;
+            height: 50px;
+            display: -ms-flexbox;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-justify-content: space-around;
+            justify-content: space-around;
+            -ms-flex-pack: space-around;
+            -webkit-align-items: center;
+            align-items: center;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        nav .m-menu__header span {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+        }
+
+        nav .m-menu .m-menu {
+            -moz-transform: translate3d(480px, 0, 0);
+            -o-transform: translate3d(480px, 0, 0);
+            -ms-transform: translate3d(480px, 0, 0);
+            -webkit-transform: translate3d(480px, 0, 0);
+            transform: translate3d(480px, 0, 0);
+        }
+
+        nav .m-menu ul {
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        nav .m-menu ul li a,
+        nav .m-menu ul li label {
+            display: block;
+            text-align: left;
+            padding: 0 15px;
+            line-height: 47px;
+            text-decoration: none;
+            color: #333;
+            cursor: pointer;
+            font-size: 1rem;
+            border-bottom: 1px solid #e8e8e8;
+            position: relative;
+        }
+
+        nav .m-menu ul li label.a-label__chevron::after {
+            content: "";
+            position: absolute;
+            display: inline-block;
+            height: 10px;
+            width: 10px;
+            border-color: #333;
+            border-style: solid;
+            border-width: 1px 1px 0 0;
+            -moz-transform: rotate(45deg);
+            -o-transform: rotate(45deg);
+            -ms-transform: rotate(45deg);
+            -webkit-transform: rotate(45deg);
+            transform: rotate(45deg);
+            top: 50%;
+            margin-top: -5px;
+            right: 16px;
+        }
+
+        nav .m-menu ul li .-invisible {
+            border-bottom: 0;
+        }
+
+        nav .m-menu .m-menu label.m-menu__toggle {
+            display: -ms-flexbox;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            border-bottom: 0;
+            padding: 0;
+            -webkit-box-sizing: content-box;
+            -moz-box-sizing: content-box;
+            box-sizing: content-box;
+        }
+
+        nav .m-menu__checkbox:checked~.m-menu__overlay {
+            display: block;
+        }
+
+        nav .m-menu__checkbox:checked~.m-menu {
+            -moz-transform: translate3d(0, 0, 0);
+            -o-transform: translate3d(0, 0, 0);
+            -ms-transform: translate3d(0, 0, 0);
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+
+        .wrapper {
+            /* width: 480px;
+            height: 667px; */
+            margin: 0 auto;
+            overflow: hidden;
+            background-color: #F8F4EC;
+            position: relative;
+        }
+    </style>
+    <script type="text/javascript" src="/public/ajax.js"></script>
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", (function (e) { var n; function t() { let e = document.querySelectorAll("img.lazy"); n && clearTimeout(n), n = setTimeout((function () { var n = window.pageYOffset; e.forEach((function (e) { e.offsetTop < window.innerHeight + n && (e.src = e.dataset.src, e.classList.remove("lazy")) })), 0 == e.length && (document.removeEventListener("scroll", t), window.removeEventListener("resize", t), window.removeEventListener("orientationChange", t)) }), 20) } document.addEventListener("scroll", t), window.addEventListener("resize", t), window.addEventListener("orientationChange", t) })), window.onload = function () { let e = document.querySelector("h4").clientHeight; document.querySelectorAll("img.lazy").forEach((function (n) { let t = document.getElementById("tmpImg"); t.src = n.dataset.src, e < window.innerHeight && (n.src = n.dataset.src, n.classList.remove("lazy"), e += t.height); }));loadCh();};
+
+        function loadCh(){
+            const chapterlist = document.getElementById("chapterlist")
+            const url = window.location.pathname.replace("manga","manga/chapter");
+            const params = (new URL(document.location)).searchParams;
+            getAjax(url, {q:params.get("q")}, (data) => {
+                const jsData = JSON.parse(data);
+                jsData.chapters.forEach((item) => {
+                    let li = document.createElement('li');
+                    let a = document.createElement('a');
+                    a.href = item.url;
+                    a.innerHTML = item.title;
+                    li.appendChild(a);
+                    chapterlist.appendChild(li);
+                });
+            });
+        }
+    </script>
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <nav>
+            <input type="checkbox" id="menu" name="menu" class="m-menu__checkbox">
+            <label class="m-menu__toggle" for="menu">
+                <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
+                    stroke-linecap="butt" stroke-linejoin="arcs">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </label>
+            <label class="m-menu__overlay" for="menu"></label>
+
+            <div class="m-menu">
+                <div class="m-menu__header">
+                    <label class="m-menu__toggle" for="menu">
+                        <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2"
+                            stroke-linecap="butt" stroke-linejoin="arcs">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </label>
+                    <span>Chapter</span>
+                </div>
+                <ul id="chapterlist">
+                </ul>
+            </div>
+        </nav>
+        <div class="readmore"><a class="read-more" href="/manga">Read more</a></div>
+        <h1>
+            <%=BTN_PREV%>
+                <%=TITLE%>
+                    <%=BTN_NEXT%>
+        </h1>
         <div class="container">
             <div class="row">
                 <img id="tmpImg" src="#" style="display: none;" />
                 <%=LIST_IMG_MANGA%>
             </div>
-            <%=BTN_PREV%><%=TITLE%><%=BTN_NEXT%>
+            <h4>
+                <%=BTN_PREV%>
+                    <%=TITLE%>
+                        <%=BTN_NEXT%>
+            </h4>
         </div>
-        
-    </body>
+        <div class="readmore"><a class="read-more" href="/manga">Read more</a></div>
+    </div>
+</body>
+
 </html>

@@ -10,6 +10,10 @@ module.exports = function (app) {
         return res.status(200).send(`Start API Keeper`);
     });
 
+    app.get('/favicon.ico', async (req, res) => {
+        // #swagger.ignore = true
+        return res.status(200).send(``);
+    });
     app.get('/csv/fake/:record', async (req, res) => {
         // #swagger.ignore = true
         if (req.params.record && req.query.f) {

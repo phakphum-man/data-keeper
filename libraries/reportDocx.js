@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const { createReport } = require('docx-templates');
-const DocxMerger = require('docx-merger');
+const DocxMerger = require('@scholarcy/docx-merger/dist/index.cjs');
 const dataReport = require('./dataReport');
 
 async function imgToBytes(url) {
@@ -98,10 +98,11 @@ async function mergeDocx(reportParams){
 
             fs.unlinkSync(fileSavePath);
         }
-        const docx = new DocxMerger({}, bytesArray);
-        docx.save('nodebuffer', (doc) => {
-            fs.writeFileSync(dataReport.getSavePath(reportParams), doc);
-        });
+        const docx = new DocxMerger()
+        await docx.initialize({}, bytesArray);
+        const docBuffer = await docx.save('nodebuffer');
+        fs.writeFileSync(dataReport.getSavePath(reportParams), docBuffer);
+
         return false;
 
     } catch (error) {

@@ -20,13 +20,13 @@
     "@google-cloud/local-auth": "^2.1.0",
     "@notionhq/client": "^2.2.14",
     "@pdf-lib/fontkit": "^1.1.1",
+    "@scholarcy/docx-merger": "^0.3.0",
     "axios": "^1.4.0",
     "bullmq": "^4.14.4",
     "cheerio": "^1.0.0-rc.12",
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "csvtojson": "^2.0.10",
-    "docx-merger": "^1.2.0",
     "docx-templates": "^4.11.3",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
@@ -34,6 +34,7 @@
     "googleapis": "^105.0.0",
     "got": "^11.8.3",
     "ioredis": "^5.3.2",
+    "json-server": "^0.17.4",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.44",
@@ -48,7 +49,7 @@
     "swagger-autogen": "^2.23.1",
     "swagger-ui-express": "^4.6.2",
     "uuid": "^9.0.0",
-    "xlsx": "^0.18.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz",
     "xltpl": "^0.3.0"
   }
 }
