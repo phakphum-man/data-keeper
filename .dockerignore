@@ -2,7 +2,7 @@
 .git/
 node_modules/
 .fly/
-mnt/data/
+mnt/data/db.sqlite3
 mnt/servicefiles/
 
 credentials.json
