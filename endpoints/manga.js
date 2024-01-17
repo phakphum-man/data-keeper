@@ -1,11 +1,12 @@
 require('dotenv').config();
+require("../libraries/util.string");
 const fs = require('fs');
 const path = require('path');
 const mangaScrape = require('../libraries/mangaScrape');
 
 module.exports = function (app) {
     app.get('/manga', async (req, res) => {
-        let htmlContent = `<!DOCTYPE html>
+        /*let htmlContent = `<!DOCTYPE html>
         <html>
             <head>
                 <title>Chapter finder</title>
@@ -41,17 +42,37 @@ module.exports = function (app) {
       </style>
       </body>
     </html>`;
+        return res.status(200).send(htmlContent);*/
+
+        const p = req.query.p;
+        const selfPath = path.dirname(__dirname);
+        const rootPath = selfPath.replace(`/${selfPath}`,"");
+
+        const pNo = parseInt(p.getOnlyNumber());
+        let htmlContent = fs.readFileSync(`${rootPath}/manga.html`, 'utf8');
+
+        if(!p || pNo > 1){
+            htmlContent = htmlContent.replace("<%=BTN_PREV%>",`<a class="btn-link" href="/manga/?p=${(pNo-1)}">Newer Posts</a>`);
+        }else{
+            htmlContent = htmlContent.replace("<%=BTN_PREV%>","");
+        }
+        const totalPage = (mangaScrape.mergeStores().length / mangaScrape.pageSize)
+        if((pNo + 1) < totalPage){
+            htmlContent = htmlContent.replace("<%=BTN_NEXT%>",`<a class="btn-link" href="/manga/?p=${(pNo+1)}">Older Posts</a>`);
+        }else{
+            htmlContent = htmlContent.replace("<%=BTN_NEXT%>","");
+        }
         return res.status(200).send(htmlContent);
     });
 
     app.get('/manga/api', async (req, res) => {
         // #swagger.ignore = true
         const p = req.query.p;
-        if(!p || !(isFinite(p) && !isNaN(parseFloat(p)) ) ){
+        if(!p || !p.isNumber()){
             return res.status(404).send("Not Found");
         }
 
-        const rows =  mangaScrape.getStoreByPage(parseInt(p), "read-magic-0002");
+        const rows =  mangaScrape.getStoreByPage(parseInt(p));
         if(rows) {
             return res.status(200).send({data: rows});
         }
@@ -106,7 +127,7 @@ module.exports = function (app) {
         const selfPath = path.dirname(__dirname);
         const rootPath = selfPath.replace(`/${selfPath}`,"");
 
-        let htmlContent = fs.readFileSync(`${rootPath}/manga.html`, 'utf8');
+        let htmlContent = fs.readFileSync(`${rootPath}/readmanga.html`, 'utf8');
         const setting =  mangaScrape.getConfigByCode(req.params.codeurl);
         if(!setting){
             return res.status(404).send("Not Found");

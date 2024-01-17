@@ -3,11 +3,27 @@ const fs = require('fs');
 const axios = require('axios');
 const cheerio = require('cheerio');
 //const puppeteer = require('puppeteer');
+const pageSize = 16;
 
 const configs = [
     { codeUrl: 'read-magic-0001', host: 'http://reapertrans.com', method: 'reapertrans', methodChapter: 'reapertransChapter'},
     { codeUrl: 'read-magic-0002', host: 'http://www.manhuathai.com', method: 'manhuathai', methodChapter: 'manhuathaiChapter'},
 ];
+
+// Use: dateThaiToIsoString("30 มิถุนายน 2022")
+function dateThaiToIsoString(dateThaiString, dateDefault = "") {
+    const months_th = [ "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม", ];
+    const dateSplit = dateThaiString.split(' ');
+    return (dateSplit.length == 3)? `${dateSplit[2]}-${(months_th.indexOf(dateSplit[1])+1)}-${dateSplit[0]}T23:52:38+07:00`: dateDefault;
+}
+
+// Use: dateEngToIsoString("March 3, 2023")
+function dateEngToIsoString(dateThaiString, dateDefault = "") {
+    const months_th = [ "January", "February", "March", "April", "May", "June", "July",
+        "August", "September", "October", "November", "December", ];
+    const dateSplit = dateThaiString.split(' ');
+    return (dateSplit.length == 3)? `${dateSplit[1].replace(",","")}-${(months_th.indexOf(dateSplit[0])+1)}-${dateSplit[2]}T23:52:38+07:00`: dateDefault;
+}
 
 function getConfigByDomain(domain){
     const check = domain.toLowerCase();
@@ -26,16 +42,67 @@ function getConfigByCode(code){
     return null;
 }
 
-function getStoreByPage(page, codeUrl="*"){
+function presentManga(item){
+    let firstChapterUrl = item.firstChapter.url;
+    let lastChapterUrl = item.lastChapter.url;
+    const settings = configs.filter((config) => firstChapterUrl.removeProtocolUrl().startsWith(config.host.removeProtocolUrl()));
+    let firstUrl = "#";
+    let lastUrl = "#";
+    if( settings.length > 0 ){
+        const navFirst = firstChapterUrl.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
+        const navLast = lastChapterUrl.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
+        firstUrl = `/manga/${settings[0].codeUrl}?q=${navFirst}`;
+        lastUrl = `/manga/${settings[0].codeUrl}?q=${navLast}`;
+    }
+    return {
+        title: item.title,
+        imgUrl: item.imgUrl,
+        score: item.score,
+        scoreMax : item.scoreMax,
+        firstChapter: {
+            title: `Chapter ${item.firstChapter.no??""}`,
+            url: firstUrl,
+        },
+        lastChapter: {
+            title: `Chapter ${item.lastChapter.no}`,
+            url: lastUrl,
+        },
+    };
+}
+
+function mergeStores(){
     const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
     const dataJson = JSON.parse(contentJson);
+    return dataJson[configs[0].codeUrl].concat(dataJson[configs[1].codeUrl]);
+}
 
+function getStoreByPage(page, codeUrl="*"){
     if(codeUrl === "*"){
+        // let allData = [];
+        // for(let i = 0; i < configs.length; i++) {
+        //     for(let j = 0; j < dataJson[configs[i].codeUrl].length; j++) {
+        //         const newData = dataJson[configs[i].codeUrl][j];
 
+        //         const found = allData.find((o) => o.title?.includes(newData.title));
+        //         if(!found && newData.lastChapter.date){
+        //             allData.push(newData);
+        //         }
+        //     }
+        // }
+        const allData = mergeStores();
+        return allData.sort((a, b)=> {
+            const dateA = a.lastChapter.date;
+            const dateB = b.lastChapter.date;
+            if (dateA > dateB) {
+                return -1;
+            }
+            return 1;
+        }).slice((pageSize * (page-1)), (pageSize*page)).map(presentManga);
     }
 
-    const pageSize = 16;
-    return dataJson[codeUrl].slice((pageSize * (page-1)), (pageSize*page));
+    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
+    const dataJson = JSON.parse(contentJson);
+    return dataJson[codeUrl].slice((pageSize * (page-1)), (pageSize*page)).map(presentManga);
 }
 
 async function reapertransChapter(query){
@@ -250,6 +317,7 @@ async function manhuathaiGetManga(maxPageSize=200){
         }
         
         console.log(p);
+        const expect_time = ["วัน", "ชั่วโมง"];
         const $ = cheerio.load(dataContent);
         const mangaItems = $('div#loop-content > div.page-listing-item');
         mangaItems.find('.page-item-detail').each((_, el) => {
@@ -261,21 +329,64 @@ async function manhuathaiGetManga(maxPageSize=200){
 
             const lastCh = item.find('.chapter > a').first();
             const no = lastCh.text().getOnlyNumber();
+            const sDate = itemDate.find('span.post-on').text().cleanText();
+            let dateDefault = "";
+            if (sDate === '' && itemDate.length > 0) {
+                const sDay = itemDate.find('span.post-on > a').attr('title').split(' ');
+                if (sDay.length == 3 && sDay[0].isNumber()) {
+                    let date = new Date();
+                    const expt = expect_time.indexOf(sDay[1]);
+                    if (expt == 0){ // วัน
+                        date.setDate(date.getDate() + parseInt(sDay[0]));
+                        dateDefault = date.toISOString();
+                    } else if (expt == 1){ // ชั่วโมง
+                        date.setHours(date.getHours() + parseInt(sDay[0]));
+                        dateDefault = date.toISOString();
+                    }
+                }
+            }
             const objJson = { 
                 title: a.attr('title'),
                 sourceUrl: a.attr('href'),
                 imgUrl: img.attr('data-src'),
-                score: score.text(),
+                score: parseFloat(score.text()),
+                scoreMax: 5,
+                firstChapter: {
+                    no: null,
+                    url: null,
+                    date: null
+                },
                 lastChapter: {
-                    no: (no!==null)? parseInt(no): "",
+                    no: (no!==null)? parseInt(no): null,
                     url: lastCh.attr('href'),
-                    date: itemDate.find('span.post-on').text().cleanText(),
+                    date: dateThaiToIsoString(sDate, dateDefault),
                 }
             };
             
             data.push(objJson);
         });
     }
+
+    console.log("Update First Chapter");
+    //UPDATE lastChapter
+    for (let i = 0; i < data.length; i++) {
+        const dataContent = await axios.get(data[i].sourceUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
+
+        if(dataContent === "Request failed with status code 404"){
+            continue;
+        }
+
+        const $ = cheerio.load(dataContent);
+        const mangaItems = $('ul.main > .wp-manga-chapter');
+        const firstCh = mangaItems.last();
+
+        const no = firstCh.find('a').text().getOnlyFloatNumber();
+        data[i].firstChapter.no = (no!==null)? parseFloat(no): null;
+        data[i].firstChapter.url = firstCh.find('a').attr('href');
+        data[i].firstChapter.date = dateThaiToIsoString(firstCh.find('span.chapter-release-date > i').text());
+        console.log(`updated => ${i}/${data.length}`);
+    }
+
     const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
     let dataJson = JSON.parse(contentJson);
     dataJson[settings.codeUrl] = data;
@@ -283,10 +394,98 @@ async function manhuathaiGetManga(maxPageSize=200){
 }
 //manhuathaiGetManga();
 
+async function reapertransGetManga(maxPageSize=200){
+    const host = "https://reapertrans.com/";
+
+    const settings = getConfigByDomain(host.getDomain());
+    let data = [];
+    for (let p = 1; p < maxPageSize; p++) {
+        const query = `manga/?page=${p}`
+        const url = `${host}${query}`;
+
+        const dataContent = await axios.get(url, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
+
+        if(dataContent === "Request failed with status code 404"){
+            break;
+        }
+        
+        const $ = cheerio.load(dataContent);
+        const mangaItems = $('div.mrgn > .listupd');
+        if(mangaItems.find('div.bs > div.bsx').length === 0){
+            break;
+        }
+        console.log(p);
+        mangaItems.find('div.bs > div.bsx').each((_, el) => {
+            const a = $(el).find('a');
+            const img = a.find('div.limit > img');
+            const score = a.find('div.bigor > div.adds > div.rt > div.rating > div.numscore');
+            const item = $(a).find('div.bigor > div.adds > div.epxs');
+            
+            const no = item.text().getOnlyNumber();
+            const objJson = { 
+                title: a.attr('title'),
+                sourceUrl: a.attr('href'),
+                imgUrl: img.attr('src'),
+                score: parseFloat(score.text()),
+                scoreMax: 10,
+                firstChapter: {
+                    no: null,
+                    url: null,
+                    date: null
+                },
+                lastChapter: {
+                    no: (no!==null)? parseInt(no): null,
+                    url: null,
+                    date: null,
+                }
+            };
+            
+            data.push(objJson);
+        });
+    }
+    
+    console.log("Update Last Chapter");
+    //UPDATE lastChapter
+    for (let i = 0; i < data.length; i++) {
+        const dataContent = await axios.get(data[i].sourceUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
+
+        if(dataContent === "Request failed with status code 404"){
+            continue;
+        }
+
+        const $ = cheerio.load(dataContent);
+        
+        const firstCh = $('div#chapterlist > ul > li.first-chapter > .chbox > .eph-num a');
+
+        const noF = firstCh.find('span.chapternum').text().getOnlyFloatNumber();
+        data[i].firstChapter.no = (noF!==null)? parseFloat(noF): null;
+        data[i].firstChapter.url = firstCh.attr('href');
+        data[i].firstChapter.date = dateEngToIsoString(firstCh.find('span.chapterdate').text());
+
+        const mangaItems = $('div.postbody > article');
+        const lastDateChapter = mangaItems.find('.animefull').find('.bigcontent > .infox > .flex-wrap').last().find('.fmed').last().find('span');
+        const lastChapter = mangaItems.find('.epcheck').find('.lastend > .inepcx > a').last();
+
+        const noL = lastChapter.find('span.epcurlast').text().getOnlyNumber();
+        data[i].lastChapter.no = (noL!==null)? parseInt(noL): null;
+        data[i].lastChapter.url = lastChapter.attr('href');
+        data[i].lastChapter.date = lastDateChapter.find('time').attr('datetime');
+        console.log(`updated => ${i}/${data.length}`);
+    }
+
+    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
+    let dataJson = JSON.parse(contentJson);
+    dataJson[settings.codeUrl] = data;
+    fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
+}
+//reapertransGetManga();
+
 module.exports = {
+    pageSize: pageSize,
     getConfigByDomain: getConfigByDomain,
     getConfigByCode: getConfigByCode,
     getStoreByPage: getStoreByPage,
+    mergeStores: mergeStores,
     reapertrans: reapertrans,
     reapertransChapter: reapertransChapter,
     manhuathai: manhuathai,

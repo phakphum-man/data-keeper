@@ -46,9 +46,28 @@ String.prototype.getDomain = function() {
 	return str.replace(/(http\:\/\/|https\:\/\/|\/)/g,"");
 }
 
+String.prototype.removeProtocolUrl = function() {
+    let str = this;
+	return str.replace(/(http\:\/\/|https\:\/\/)/g,"");
+}
+
+String.prototype.isNumber = function() {
+    let str = this;
+    return isFinite(str) && !isNaN(parseFloat(str));
+}
+
 String.prototype.getOnlyNumber = function() {
     let str = this;
 	const matches = str.match(/(\d+)/);
+    if (matches && matches.length > 0) {
+        return matches[0];
+    }
+    return null;
+}
+
+String.prototype.getOnlyFloatNumber = function() {
+    let str = this;
+	const matches = str.match(/(\d+\.\d+|\d+)/);
     if (matches && matches.length > 0) {
         return matches[0];
     }
