@@ -27,6 +27,12 @@ module.exports = function (app) {
         return res.status(200).send(htmlContent);
     });
 
+    app.get('/manga/view-image', async (req, res) => {
+        const q = req.query.q;
+        const htmlContent = await mangaScrape.getImage(q);
+        return res.contentType('image/jpeg').status(200).send(htmlContent);
+    });
+
     app.get('/manga/host', async (req, res) => {
         let htmlContent = `<!DOCTYPE html>
         <html>

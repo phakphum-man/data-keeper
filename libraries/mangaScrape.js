@@ -25,6 +25,12 @@ function dateEngToIsoString(dateThaiString, dateDefault = "") {
     return (dateSplit.length == 3)? `${dateSplit[1].replace(",","")}-${(months_th.indexOf(dateSplit[0])+1)}-${dateSplit[2]}T23:52:38+07:00`: dateDefault;
 }
 
+async function getImage(url){
+    const dataContent = await axios.get(url, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'arraybuffer' }).then((res) => res.data).catch((err) => err.message);
+    //fs.writeFileSync("./99-Wooden-Stick.jpg",dataContent);
+    return dataContent;
+}
+
 function getConfigByDomain(domain){
     const check = domain.toLowerCase();
     const data = configs.filter((config) => config.host.getDomain() === check);
@@ -45,7 +51,7 @@ function getConfigByCode(code){
 function presentManga(item){
     let firstChapterUrl = item.firstChapter.url;
     let lastChapterUrl = item.lastChapter.url;
-    const settings = configs.filter((config) => firstChapterUrl.removeProtocolUrl().startsWith(config.host.removeProtocolUrl()));
+    const settings = configs.filter((config) => firstChapterUrl?.removeProtocolUrl().startsWith(config.host.removeProtocolUrl()));
     let firstUrl = "#";
     let lastUrl = "#";
     if( settings.length > 0 ){
@@ -56,7 +62,7 @@ function presentManga(item){
     }
     return {
         title: item.title,
-        imgUrl: item.imgUrl,
+        imgUrl: `/manga/view-image?q=${item.imgUrl}`,
         score: item.score,
         scoreMax : item.scoreMax,
         firstChapter: {
@@ -95,8 +101,12 @@ function getStoreByPage(page, codeUrl="*"){
             const dateB = b.lastChapter.date;
             if (dateA > dateB) {
                 return -1;
+            }else if (dateA == dateB) {
+                return 0;
+            } else {
+                return 1;
             }
-            return 1;
+            
         }).slice((pageSize * (page-1)), (pageSize*page)).map(presentManga);
     }
 
@@ -490,4 +500,5 @@ module.exports = {
     reapertransChapter: reapertransChapter,
     manhuathai: manhuathai,
     manhuathaiChapter: manhuathaiChapter,
+    getImage: getImage,
 };
