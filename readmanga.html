@@ -254,7 +254,23 @@
     </style>
     <script type="text/javascript" src="/public/ajax.js"></script>
     <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", (function (e) { var n; function t() { let e = document.querySelectorAll("img.lazy"); n && clearTimeout(n), n = setTimeout((function () { var n = window.pageYOffset; e.forEach((function (e) { e.offsetTop < window.innerHeight + n && (e.src = e.dataset.src, e.classList.remove("lazy")) })), 0 == e.length && (document.removeEventListener("scroll", t), window.removeEventListener("resize", t), window.removeEventListener("orientationChange", t)) }), 20) } document.addEventListener("scroll", t), window.addEventListener("resize", t), window.addEventListener("orientationChange", t) })), window.onload = function () { let e = document.querySelector("h4").clientHeight; document.querySelectorAll("img.lazy").forEach((function (n) { let t = document.getElementById("tmpImg"); t.src = n.dataset.src, e < window.innerHeight && (n.src = n.dataset.src, n.classList.remove("lazy"), e += t.height); }));loadCh();};
+        document.addEventListener("DOMContentLoaded", (function (e) { var n; function t() { let e = document.querySelectorAll("img.lazy"); n && clearTimeout(n), n = setTimeout((function () { var n = window.pageYOffset; e.forEach((function (e) { e.offsetTop < window.innerHeight + n && (e.src = e.dataset.src, e.classList.remove("lazy")) })), 0 == e.length && (document.removeEventListener("scroll", t), window.removeEventListener("resize", t), window.removeEventListener("orientationChange", t)) }), 20) } document.addEventListener("scroll", t), window.addEventListener("resize", t), window.addEventListener("orientationChange", t) })), window.onload = function () { let e = document.querySelector("h4").clientHeight; document.querySelectorAll("img.lazy").forEach((function (n) { let t = document.getElementById("tmpImg"); t.src = n.dataset.src, e < window.innerHeight && (n.src = n.dataset.src, n.classList.remove("lazy"), e += t.height); }));imageAutoFit();loadCh();};
+
+        function imageAutoFit() {
+            const imgs = document.querySelectorAll("img");
+            for (var i = 0; i < imgs.length;i++) {
+                imgs[i].style = `max-width:${window.innerWidth}px`; 
+            }
+            if(window.innerWidth < 1000){
+                const div = document.querySelectorAll("div.displayImage");
+                for (var i = 0; i < div.length;i++) {
+                    div[i].style.width = `${window.innerWidth}px`;
+                    div[i].style.height = `100%`;
+                    div[i].style.transform = `scale(${((window.innerWidth+1) / 1000)})`;
+                    
+                }
+            }
+        }
 
         function loadCh(){
             const chapterlist = document.getElementById("chapterlist")
