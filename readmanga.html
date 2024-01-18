@@ -39,6 +39,10 @@
             position: relative;
         }
 
+        .displayImage{
+            margin: 0 auto;
+        }
+
         img {
             background: #183445;
             display: block;
@@ -254,40 +258,108 @@
     </style>
     <script type="text/javascript" src="/public/ajax.js"></script>
     <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", (function (e) { var n; function t() { let e = document.querySelectorAll("img.lazy"); n && clearTimeout(n), n = setTimeout((function () { var n = window.pageYOffset; e.forEach((function (e) { e.offsetTop < window.innerHeight + n && (e.src = e.dataset.src, e.classList.remove("lazy")) })), 0 == e.length && (document.removeEventListener("scroll", t), window.removeEventListener("resize", t), window.removeEventListener("orientationChange", t)) }), 20) } document.addEventListener("scroll", t), window.addEventListener("resize", t), window.addEventListener("orientationChange", t) })), window.onload = function () { let e = document.querySelector("h4").clientHeight; document.querySelectorAll("img.lazy").forEach((function (n) { let t = document.getElementById("tmpImg"); t.src = n.dataset.src, e < window.innerHeight && (n.src = n.dataset.src, n.classList.remove("lazy"), e += t.height); }));imageAutoFit();loadCh();};
+    document.addEventListener("DOMContentLoaded", function (e) {
+        var lazyloadThrottleTimeout;
 
-        function imageAutoFit() {
-            const imgs = document.querySelectorAll("img");
-            for (var i = 0; i < imgs.length;i++) {
-                imgs[i].style = `max-width:${window.innerWidth}px`; 
+        function lazyload() {
+            let lazyloadImages = document.querySelectorAll("img.lazy");
+            if (lazyloadThrottleTimeout) {
+                clearTimeout(lazyloadThrottleTimeout);
             }
-            if(window.innerWidth < 1000){
-                const div = document.querySelectorAll("div.displayImage");
-                for (var i = 0; i < div.length;i++) {
-                    div[i].style.width = `${window.innerWidth}px`;
-                    div[i].style.height = `100%`;
-                    div[i].style.transform = `scale(${((window.innerWidth+1) / 1000)})`;
-                    
+
+            lazyloadThrottleTimeout = setTimeout(function () {
+                var scrollTop = window.pageYOffset;
+                lazyloadImages.forEach(function (img) {
+                    if (img.offsetTop < window.innerHeight + scrollTop) {
+                        //   console.log(
+                        //     `offsetTop:${img.offsetTop} < ${
+                        //       window.innerHeight + scrollTop
+                        //     } (innerHeight:${window.innerHeight}, scrollTop:${scrollTop})`
+                        //   );
+                        img.src = img.dataset.src;
+                        img.classList.remove("lazy");
+                    }
+                });
+                if (lazyloadImages.length == 0) {
+                    document.removeEventListener("scroll", lazyload);
+                    window.removeEventListener("resize", lazyload);
+                    window.removeEventListener("orientationChange", lazyload);
                 }
-            }
+            }, 20);
         }
 
-        function loadCh(){
-            const chapterlist = document.getElementById("chapterlist")
-            const url = window.location.pathname.replace("manga","manga/chapter");
-            const params = (new URL(document.location)).searchParams;
-            getAjax(url, {q:params.get("q")}, (data) => {
-                const jsData = JSON.parse(data);
-                jsData.chapters.forEach((item) => {
-                    let li = document.createElement('li');
-                    let a = document.createElement('a');
-                    a.href = item.url;
-                    a.innerHTML = item.title;
-                    li.appendChild(a);
-                    chapterlist.appendChild(li);
-                });
+        document.addEventListener("scroll", lazyload);
+        window.addEventListener("resize", lazyload);
+        window.addEventListener("orientationChange", lazyload);
+    });
+
+    window.onload = function () {
+        let h4 = document.querySelector("h4");
+        let height = h4.clientHeight;
+
+        let viewImgs = document.querySelectorAll("img.lazy");
+        viewImgs.forEach(function (img) {
+            let tmpImg = document.getElementById('tmpImg');
+            tmpImg.src = img.dataset.src;
+            if (height < window.innerHeight) {
+
+                img.src = img.dataset.src;
+                img.classList.remove("lazy");
+                //console.log(`src:${img.getAttribute("data-src")} , w:${img.width}, h:${img.height}`);
+                height += tmpImg.height;
+            }
+        });
+
+        imageAutoFit();
+        loadCh();
+    }
+
+    function imageAutoFit() {
+        const imgs = document.querySelectorAll("img");
+        for (var i = 0; i < imgs.length;i++) {
+            imgs[i].style = `max-width:${window.innerWidth}px`; 
+        }
+        
+        let scaleX = (window.innerWidth+1) / 1000;
+        if (scaleX > 1) {
+            scaleX = 1;
+        }
+        const div = document.querySelectorAll("div.displayImage");
+        for (var i = 0; i < div.length;i++) {
+            const oriWidth = div[i].getAttribute('ori-width');
+            const oriHeight = div[i].getAttribute('ori-height');
+            const cssScale = {
+                '-webkit-transform': 'scale(' + scaleX + ')',
+                '-moz-transform': 'scale(' + scaleX + ')',
+                '-ms-transform': 'scale(' + scaleX + ')',
+                '-o-transform': 'scale(' + scaleX + ')',
+                'transform': 'scale(' + scaleX + ')',
+                'width': (scaleX * parseFloat(oriWidth)) + 'px',
+                'height': (scaleX * parseFloat(oriHeight)) + 'px',
+            };
+
+            Object.entries(cssScale).forEach(([k,v]) => {
+                div[i].style[k] = v;
             });
         }
+    }
+
+    function loadCh(){
+        const chapterlist = document.getElementById("chapterlist")
+        const url = window.location.pathname.replace("manga","manga/chapter");
+        const params = (new URL(document.location)).searchParams;
+        getAjax(url, {q:params.get("q")}, (data) => {
+            const jsData = JSON.parse(data);
+            jsData.chapters.forEach((item) => {
+                let li = document.createElement('li');
+                let a = document.createElement('a');
+                a.href = item.url;
+                a.innerHTML = item.title;
+                li.appendChild(a);
+                chapterlist.appendChild(li);
+            });
+        });
+    }
     </script>
 </head>
 

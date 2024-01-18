@@ -6,44 +6,6 @@ const mangaScrape = require('../libraries/mangaScrape');
 
 module.exports = function (app) {
     app.get('/manga', async (req, res) => {
-        /*let htmlContent = `<!DOCTYPE html>
-        <html>
-            <head>
-                <title>Chapter finder</title>
-                <script type="text/javascript" src="/public/ajax.js"></script>
-            </head>
-      <body>
-    <div class="form-center">
-      <form>
-        <label for="url">Paste the link manga:</label>
-        <input type="text" id="url" name="url">
-        <input type="button" onclick="goChapter();" value="Go Chapter">
-      </form>
-    </div>
-      <script type="text/javascript">function goChapter(){
-        let url = document.getElementById('url').value;
-        let l = document.createElement("a");
-        l.href = url;
-        getAjax("/manga/getroute",{s:l.hostname},(data) => {
-            const result = JSON.parse(data);
-            if(result.status === true){
-                window.location.href=\`/manga/$\{result.code\}?q=$\{l.pathname\}\`;
-            }else{
-                alert(result.message);
-            }
-        });
-      }</script>
-      <style type="text/css">
-      input[type="text"] { min-width: 600px;}
-      .form-center {
-        display:flex;
-        justify-content: center;
-      }
-      </style>
-      </body>
-    </html>`;
-        return res.status(200).send(htmlContent);*/
-
         const p = req.query.p;
         const selfPath = path.dirname(__dirname);
         const rootPath = selfPath.replace(`/${selfPath}`,"");
