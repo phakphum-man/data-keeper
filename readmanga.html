@@ -323,7 +323,7 @@
                 img.src = img.dataset.src;
                 img.classList.remove("lazy");
                 //console.log(`src:${img.getAttribute("data-src")} , w:${img.width}, h:${img.height}`);
-                height += tmpImg.height;
+                height += (tmpImg.height === 0)? window.innerHeight : tmpImg.height;
             }
         });
 
