@@ -3,7 +3,7 @@ const fs = require('fs');
 const axios = require('axios');
 const cheerio = require('cheerio');
 //const puppeteer = require('puppeteer');
-const pageSize = 16;
+const pageSize = 18;
 
 const configs = [
     { codeUrl: 'read-magic-0001', host: 'http://reapertrans.com', method: 'reapertrans', methodChapter: 'reapertransChapter'},

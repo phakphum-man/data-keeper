@@ -17,12 +17,12 @@
             font-size: 18px;
         }
 
-        h4 {
-            font-size: 14px;
+        .footer {
+            display: block;
+            padding-bottom: 100px;
         }
 
-        h1,
-        h4 {
+        h1{
             text-align: center;
             color: #555;
         }
@@ -71,16 +71,11 @@
             cursor: pointer;
             border: none;
             outline: none;
-            margin: 5px;
+            margin: 15px;
         }
 
         .btn:hover {
             background-color: #555;
-        }
-
-        .readmore {
-            display: block;
-            text-align: center
         }
 
         a.read-more {
@@ -91,10 +86,11 @@
             display: block;
             text-align: center;
             padding-top: 15px;
+            color: #fff;
         }
 
         a.top-menu {
-            color: #fff;
+            color: #555;
         }
 
         nav {
@@ -294,8 +290,8 @@
     });
 
     window.onload = function () {
-        let h4 = document.querySelector("h4");
-        let height = h4.clientHeight;
+        let footer = document.querySelector(".footer");
+        let height = footer.clientHeight;
 
         let viewImgs = document.querySelectorAll("img.lazy");
         viewImgs.forEach(function (img) {
@@ -393,27 +389,25 @@
                 </ul>
             </div>
             <div class="row">
-                <div class="top-nav"><a class="top-menu" href="/manga">Go to Home</a></div>
+                <div class="top-nav"><%=TITLE%></div>
             </div>
         </nav>
         
         <h1>
-            <%=BTN_PREV%>
-                <%=TITLE%>
-                    <%=BTN_NEXT%>
+            <%=BTN_PREV%><a class="top-menu" href="/manga">Go to Home</a> <%=BTN_NEXT%>
         </h1>
         <div class="container">
             <div class="row">
                 <img id="tmpImg" src="#" style="display: none;" />
                 <%=LIST_IMG_MANGA%>
             </div>
-            <h4>
+            <div class="footer">
                 <%=BTN_PREV%>
-                    <%=TITLE%>
-                        <%=BTN_NEXT%>
-            </h4>
+                <a class="read-more" href="/manga">Go to Home</a>
+                <%=BTN_NEXT%>
+            </div>
         </div>
-        <div class="readmore"><a class="read-more" href="/manga">Go to Home</a></div>
+        
     </div>
 </body>
 
