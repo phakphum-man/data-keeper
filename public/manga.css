@@ -184,7 +184,7 @@ header {
 
 .shop-images {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
   gap: 10px;
   max-width: 1280px;
   width: 100%;
@@ -222,8 +222,11 @@ header {
 
 .btn-link {
   font-size: 16px;
-  padding: 8px;
-  border-radius: 15px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-right: 15px;
+  padding-left: 30px;
+  border-radius: 30px;
   background-color: #37475a;
   color: white;
   cursor: pointer;
@@ -236,9 +239,33 @@ header {
   background-color: #febd68;
   color: #37475a;
 }
+
 .shop-pageneration{
   padding: 50px 0;
 }
+
+.btn {
+  font-size: 16px;
+  padding: 15px;
+  border-radius: 25px;
+  background-color: #febd68;
+  color: #222f3d;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  margin: 15px;
+}
+
+.btn:hover {
+  background-color: #000;
+}
+
+.date{
+  display: block;
+  font-size: 10px;
+  color: #ccc;
+}
+
 /* Footer */
 .footer-title {
   display: flex;

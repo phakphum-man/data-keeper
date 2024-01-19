@@ -3,6 +3,7 @@ const fs = require('fs');
 const axios = require('axios');
 const cheerio = require('cheerio');
 //const puppeteer = require('puppeteer');
+const months_th = [ "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม", ];
 const pageSize = 18;
 
 const configs = [
@@ -12,7 +13,6 @@ const configs = [
 
 // Use: dateThaiToIsoString("30 มิถุนายน 2022")
 function dateThaiToIsoString(dateThaiString, dateDefault = "") {
-    const months_th = [ "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม", ];
     const dateSplit = dateThaiString.split(' ');
     return (dateSplit.length == 3)? `${dateSplit[2]}-${(months_th.indexOf(dateSplit[1])+1)}-${dateSplit[0]}T23:52:38+07:00`: dateDefault;
 }
@@ -23,6 +23,20 @@ function dateEngToIsoString(dateThaiString, dateDefault = "") {
         "August", "September", "October", "November", "December", ];
     const dateSplit = dateThaiString.split(' ');
     return (dateSplit.length == 3)? `${dateSplit[1].replace(",","")}-${(months_th.indexOf(dateSplit[0])+1)}-${dateSplit[2]}T23:52:38+07:00`: dateDefault;
+}
+
+function viewDate(dbDate){
+    const lastUpdate = dbDate?.substr(0, (dbDate?.indexOf("T")+9));
+    const splitDate = lastUpdate.split("T");
+    let date = "";
+    if (splitDate.length > 1) {
+        const cutDate = splitDate[0].split("-");
+        if(cutDate.length > 2){
+            const month = parseInt(cutDate[1].getOnlyNumber());
+            date = `${cutDate[2]} ${months_th[month-1]} ${cutDate[0]}`
+        }
+    }
+    return date;
 }
 
 async function getImage(url){
@@ -60,17 +74,20 @@ function presentManga(item){
         firstUrl = `/manga/${settings[0].codeUrl}?q=${navFirst}`;
         lastUrl = `/manga/${settings[0].codeUrl}?q=${navLast}`;
     }
+    
     return {
         title: item.title,
         imgUrl: `/manga/view-image?q=${item.imgUrl}`,
         score: item.score,
         scoreMax : item.scoreMax,
         firstChapter: {
-            title: `Chapter ${item.firstChapter.no??""}`,
+            title: `ตอนที่ ${item.firstChapter.no??""}`,
+            date: viewDate(item.firstChapter.date),
             url: firstUrl,
         },
         lastChapter: {
-            title: `Chapter ${item.lastChapter.no}`,
+            title: `ตอนที่ ${item.lastChapter.no}`,
+            date: viewDate(item.lastChapter.date),
             url: lastUrl,
         },
     };
@@ -197,14 +214,14 @@ async function reapertrans(settings, query, htmlContent){
         }
         if(data.prevUrl){
             const nav = data.prevUrl.replace(host,"");
-            htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<button class="btn btnPrev" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ย้อนหลัง">ย้อนหลัง</button>`);
+            htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<button class="btn btnPrev" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ย้อนหลัง">&#8592;</button>`);
         } else {
             htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>","");
         }
 
         if(data.nextUrl){
             const nav = data.nextUrl.replace(host,"");
-            htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<button class="btn btnNext" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ต่อไป">ต่อไป</button>`);
+            htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<button class="btn btnNext" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ต่อไป">&#8594;</button>`);
         } else {
             htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>","");
         }
@@ -278,7 +295,7 @@ async function manhuathai(settings, query, htmlContent){
 
     if(prev && prev.length > 0){
         const nav = $(prev[0]).attr("href").replace(host,"");
-        htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<button class="btn btnPrev" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ย้อนหลัง">ย้อนหลัง</button>`);
+        htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<button class="btn btnPrev" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ย้อนหลัง">&#8592;</button>`);
     } else {
         htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>","");
     }
@@ -286,7 +303,7 @@ async function manhuathai(settings, query, htmlContent){
 
     if(next && next.length > 0){
         const nav = $(next[0]).attr("href").replace(host,"");
-        htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<button class="btn btnNext" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ต่อไป">ต่อไป</button>`);
+        htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<button class="btn btnNext" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ต่อไป">&#8594;</button>`);
     } else {
         htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>","");
     }

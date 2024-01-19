@@ -14,13 +14,13 @@ module.exports = function (app) {
         let htmlContent = fs.readFileSync(`${rootPath}/manga.html`, 'utf8');
 
         if(pNo > 1){
-            htmlContent = htmlContent.replace("<%=BTN_PREV%>",`<a class="btn-link" href="/manga/?p=${(pNo-1)}">Newer Posts</a>`);
+            htmlContent = htmlContent.replace("<%=BTN_PREV%>",`<a class="btn" href="/manga/?p=${(pNo-1)}">อัพใหม่</a>`);
         }else{
             htmlContent = htmlContent.replace("<%=BTN_PREV%>","");
         }
         const totalPage = (mangaScrape.mergeStores().length / mangaScrape.pageSize)
         if((pNo + 1) < totalPage){
-            htmlContent = htmlContent.replace("<%=BTN_NEXT%>",`<a class="btn-link" href="/manga/?p=${(pNo+1)}">Older Posts</a>`);
+            htmlContent = htmlContent.replace("<%=BTN_NEXT%>",`<a class="btn" href="/manga/?p=${(pNo+1)}">ย้อนหลัง</a>`);
         }else{
             htmlContent = htmlContent.replace("<%=BTN_NEXT%>","");
         }

@@ -22,6 +22,11 @@ window.onload = function () {
             aLast.href = item.lastChapter.url;
             aLast.innerHTML = item.lastChapter.title;
             aLast.alt = "New Chapter";
+
+            let spanLast = document.createElement('span');
+            spanLast.className = 'date';
+            spanLast.innerHTML = item.lastChapter.date;
+            aLast.appendChild(spanLast);
             linkshop.appendChild(aLast);
 
             let aFirst = document.createElement('a');
@@ -29,6 +34,11 @@ window.onload = function () {
             aFirst.href = item.firstChapter.url;
             aFirst.innerHTML = item.firstChapter.title;
             aLast.alt = "First Chapter";
+
+            let spanFirst = document.createElement('span');
+            spanFirst.className = 'date';
+            spanFirst.innerHTML = item.firstChapter.date;
+            aFirst.appendChild(spanFirst);
             linkshop.appendChild(aFirst);
 
             mangaList.appendChild(linkshop);
