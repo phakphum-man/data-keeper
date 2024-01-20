@@ -216,20 +216,20 @@ async function reapertrans(settings, query, htmlContent){
             const nav = data.prevUrl.replace(host,"");
             htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<button class="btn btnPrev" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ย้อนหลัง">&#8592;</button>`);
         } else {
-            htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<span class="no-chapter-prev">&npsp;</span>`);
+            htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<span class="no-chapter-prev">&nbsp;</span>`);
         }
 
         if(data.nextUrl){
             const nav = data.nextUrl.replace(host,"");
             htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<button class="btn btnNext" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ต่อไป">&#8594;</button>`);
         } else {
-            htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<span class="no-chapter-next">&npsp;</span>`);
+            htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<span class="no-chapter-next">&nbsp;</span>`);
         }
 
     } else {
 
-        htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<span class="no-chapter-prev">&npsp;</span>`);
-        htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<span class="no-chapter-next">&npsp;</span>`);
+        htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<span class="no-chapter-prev">&nbsp;</span>`);
+        htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<span class="no-chapter-next">&nbsp;</span>`);
     }
     
     htmlContent = htmlContent.replace("<%=LIST_IMG_MANGA%>",listImg.join("\n"));
@@ -297,7 +297,7 @@ async function manhuathai(settings, query, htmlContent){
         const nav = $(prev[0]).attr("href").replace(host,"");
         htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<button class="btn btnPrev" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ย้อนหลัง">&#8592;</button>`);
     } else {
-        htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<span class="no-chapter-prev">&npsp;</span>`);
+        htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<span class="no-chapter-prev">&nbsp;</span>`);
     }
     const next = $("div#manga-reading-nav-head > div.wp-manga-nav > div.select-pagination > div.nav-links > div.nav-next > a");
 
@@ -305,7 +305,7 @@ async function manhuathai(settings, query, htmlContent){
         const nav = $(next[0]).attr("href").replace(host,"");
         htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<button class="btn btnNext" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ต่อไป">&#8594;</button>`);
     } else {
-        htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<span class="no-chapter-next">&npsp;</span>`);
+        htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<span class="no-chapter-next">&nbsp;</span>`);
     }
 
     const htmBody = $('div.reading-content > div.text-center');
