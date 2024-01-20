@@ -240,6 +240,10 @@ header {
   color: #37475a;
 }
 
+.btn-link:hover span{
+  color: white;
+}
+
 .shop-pageneration{
   padding: 50px 0;
 }

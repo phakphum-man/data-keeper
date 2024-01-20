@@ -6,25 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type="text/css">
         * {
-        padding: 0;
-        margin: 0;
+            padding: 0;
+            margin: 0;
         }
         body {
             background: #F8F4EC;
         }
-
         h1 {
-            font-size: 18px;
+            font-size: 15px;
+            font-weight:normal;
+            text-align: center;
+            color: white;
+            padding-top: 10px;
         }
-
         .footer {
             display: block;
             padding-bottom: 100px;
-        }
-
-        h1{
-            text-align: center;
-            color: #555;
         }
 
         .container {
@@ -72,10 +69,35 @@
             border: none;
             outline: none;
             margin: 15px;
+            min-width: 40px;
         }
 
         .btn:hover {
             background-color: #555;
+        }
+
+        .btn:visited {
+            color: red;
+        }
+
+        .btnPrev {
+            margin-right: 50px;
+        }
+
+        .btnNext {
+            margin-left: 50px;
+        }
+
+        .no-chapter-next{
+            width: 110px;
+            display: block;
+            float: right;
+        }
+
+        .no-chapter-prev{
+            width: 110px;
+            display: block;
+            float: left;
         }
 
         a.read-more {
@@ -85,18 +107,14 @@
         .top-nav {
             display: block;
             text-align: center;
-            padding-top: 15px;
+            padding-top: 10px;
             color: #fff;
-        }
-
-        a.top-menu {
-            color: #555;
         }
 
         nav {
             background-color: #0f1111;
-            height: 50px;
-            padding: 0 16px;
+            height: 60px;
+            padding: 0 15px;
             display: -ms-flexbox;
             display: -webkit-box;
             display: -webkit-flex;
@@ -118,7 +136,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            max-width: 450px;
+            max-width: 200px;
             width: calc(100vw - 30px);
             /* height: 100%; */
             height: 100vh;
@@ -271,6 +289,9 @@
 
         #gotoTopBtn:hover {
             background-color: #555; /* Add a dark-grey background on hover */
+        }
+        #gotoTopBtn:visited {
+            background-color: red; /* Add a dark-grey background on hover */
         }
     </style>
     <script type="text/javascript" src="/public/ajax.js"></script>
@@ -436,7 +457,7 @@
             <div class="m-menu">
                 <div class="m-menu__header">
                     <label class="m-menu__toggle" for="menu">
-                        <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2"
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2"
                             stroke-linecap="butt" stroke-linejoin="arcs">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -448,13 +469,13 @@
                 </ul>
             </div>
             <div class="row">
-                <div class="top-nav"><%=TITLE%></div>
+                <h1><%=TITLE%></h1>
             </div>
         </nav>
         
-        <h1>
-            <%=BTN_PREV%><a class="top-menu" href="/manga">Go to Manga</a> <%=BTN_NEXT%>
-        </h1>
+        <div class="top-nav">
+            <%=BTN_PREV%><a class="read-more" href="/manga">Go to Manga</a> <%=BTN_NEXT%>
+        </div>
         <div class="container">
             <div class="row">
                 <img id="tmpImg" src="#" style="display: none;" />
