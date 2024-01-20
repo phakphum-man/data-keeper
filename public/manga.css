@@ -76,9 +76,13 @@ header {
   max-width: 600px;
   width: 100%;
   font-size: 1rem;
-  border: none;
-  outline: none;
-  padding-left: 10px;
+  background-image: url(/public/images/searchicon.png);
+  background-position: 10px 8px;
+  background-repeat: no-repeat;
+  padding: 12px 20px 12px 42px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin-right: 10px;
 }
 
 .search-icon {

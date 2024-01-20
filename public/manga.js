@@ -44,8 +44,8 @@ window.onload = function () {
             mangaList.appendChild(linkshop);
         });
     });
-
+    /*
     document.querySelector('.search-icon').addEventListener('click', () =>{
         window.location.href = "/manga/host";
-    });
+    });*/
 }
