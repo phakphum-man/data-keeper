@@ -74,6 +74,10 @@ header {
   font-size: 12px;
 }
 
+#search-result li a img{
+ padding-right: 10px;
+}
+
 #search-result li a:hover:not(.header) {
   background-color: #eee; /* Add a hover effect to all links, except for headers */
 }

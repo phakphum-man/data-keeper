@@ -61,9 +61,14 @@ window.onload = function () {
 
                 let a = document.createElement('a');
                 a.href = item.firstChapter.url;
-                a.innerHTML = item.title;
-                a.alt = item.title;
 
+                let img = document.createElement('img');
+                img.src = item.imgUrl;
+                img.style.height = "50px";
+                a.appendChild(img);
+                a.appendChild(document.createTextNode(item.title));
+
+                a.alt = item.title;
                 li.appendChild(a);
                 return li;
             });
