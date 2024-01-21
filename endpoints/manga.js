@@ -2,7 +2,9 @@ require('dotenv').config();
 require("../libraries/util.string");
 const fs = require('fs');
 const path = require('path');
-const mangaScrape = require('../libraries/mangaScrape');
+const mangaStore = require('../libraries/mangaStore');
+const mangaChapter = require('../libraries/managaChapters');
+const mangaContent = require('../libraries/mangaReadContent');
 
 module.exports = function (app) {
     app.get('/manga', async (req, res) => {
@@ -18,7 +20,7 @@ module.exports = function (app) {
         }else{
             htmlContent = htmlContent.replace("<%=BTN_PREV%>","");
         }
-        const totalPage = (mangaScrape.mergeStores().length / mangaScrape.pageSize)
+        const totalPage = (mangaStore.mergeStores().length / mangaContent.pageSize)
         if((pNo + 1) < totalPage){
             htmlContent = htmlContent.replace("<%=BTN_NEXT%>",`<a class="btn" href="/manga/?p=${(pNo+1)}">ย้อนหลัง</a>`);
         }else{
@@ -29,7 +31,7 @@ module.exports = function (app) {
 
     app.get('/manga/view-image', async (req, res) => {
         const q = req.query.q;
-        const htmlContent = await mangaScrape.getImage(q);
+        const htmlContent = await mangaContent.getImage(q);
         return res.contentType('image/jpeg').status(200).send(htmlContent);
     });
 
@@ -83,7 +85,7 @@ module.exports = function (app) {
             return res.status(404).send("Not Found");
         }
 
-        const rows =  mangaScrape.getStoreByPage(parseInt(p));
+        const rows =  mangaStore.getStoreByPage(parseInt(p));
         if(rows) {
             return res.status(200).send({data: rows});
         }
@@ -97,7 +99,7 @@ module.exports = function (app) {
             return res.status(404).send("Not Found");
         }
 
-        const setting =  mangaScrape.getConfigByDomain(s);
+        const setting =  mangaStore.getConfigByDomain(s);
         if(setting) {
             return res.status(200).send({status: true, code: setting.codeUrl});
         }
@@ -112,7 +114,7 @@ module.exports = function (app) {
             return res.status(404).send("Not Found");
         }
 
-        const setting =  mangaScrape.getConfigByCode(req.params.codeurl);
+        const setting =  mangaStore.getConfigByCode(req.params.codeurl);
         if(!setting){
             return res.status(404).send("Not Found");
         }
@@ -120,7 +122,7 @@ module.exports = function (app) {
         const chAt = query.indexOf('ตอนที่');
         if(chAt !== -1) {
             //const qTitle = query.substr(0, chAt-1);
-            const chList = await mangaScrape[setting.methodChapter](query);
+            const chList = await mangaChapter[setting.methodChapter](query);
             return res.status(200).send({ chapters : chList});
         }
 
@@ -139,11 +141,11 @@ module.exports = function (app) {
         const rootPath = selfPath.replace(`/${selfPath}`,"");
 
         let htmlContent = fs.readFileSync(`${rootPath}/readmanga.html`, 'utf8');
-        const setting =  mangaScrape.getConfigByCode(req.params.codeurl);
+        const setting =  mangaStore.getConfigByCode(req.params.codeurl);
         if(!setting){
             return res.status(404).send("Not Found");
         }
-        htmlContent = await mangaScrape[setting.method](setting, q, htmlContent);
+        htmlContent = await mangaContent[setting.method](setting, q, htmlContent);
         return res.status(200).send(htmlContent);
     });
 };
