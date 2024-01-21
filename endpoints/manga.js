@@ -119,8 +119,8 @@ module.exports = function (app) {
 
         const chAt = query.indexOf('ตอนที่');
         if(chAt !== -1) {
-            const qCh = query.substr(0, chAt-1);
-            const chList = await mangaScrape[setting.methodChapter](`${qCh}/`);
+            //const qTitle = query.substr(0, chAt-1);
+            const chList = await mangaScrape[setting.methodChapter](query);
             return res.status(200).send({ chapters : chList});
         }
 

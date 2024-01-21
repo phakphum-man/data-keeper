@@ -136,7 +136,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            max-width: 200px;
+            max-width: 230px;
             width: calc(100vw - 30px);
             /* height: 100%; */
             height: 100vh;
@@ -273,7 +273,7 @@
         #gotoTopBtn {
             display: none; /* Hidden by default */
             position: fixed; /* Fixed/sticky position */
-            bottom: 60px; /* Place the button at the bottom of the page */
+            bottom: 50px; /* Place the button at the bottom of the page */
             right: 30px; /* Place the button 30px from the right */
             z-index: 99; /* Make sure it does not overlap */
             border: none; /* Remove borders */
@@ -285,6 +285,8 @@
             border-radius: 10px; /* Rounded corners */
             font-size: 18px; /* Increase font size */
             width: 40px;
+            opacity: 0.5;
+            box-shadow: 0 5px 20px rgba(0,0,0,.3);
         }
     </style>
     <script type="text/javascript" src="/public/ajax.js"></script>
@@ -378,8 +380,8 @@
     function loadCh(){
         const chapterlist = document.getElementById("chapterlist")
         const url = window.location.pathname.replace("manga","manga/chapter");
-        const params = (new URL(document.location)).searchParams;
-        getAjax(url, {q:params.get("q")}, (data) => {
+        const h1 = document.querySelector("h1");
+        getAjax(url, {q:h1.innerText}, (data) => {
             const jsData = JSON.parse(data);
             jsData.chapters.forEach((item) => {
                 let li = document.createElement('li');
@@ -398,7 +400,7 @@
     function scrollFunction() {
         let gotoTopBtn = document.getElementById("gotoTopBtn");
         if(gotoTopBtn){
-            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            if (document.body.scrollTop > 60 || document.documentElement.scrollTop > 60) {
                 gotoTopBtn.style.display = "block";
             } else {
                 gotoTopBtn.style.display = "none";
@@ -456,7 +458,7 @@
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
                     </label>
-                    <span>Chapter</span>
+                    <span>Chapters</span>
                 </div>
                 <ul id="chapterlist">
                 </ul>

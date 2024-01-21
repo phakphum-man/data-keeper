@@ -65,12 +65,12 @@ function getConfigByCode(code){
 function presentManga(item){
     let firstChapterUrl = item.firstChapter.url;
     let lastChapterUrl = item.lastChapter.url;
-    const settings = configs.filter((config) => firstChapterUrl?.removeProtocolUrl().startsWith(config.host.removeProtocolUrl()));
+    const settings = configs.filter((config) => lastChapterUrl?.removeProtocolUrl().startsWith(config.host.removeProtocolUrl()));
     let firstUrl = "#";
     let lastUrl = "#";
     if( settings.length > 0 ){
-        const navFirst = firstChapterUrl.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
-        const navLast = lastChapterUrl.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
+        const navFirst = firstChapterUrl?.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
+        const navLast = lastChapterUrl?.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
         firstUrl = `/manga/${settings[0].codeUrl}?q=${navFirst}`;
         lastUrl = `/manga/${settings[0].codeUrl}?q=${navLast}`;
     }
@@ -134,10 +134,18 @@ function getStoreByPage(page, codeUrl="*"){
 
 async function reapertransChapter(query){
     const host = "https://reapertrans.com/";
-    const dataContent = await axios.get(`${host}${query}`, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
-
+    const chAt = query.indexOf('ตอนที่');
+    const title = query.substr(0, chAt-1);
+    const store = mergeStores().find(x => x.title === title && x.sourceUrl.startsWith(host));
+    if (!store.sourceUrl){
+        console.log("Found Manga from title " + query);
+        return [];
+    }
+    const dataContent = await axios.get(store.sourceUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
+    
     if(dataContent === "Request failed with status code 404"){
-        return res.status(200).send("Not Found Manga <a href=\"javascript:history.go(-1)\">Go Back</a>");
+        console.log("HTTP Get Not Found Manga");
+        return [];
     }
     const settings = getConfigByDomain(host.getDomain());
     const $ = cheerio.load(dataContent);
@@ -239,10 +247,19 @@ async function reapertrans(settings, query, htmlContent){
 
 async function manhuathaiChapter(query){
     const host = "https://www.manhuathai.com/";
-    const dataContent = await axios.get(`${host}${query}`, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
+    const chAt = query.indexOf('ตอนที่');
+    const title = query.substr(0, chAt-2).trim().replace(/[^A-Za-z0-9]/g, "");
+
+    const store = mergeStores().find(x => x.title?.replace(/[^A-Za-z0-9]/g, "") === title && x.sourceUrl.startsWith(host));
+    if (!store || !store.sourceUrl){
+        console.log("Not Found Manga from title " + query);
+        return [];
+    }
+    const dataContent = await axios.get(store.sourceUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
 
     if(dataContent === "Request failed with status code 404"){
-        return res.status(200).send("Not Found Manga <a href=\"javascript:history.go(-1)\">Go Back</a>");
+        console.log("HTTP Get Not Found Manga");
+        return [];
     }
     const settings = getConfigByDomain(host.getDomain());
     const $ = cheerio.load(dataContent);
