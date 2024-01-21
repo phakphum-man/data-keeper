@@ -28,7 +28,22 @@ function getConfigByCode(code){
 function mangaStore(){
     const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
     const dataJson = JSON.parse(contentJson);
-    return dataJson[configs[0].codeUrl].concat(dataJson[configs[1].codeUrl]);
+
+    const mergeData = dataJson[configs[0].codeUrl].concat(dataJson[configs[1].codeUrl]);
+
+    const titles = mergeData.map((data) => data.title);
+    const uniqueTitles = [...new Set(titles)];
+    const data = uniqueTitles.map((title)=> {
+        const items = mergeData.filter((data) => data.title === title);
+        let manga = null;
+        if(items.length > 0) {
+            const lastChapterNo = items.map((item) => item.lastChapter.no);
+            const maxChapterNo = Math.max(...lastChapterNo);
+            manga = mergeData.find((data) => data.title === title && data.lastChapter.no === maxChapterNo);
+        }
+        return manga
+    });
+    return data.filter((data) => data != null);
 }
 
 function getTotalPage(){

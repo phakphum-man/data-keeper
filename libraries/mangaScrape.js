@@ -198,4 +198,4 @@ async function syncAll(){
     await reapertransGetManga();
     await manhuathaiGetManga();
 }
-syncAll();
+//syncAll();
