@@ -12,12 +12,22 @@
         body {
             background: #F8F4EC;
         }
+        .header {
+            display: block;
+            height: 100%;
+            margin: 10px auto;
+        }
         h1 {
             font-size: 15px;
             font-weight:normal;
             text-align: center;
             color: white;
-            padding-top: 10px;
+            padding-top: 6px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* number of lines to show */
+                    line-clamp: 2; 
+            -webkit-box-orient: vertical;
         }
         .footer {
             display: block;
@@ -113,7 +123,7 @@
 
         nav {
             background-color: #0f1111;
-            height: 60px;
+            height: 46px;
             padding: 0 15px;
             display: -ms-flexbox;
             display: -webkit-box;
@@ -348,7 +358,7 @@
     }
 
     function imageAutoFit() {
-        const imgs = document.querySelectorAll("img");
+        const imgs = document.querySelectorAll("img:not(#tmpImg)");
         for (var i = 0; i < imgs.length;i++) {
             imgs[i].style = `max-width:${window.innerWidth}px`; 
         }
@@ -463,7 +473,7 @@
                 <ul id="chapterlist">
                 </ul>
             </div>
-            <div class="row">
+            <div class="header">
                 <h1><%=TITLE%></h1>
             </div>
         </nav>

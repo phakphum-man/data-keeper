@@ -108,7 +108,6 @@ async function manhuathaiGetManga(maxPageSize=200){
     dataJson[settings.codeUrl] = data;
     fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
 }
-//manhuathaiGetManga();
 
 async function reapertransGetManga(maxPageSize=200){
     const host = "https://reapertrans.com/";
@@ -194,4 +193,9 @@ async function reapertransGetManga(maxPageSize=200){
     dataJson[settings.codeUrl] = data;
     fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
 }
-//reapertransGetManga();
+
+async function syncAll(){
+    await reapertransGetManga();
+    await manhuathaiGetManga();
+}
+syncAll();

@@ -2,7 +2,7 @@ require('dotenv').config();
 require("../libraries/util.string");
 const fs = require('fs');
 const path = require('path');
-const mangaStore = require('../libraries/mangaStore');
+const { getTotalPage, getConfigByCode } = require('../libraries/mangaStore');
 const mangaChapter = require('../libraries/managaChapters');
 const mangaContent = require('../libraries/mangaReadContent');
 
@@ -20,7 +20,7 @@ module.exports = function (app) {
         }else{
             htmlContent = htmlContent.replace("<%=BTN_PREV%>","");
         }
-        const totalPage = (mangaStore.mergeStores().length / mangaContent.pageSize)
+        const totalPage = getTotalPage();
         if((pNo + 1) < totalPage){
             htmlContent = htmlContent.replace("<%=BTN_NEXT%>",`<a class="btn" href="/manga/?p=${(pNo+1)}">ย้อนหลัง</a>`);
         }else{
@@ -85,7 +85,7 @@ module.exports = function (app) {
             return res.status(404).send("Not Found");
         }
 
-        const rows =  mangaStore.getStoreByPage(parseInt(p));
+        const rows =  mangaContent.getMangaByPage(parseInt(p));
         if(rows) {
             return res.status(200).send({data: rows});
         }
@@ -114,7 +114,7 @@ module.exports = function (app) {
             return res.status(404).send("Not Found");
         }
 
-        const setting =  mangaStore.getConfigByCode(req.params.codeurl);
+        const setting =  getConfigByCode(req.params.codeurl);
         if(!setting){
             return res.status(404).send("Not Found");
         }
@@ -141,7 +141,7 @@ module.exports = function (app) {
         const rootPath = selfPath.replace(`/${selfPath}`,"");
 
         let htmlContent = fs.readFileSync(`${rootPath}/readmanga.html`, 'utf8');
-        const setting =  mangaStore.getConfigByCode(req.params.codeurl);
+        const setting =  getConfigByCode(req.params.codeurl);
         if(!setting){
             return res.status(404).send("Not Found");
         }
