@@ -33,7 +33,7 @@ window.onload = function () {
             aFirst.className = 'btn-link';
             aFirst.href = item.firstChapter.url;
             aFirst.innerHTML = item.firstChapter.title;
-            aLast.alt = "First Chapter";
+            aFirst.alt = "First Chapter";
 
             let spanFirst = document.createElement('span');
             spanFirst.className = 'date';
@@ -48,4 +48,29 @@ window.onload = function () {
     document.querySelector('.search-icon').addEventListener('click', () =>{
         window.location.href = "/manga/host";
     });*/
+    document.querySelector('.search-input').addEventListener('keyup', (e) => {
+        const input = e.target.value;
+        const params = (new URL(document.location)).searchParams;
+        const p = params.get("p")??1;
+        const searchResult = document.getElementById('search-result');
+        searchResult.innerHTML = '';
+        getAjax('/manga/api', {p:p, s:input}, (data) => {
+            const jsData = JSON.parse(data);
+            const result = jsData.data.map((item) => {
+                let li = document.createElement('li');
+
+                let a = document.createElement('a');
+                a.href = item.firstChapter.url;
+                a.innerHTML = item.title;
+                a.alt = item.title;
+
+                li.appendChild(a);
+                return li;
+            });
+
+            result.forEach((li) => {
+                searchResult.appendChild(li);
+            });
+        });
+    });
 }

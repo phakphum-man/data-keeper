@@ -23,68 +23,54 @@ function viewDate(dbDate){
     return date;
 }
 
-function presentManga(item){
-    let firstChapterUrl = item.firstChapter.url;
-    let lastChapterUrl = item.lastChapter.url;
-    const settings = configs.filter((config) => lastChapterUrl?.removeProtocolUrl().startsWith(config.host.removeProtocolUrl()));
-    let firstUrl = "#";
-    let lastUrl = "#";
-    if( settings.length > 0 ){
-        const navFirst = firstChapterUrl?.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
-        const navLast = lastChapterUrl?.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
-        firstUrl = `/manga/${settings[0].codeUrl}?q=${navFirst}`;
-        lastUrl = `/manga/${settings[0].codeUrl}?q=${navLast}`;
-    }
+function getMangaByPage(page, search=""){
+    let allData = mangaStore();
     
-    return {
-        title: item.title,
-        imgUrl: `/manga/view-image?q=${item.imgUrl}`,
-        score: item.score,
-        scoreMax : item.scoreMax,
-        firstChapter: {
-            title: `ตอนที่ ${item.firstChapter.no??""}`,
-            date: viewDate(item.firstChapter.date),
-            url: firstUrl,
-        },
-        lastChapter: {
-            title: `ตอนที่ ${item.lastChapter.no}`,
-            date: viewDate(item.lastChapter.date),
-            url: lastUrl,
-        },
-    };
-}
-
-function getMangaByPage(page, codeUrl="*"){
-    if(codeUrl === "*"){
-        // let allData = [];
-        // for(let i = 0; i < configs.length; i++) {
-        //     for(let j = 0; j < dataJson[configs[i].codeUrl].length; j++) {
-        //         const newData = dataJson[configs[i].codeUrl][j];
-
-        //         const found = allData.find((o) => o.title?.includes(newData.title));
-        //         if(!found && newData.lastChapter.date){
-        //             allData.push(newData);
-        //         }
-        //     }
-        // }
-        const allData = mangaStore();
-        return allData.sort((a, b)=> {
-            const dateA = a.lastChapter.date;
-            const dateB = b.lastChapter.date;
-            if (dateA > dateB) {
-                return -1;
-            }else if (dateA == dateB) {
-                return 0;
-            } else {
-                return 1;
-            }
-            
-        }).slice((pageSize * (page-1)), (pageSize*page)).map(presentManga);
+    if(search){
+        allData = allData.filter((item)=> item.title.includes(search));
     }
 
-    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
-    const dataJson = JSON.parse(contentJson);
-    return dataJson[codeUrl].slice((pageSize * (page-1)), (pageSize*page)).map(presentManga);
+    return allData.sort((a, b)=> {
+        const dateA = a.lastChapter.date;
+        const dateB = b.lastChapter.date;
+        if (dateA > dateB) {
+            return -1;
+        }else if (dateA == dateB) {
+            return 0;
+        } else {
+            return 1;
+        }
+        
+    }).slice((pageSize * (page-1)), (pageSize*page)).map((item)=>{
+        let firstChapterUrl = item.firstChapter.url;
+        let lastChapterUrl = item.lastChapter.url;
+        const settings = configs.filter((config) => lastChapterUrl?.removeProtocolUrl().startsWith(config.host.removeProtocolUrl()));
+        let firstUrl = "#";
+        let lastUrl = "#";
+        if( settings.length > 0 ){
+            const navFirst = firstChapterUrl?.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
+            const navLast = lastChapterUrl?.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
+            firstUrl = `/manga/${settings[0].codeUrl}?q=${navFirst}`;
+            lastUrl = `/manga/${settings[0].codeUrl}?q=${navLast}`;
+        }
+        
+        return {
+            title: item.title,
+            imgUrl: `/manga/view-image?q=${item.imgUrl}`,
+            score: item.score,
+            scoreMax : item.scoreMax,
+            firstChapter: {
+                title: `ตอนที่ ${item.firstChapter.no??""}`,
+                date: viewDate(item.firstChapter.date),
+                url: firstUrl,
+            },
+            lastChapter: {
+                title: `ตอนที่ ${item.lastChapter.no}`,
+                date: viewDate(item.lastChapter.date),
+                url: lastUrl,
+            },
+        };
+    });
 }
 
 /** Imprement Manga Reader Content **/

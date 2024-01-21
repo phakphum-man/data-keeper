@@ -43,7 +43,7 @@ function mangaStore(){
         }
         return manga
     });
-    return data.filter((data) => data != null);
+    return data.filter((data) => data != null && data.title);
 }
 
 function getTotalPage(){
