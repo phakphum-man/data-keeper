@@ -65,6 +65,7 @@ async function manhuathaiGetManga(maxPageSize=200){
                 title: a.attr('title'),
                 sourceUrl: a.attr('href'),
                 imgUrl: img.attr('data-src'),
+                genres: [],
                 score: parseFloat(score.text()),
                 scoreMax: 5,
                 firstChapter: {
@@ -100,7 +101,9 @@ async function manhuathaiGetManga(maxPageSize=200){
         data[i].firstChapter.no = (no!==null)? parseFloat(no): null;
         data[i].firstChapter.url = firstCh.find('a').attr('href');
         data[i].firstChapter.date = dateThaiToIsoString(firstCh.find('span.chapter-release-date > i').text());
-        console.log(`updated => ${i}/${data.length}`);
+
+        data[i].genres = $('div.summary-content > div.genres-content > a').map((_, mgen) => $(mgen).text()).get();
+        console.log(`updated => ${(i+1)}/${data.length}`);
     }
 
     const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
@@ -141,6 +144,7 @@ async function reapertransGetManga(maxPageSize=200){
                 title: a.attr('title'),
                 sourceUrl: a.attr('href'),
                 imgUrl: img.attr('src'),
+                genres: [],
                 score: parseFloat(score.text()),
                 scoreMax: 10,
                 firstChapter: {
@@ -185,7 +189,9 @@ async function reapertransGetManga(maxPageSize=200){
         data[i].lastChapter.no = (noL!==null)? parseInt(noL): null;
         data[i].lastChapter.url = lastChapter.attr('href');
         data[i].lastChapter.date = lastDateChapter.find('time').attr('datetime');
-        console.log(`updated => ${i}/${data.length}`);
+
+        data[i].genres = mangaItems.find('.animefull').find('.bigcontent > .infox > .wd-full > span.mgen > a').map((_,mgen) => $(mgen).text().replace(/[^A-Za-z0-9]/g, '')).get();
+        console.log(`updated => ${(i+1)}/${data.length}`);
     }
 
     const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');

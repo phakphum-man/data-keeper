@@ -9,23 +9,41 @@ const mangaContent = require('../libraries/mangaReadContent');
 module.exports = function (app) {
     app.get('/manga', async (req, res) => {
         const p = req.query.p;
+        const g = req.query.g || "";
         const selfPath = path.dirname(__dirname);
         const rootPath = selfPath.replace(`/${selfPath}`,"");
 
         const pNo = (p)? parseInt(p.getOnlyNumber()) : 1;
         let htmlContent = fs.readFileSync(`${rootPath}/manga.html`, 'utf8');
 
+        let htmlGenre = "";
+        if(g){
+            htmlGenre = `&g=${g}`;
+        }
+
         if(pNo > 1){
-            htmlContent = htmlContent.replace("<%=BTN_PREV%>",`<a class="btn" href="/manga/?p=${(pNo-1)}">อัพใหม่</a>`);
+            htmlContent = htmlContent.replace("<%=BTN_PREV%>",`<a class="btn" href="/manga/?p=${(pNo-1)}${htmlGenre}">อัพใหม่</a>`);
         }else{
             htmlContent = htmlContent.replace("<%=BTN_PREV%>","");
         }
-        const totalPage = getTotalPage();
-        if((pNo + 1) < totalPage){
-            htmlContent = htmlContent.replace("<%=BTN_NEXT%>",`<a class="btn" href="/manga/?p=${(pNo+1)}">ย้อนหลัง</a>`);
+        const totalPage = getTotalPage(g);
+        if((pNo + 1) <= totalPage){
+            htmlContent = htmlContent.replace("<%=BTN_NEXT%>",`<a class="btn" href="/manga/?p=${(pNo+1)}${htmlGenre}">ย้อนหลัง</a>`);
         }else{
             htmlContent = htmlContent.replace("<%=BTN_NEXT%>","");
         }
+
+        // for nav menu items
+        const rows =  mangaContent.getGenres();
+        if(rows.length > 0){
+            const links = rows.map((r) =>{
+                return `<li><a href="/manga?g=${r}&p=1">${r}</a></li>`;
+            });
+            htmlContent = htmlContent.replace("<%=NAV_LINKS%>",`<ul class="links">${links.join('\n')}</ul>`);
+        } else {
+            htmlContent = htmlContent.replace("<%=NAV_LINKS%>","");
+        }
+
         return res.status(200).send(htmlContent);
     });
 
@@ -80,18 +98,29 @@ module.exports = function (app) {
     
     app.get('/manga/api', async (req, res) => {
         // #swagger.ignore = true
-        const p = req.query.p;
+        const p = req.query.p || "1";
         const s = req.query.s || "";
+        const g = req.query.g || "";
+
         if(!p || !p.isNumber()){
             return res.status(404).send("Not Found");
         }
 
-        const rows =  mangaContent.getMangaByPage(parseInt(p), s);
+        const rows =  mangaContent.getMangaByPage(parseInt(p), s, g);
         if(rows) {
             return res.status(200).send({data: rows});
         }
         return res.status(404).send("Not Found");
     });
+
+    // app.get('/manga/api/genres', async (req, res) => {
+    //     // #swagger.ignore = true
+    //     const rows =  mangaContent.getGenres();
+    //     if(rows) {
+    //         return res.status(200).send({data: rows});
+    //     }
+    //     return res.status(404).send("Not Found");
+    // });
 
     app.get('/manga/getroute', async (req, res) => {
         // #swagger.ignore = true

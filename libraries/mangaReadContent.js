@@ -23,11 +23,17 @@ function viewDate(dbDate){
     return date;
 }
 
-function getMangaByPage(page, search=""){
+function getMangaByPage(page, search="", genre = ""){
     let allData = mangaStore();
-    
+    let limitSize = pageSize;
+
     if(search){
-        allData = allData.filter((item)=> item.title.includes(search));
+        allData = allData.filter((item)=> item.title.toLowerCase().includes(search.toLowerCase()));
+        limitSize = 10;
+    }
+
+    if(genre){
+        allData = allData.filter((item)=> item.genres.indexOf(genre) > -1);
     }
 
     return allData.sort((a, b)=> {
@@ -41,7 +47,7 @@ function getMangaByPage(page, search=""){
             return 1;
         }
         
-    }).slice((pageSize * (page-1)), (pageSize*page)).map((item)=>{
+    }).slice((limitSize * (page-1)), (limitSize*page)).map((item)=>{
         let firstChapterUrl = item.firstChapter.url;
         let lastChapterUrl = item.lastChapter.url;
         const settings = configs.filter((config) => lastChapterUrl?.removeProtocolUrl().startsWith(config.host.removeProtocolUrl()));
@@ -57,6 +63,7 @@ function getMangaByPage(page, search=""){
         return {
             title: item.title,
             imgUrl: `/manga/view-image?q=${item.imgUrl}`,
+            genres: item.genres,
             score: item.score,
             scoreMax : item.scoreMax,
             firstChapter: {
@@ -71,6 +78,18 @@ function getMangaByPage(page, search=""){
             },
         };
     });
+}
+
+function getGenres(){
+    const bestLayoutColumn = 6;
+    const allData = mangaStore();
+    const genres = [].concat(...allData.map((data) => data.genres));
+    let uniqueGenres = [...new Set(genres)];
+    uniqueGenres = uniqueGenres.filter(g => g !== "");
+
+    let ignoreGenres = uniqueGenres.filter((genre) => allData.filter((item)=> item.genres.indexOf(genre) > -1).length < bestLayoutColumn);
+    ignoreGenres = ignoreGenres.concat(["Martial Arts","School Life","Sci-fi","Slice of Life"]);// have white-space then bad layout
+    return uniqueGenres.filter(g => ignoreGenres.indexOf(g) === -1);
 }
 
 /** Imprement Manga Reader Content **/
@@ -205,4 +224,4 @@ async function manhuathai(settings, query, htmlContent){
     return htmlContent;
 }
 
-module.exports = {getImage, getMangaByPage, reapertrans, manhuathai};
+module.exports = {getImage, getGenres, getMangaByPage, reapertrans, manhuathai};

@@ -46,7 +46,11 @@ function mangaStore(){
     return data.filter((data) => data != null && data.title);
 }
 
-function getTotalPage(){
-    return (mangaStore().length / pageSize);
+function getTotalPage(genre = ""){
+    let allData = mangaStore();
+    if(genre){
+        allData = allData.filter((item)=> item.genres.indexOf(genre) > -1);
+    }
+    return (allData.length / pageSize);
 }
 module.exports = { configs, pageSize, months_th, getTotalPage, getConfigByDomain, getConfigByCode, mangaStore}

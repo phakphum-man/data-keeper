@@ -185,10 +185,16 @@ header {
   gap: 15px;
   flex-grow: 1;
   margin-left: 15px;
+  max-width: 1200px;
+  overflow-x: scroll;
+}
+.links li{
+  display: inline;
 }
 
 .links a {
   padding: 10px 0;
+  display: inline-block;
 }
 
 .deals a {

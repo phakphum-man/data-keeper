@@ -2,7 +2,8 @@ window.onload = function () {
     const mangaList = document.querySelector('.shop-images');
     const params = (new URL(document.location)).searchParams;
     const p = params.get("p")??1;
-    getAjax('/manga/api', {p:p}, (data) => {
+    const g = params.get("g")??"";
+    getAjax('/manga/api', {p:p,g:g}, (data) => {
         const jsData = JSON.parse(data);
         jsData.data.forEach((item) => {
             let linkshop = document.createElement('div');
@@ -50,32 +51,32 @@ window.onload = function () {
     });*/
     document.querySelector('.search-input').addEventListener('keyup', (e) => {
         const input = e.target.value;
-        const params = (new URL(document.location)).searchParams;
-        const p = params.get("p")??1;
         const searchResult = document.getElementById('search-result');
         searchResult.innerHTML = '';
-        getAjax('/manga/api', {p:p, s:input}, (data) => {
-            const jsData = JSON.parse(data);
-            const result = jsData.data.map((item) => {
-                let li = document.createElement('li');
+        if(input){
+            getAjax('/manga/api', {s:input}, (data) => {
+                const jsData = JSON.parse(data);
+                const result = jsData.data.map((item) => {
+                    let li = document.createElement('li');
 
-                let a = document.createElement('a');
-                a.href = item.firstChapter.url;
+                    let a = document.createElement('a');
+                    a.href = item.firstChapter.url;
 
-                let img = document.createElement('img');
-                img.src = item.imgUrl;
-                img.style.height = "50px";
-                a.appendChild(img);
-                a.appendChild(document.createTextNode(item.title));
+                    let img = document.createElement('img');
+                    img.src = item.imgUrl;
+                    img.style.height = "50px";
+                    a.appendChild(img);
+                    a.appendChild(document.createTextNode(item.title));
 
-                a.alt = item.title;
-                li.appendChild(a);
-                return li;
+                    a.alt = item.title;
+                    li.appendChild(a);
+                    return li;
+                });
+
+                result.forEach((li) => {
+                    searchResult.appendChild(li);
+                });
             });
-
-            result.forEach((li) => {
-                searchResult.appendChild(li);
-            });
-        });
+        }
     });
 }
