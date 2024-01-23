@@ -1,6 +1,6 @@
 require("./util.string");
 const fs = require('fs');
-const pageSize = 18;
+const pageSize = 20;
 
 const configs = [
     { codeUrl: 'read-magic-0001', host: 'http://reapertrans.com', method: 'reapertrans', methodChapter: 'reapertransChapter'},
