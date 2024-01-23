@@ -65,7 +65,7 @@ function saveStore(codeUrl, newData) {
     const srcPath = `${process.cwd()}/mnt/data/manga.json`;
     fs.readFile(srcPath, 'utf8', function (err, contentJson) {
         if (err) throw err;
-        const dataJson = JSON.parse(contentJson);
+        let dataJson = JSON.parse(contentJson);
         const oldData = dataJson[codeUrl] || [];
 
         // const data = newData.map(n => 
@@ -75,18 +75,17 @@ function saveStore(codeUrl, newData) {
 
         let data = oldData;
         newData.forEach(n => {
-            if(data.find(o => o.title?.toLowerCase() !== n.title?.toLowerCase())){
+            if(data.find(o => o.title.toLowerCase() === n.title?.toLowerCase())){
+                data = data.map(o => (o.title.toLowerCase() === n.title?.toLowerCase() && o.lastChapter !== n.lastChapter? n : o));
+            }else{
                 data.push(n);
-            }else if(data.find(o => o.title.toLowerCase() === n.title?.toLowerCase()
-                && o.lastChapter !== n.lastChapter
-            )){
-                data = data.map(o => (o.title?.toLowerCase() === n.title?.toLowerCase()? n : o));
             }
         });
 
-        fs.writeFile (srcPath, data, function(err) {
+        dataJson[codeUrl] = data;
+        fs.writeFile (srcPath, JSON.stringify(dataJson), function(err) {
             if (err) throw err;
-            console.log('complete');
+            console.log(`save file (${codeUrl} complete)`);
         });
     });
 }

@@ -19,7 +19,7 @@ const bindingQueue = new Queue(QueueNameBinding, { connection });
 // Imprement Logic of Queue
 const workBinding = new Worker(QueueNameBinding, async (job)=>{
     try{
-        syncAll();
+        await syncAll();
     }catch (error) {
         console.log(`Error worth logging: ${error}`);
         throw error; // still want to crash
@@ -49,11 +49,12 @@ workBinding.on('failed', async ( job, err ) => {
 const gracefulShutdown = async (signal) => {
     console.log(`Received ${signal}, closing server...`);
 
+    await workBinding.close();
+    await workBinding.disconnect();
+
     await bindingQueue.close();
     await bindingQueue.disconnect();
 
-    await workBinding.close();
-    await workBinding.disconnect();
     // Other asynchronous closings
     process.exit(0);
 }
@@ -63,15 +64,13 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 async function clearAllJobs(){
     await bindingQueue.obliterate();
-    console.log('clear All Jobs');
+    console.log('...clear All Jobs.');
 }
 
-async function start() {
+async function startBackgroundRun() {
     const job = await bindingQueue.add('jobSyncAll', {});
     console.log(`Start JobId:${job.id}`);
 }
-//clearAllJobs();
-//start();
 
 /*** Logic Scrap Web ***/
 
@@ -91,7 +90,9 @@ async function reapertransGetManga(maxPageSize=200)
 {
     const host = "https://reapertrans.com/";
 
+    console.log(`\nScraping to ${host}`);
     const settings = getConfigByDomain(host.getDomain());
+    console.log("fetch html page...");
     let data = [];
     for (let p = 1; p < maxPageSize; p++) {
         const query = `manga/?page=${p}`
@@ -108,7 +109,8 @@ async function reapertransGetManga(maxPageSize=200)
         if(mangaItems.find('div.bs > div.bsx').length === 0){
             break;
         }
-        console.log(p);
+
+        process.stdout.write(`${p} `);
         mangaItems.find('div.bs > div.bsx').each((_, el) => {
             const a = $(el).find('a');
             const img = a.find('div.limit > img');
@@ -139,7 +141,7 @@ async function reapertransGetManga(maxPageSize=200)
         });
     }
     
-    console.log("Update Last Chapter");
+    console.log(`\nUpdate Chapters(${data.length})...`);
     //UPDATE lastChapter
     for (let i = 0; i < data.length; i++) {
         const dataContent = await axios.get(data[i].sourceUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
@@ -167,20 +169,23 @@ async function reapertransGetManga(maxPageSize=200)
         data[i].lastChapter.date = lastDateChapter.find('time').attr('datetime');
 
         data[i].genres = mangaItems.find('.animefull').find('.bigcontent > .infox > .wd-full > span.mgen > a').map((_,mgen) => $(mgen).text().replace(/[^A-Za-z0-9]/g, '')).get();
-        console.log(`updated => ${(i+1)}/${data.length}`);
+        process.stdout.write(`${(i+1)} `);
     }
 
-    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
+    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8')||"{}";
     let dataJson = JSON.parse(contentJson);
     dataJson[settings.codeUrl] = data;
     fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
+    console.log(`save data ${host} done.`);
 }
 
 async function manhuathaiGetManga(maxPageSize=200)
 {
     const host = "https://www.manhuathai.com/";
 
+    console.log(`\nScraping to ${host}`);
     const settings = getConfigByDomain(host.getDomain());
+    console.log("fetch html page...");
     let data = [];
     for (let p = 1; p < maxPageSize; p++) {
         const query = `page/${p}/`
@@ -192,7 +197,7 @@ async function manhuathaiGetManga(maxPageSize=200)
             break;
         }
         
-        console.log(p);
+        process.stdout.write(`${p} `);
         const expect_time = ["วัน", "ชั่วโมง"];
         const $ = cheerio.load(dataContent);
         const mangaItems = $('div#loop-content > div.page-listing-item');
@@ -244,7 +249,7 @@ async function manhuathaiGetManga(maxPageSize=200)
         });
     }
 
-    console.log("Update First Chapter");
+    console.log(`\nUpdate Chapters(${data.length})...`);
     //UPDATE lastChapter
     for (let i = 0; i < data.length; i++) {
         const dataContent = await axios.get(data[i].sourceUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
@@ -264,20 +269,24 @@ async function manhuathaiGetManga(maxPageSize=200)
 
         data[i].genres = $('div.summary-content > div.genres-content > a').map((_, mgen) => $(mgen).text()).get();
         data[i].imgUrl = $('div.summary_image > a > img').attr('data-src');
-        console.log(`updated => ${(i+1)}/${data.length}`);
+        process.stdout.write(`${(i+1)} `);
     }
 
-    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
+    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8')||"{}";
     let dataJson = JSON.parse(contentJson);
     dataJson[settings.codeUrl] = data;
     fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
+    console.log(`save data ${host} done.`);
 }
 
 async function tanukimangaGetManga(maxPageSize=300)
 {
     const host = "https://www.tanuki-manga.com/";
 
+    console.log(`\nScraping to ${host}`);
     const settings = getConfigByDomain(host.getDomain());
+
+    console.log("fetch html page...");
     let data = [];
     for (let p = 1; p < maxPageSize; p++) {
         const query = `manga/?page=${p}&order=update`
@@ -294,7 +303,7 @@ async function tanukimangaGetManga(maxPageSize=300)
         if(mangaItems.find('div.bs > div.bsx').length === 0){
             break;
         }
-        console.log(p);
+        process.stdout.write(`${p} `);
         mangaItems.find('div.bs > div.bsx').each((_, el) => {
             const a = $(el).find('a');
             const img = a.find('div.limit > img');
@@ -324,7 +333,7 @@ async function tanukimangaGetManga(maxPageSize=300)
         });
     }
     
-    console.log("Update Last Chapter");
+    console.log(`\nUpdate Chapters(${data.length})...`);
     let x = 0;
     //UPDATE lastChapter
     for (let i = 0; i < data.length; i++) {
@@ -352,34 +361,23 @@ async function tanukimangaGetManga(maxPageSize=300)
 
         data[i].genres = $('.main-info > .info-right > .info-desc > .wd-full').first().find('span.mgen > a').map((_,mgen) => $(mgen).text().replace(/[^A-Za-z0-9]/g, '')).get();
 
-        // const found = dataSource.find((manga)=> manga.title.toLowerCase() === data[i].title.toLowerCase());
-        // if(!found){
-        //     const foundUpdate = dataSource.find((manga)=> manga.title.toLowerCase() === data[i].title.toLowerCase()
-        //         && manga.lastChapter !== data[i].lastChapter
-        //     );
-        //     if(!foundUpdate){
-        //         //add new manga
-        //         dataSource.push(manga);
-        //     } else {
-        //         //update existing manga
-        //     }
-        // }
-        
-        if((i+1)% 1000 === 0){
+        if((i+1)% 100 === 0){
             const newData = data.slice(x, i+1);
             saveStore(settings.codeUrl, newData);
             x = (i+1);
         }
-        console.log(`updated => ${(i+1)}/${data.length}`);
+        process.stdout.write(`${(i+1)} `);
     }
     
     const newData = data.slice(x, data.length);
     saveStore(settings.codeUrl, newData);
     
-    // const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
+    // const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8')||"{}";
     // let dataJson = JSON.parse(contentJson);
     // dataJson[settings.codeUrl] = data;
     // fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
+
+    console.log(`save data ${host} done.`);
 }
 
 async function syncAll(){
@@ -388,3 +386,5 @@ async function syncAll(){
     await tanukimangaGetManga();
 }
 //syncAll();
+//clearAllJobs();
+//startBackgroundRun();

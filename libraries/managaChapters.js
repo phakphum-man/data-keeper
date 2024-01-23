@@ -93,7 +93,7 @@ async function tanukimangaChapter(query){
     const chAt = query.indexOf('ตอนที่');
     const title = query.substr(0, chAt-1);
     const store = mangaStore().find(x => x.title === title && x.sourceUrl.startsWith(host));
-    if (!store.sourceUrl){
+    if (!store?.sourceUrl){
         console.log("Found Manga from title " + query);
         return [];
     }

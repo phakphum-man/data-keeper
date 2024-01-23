@@ -450,11 +450,12 @@ const gracefulShutdown = async (signal) => {
         console.log('Close the SQlite database connection.');
     });
 
+    await workBinding.close();
+    await workBinding.disconnect();
+
     await bindingQueue.close();
     await bindingQueue.disconnect();
 
-    await workBinding.close();
-    await workBinding.disconnect();
     // Other asynchronous closings
     process.exit(0);
 }

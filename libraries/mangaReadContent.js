@@ -242,6 +242,8 @@ async function tanukimanga(settings, query, htmlContent){
         htmlContent = htmlContent.replaceAll("<%=TITLE%>",s);
     }
 
+    const $ = cheerio.load(dataContent);
+    const htmBody = $('#readerarea');
     const mpic = dataContent.match("<script type=\"rocketlazyloadscript\">ts_reader.run(.*);");
     let listImg = [];
     if(mpic && mpic.length > 1){
@@ -266,9 +268,44 @@ async function tanukimanga(settings, query, htmlContent){
         } else {
             htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<span class="no-chapter-next">&nbsp;</span>`);
         }
+        
+    }else if(htmBody.length > 0){
+        let contentBody = $(htmBody).html();
+        
+        // Remove Jquery at Last find
+        const listScript = $('#readerarea > script') 
+            .map((_, item) => { 
+                return `<script type="rocketlazyloadscript">${$(item).text()}</script>`;
+            }) 
+            .toArray();
+        const f = listScript[listScript.length-1];
+        contentBody = contentBody.replace(f,"");
+
+        contentBody = contentBody.replaceAll("<script type=\"rocketlazyloadscript\">","<script>");
+
+        // Set Image lazy loading
+        contentBody = contentBody.replaceAll("<img src=","<img class=\"lazy\" data-src=");
+
+        htmlContent = htmlContent.replace("<%=LIST_IMG_MANGA%>", contentBody);
+        
+        const htmNextPrev = $('#content > .wrapper > script');
+        if(htmNextPrev.length >1){
+            const np = $(htmNextPrev[0]).text();
+            const fPrev = `jQuery('.ch-prev-btn').attr("href", "`;
+            const navPv = np.slice((np.indexOf(fPrev) + fPrev.length) , np.indexOf(`" == "" ? "#/prev/"`)).replace(host,"");
+            htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<button class="btn btnPrev" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${navPv}'" title="ย้อนหลัง">&#8592;</button>`);
+
+            const fNext = `jQuery('.ch-next-btn').attr("href", "`;
+            const navNt = np.slice((np.indexOf(fNext) + fNext.length) , np.indexOf(`" == "" ? "#/next/"`)).replace(host,"");
+            htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<button class="btn btnNext" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${navNt}'" title="ต่อไป">&#8594;</button>`);
+        } else {
+            htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<span class="no-chapter-prev">&nbsp;</span>`);
+            htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<span class="no-chapter-next">&nbsp;</span>`);
+        }
+
+        return htmlContent;
 
     } else {
-
         htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<span class="no-chapter-prev">&nbsp;</span>`);
         htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<span class="no-chapter-next">&nbsp;</span>`);
     }
