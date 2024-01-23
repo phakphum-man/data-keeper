@@ -4,7 +4,8 @@ const cheerio = require('cheerio');
 const { configs, pageSize, months_th, mangaStore } = require('./mangaStore');
 //const puppeteer = require('puppeteer');
 async function getImage(url){
-    const dataContent = await axios.get(url, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'arraybuffer' }).then((res) => res.data).catch((err) => err.message);
+    const imgUrl = url ===''? "https://placehold.co/200x300/jpeg?text=Image%20Not%20Found" : url;
+    const dataContent = await axios.get(imgUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'arraybuffer' }).then((res) => res.data).catch((err) => err.message);
     //fs.writeFileSync("./99-Wooden-Stick.jpg",dataContent);
     return dataContent;
 }
@@ -224,4 +225,57 @@ async function manhuathai(settings, query, htmlContent){
     return htmlContent;
 }
 
-module.exports = {getImage, getGenres, getMangaByPage, reapertrans, manhuathai};
+async function tanukimanga(settings, query, htmlContent){
+    const host = "https://www.tanuki-manga.com/";
+    const url = `${host}${query}`;
+
+    // HTML set Variable
+    const dataContent = await axios.get(url, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
+
+    if(dataContent === "Request failed with status code 404"){
+        return res.status(200).send("Not Found Manga <a href=\"javascript:history.go(-1)\">Go Back</a>");
+    }
+
+    const mtitle = dataContent.match("<h1 class=\"entry-title\" itemprop=\"name\">(.*)</h1>");
+    if(mtitle && mtitle.length > 1){
+        const s = mtitle[1];
+        htmlContent = htmlContent.replaceAll("<%=TITLE%>",s);
+    }
+
+    const mpic = dataContent.match("<script type=\"rocketlazyloadscript\">ts_reader.run(.*);");
+    let listImg = [];
+    if(mpic && mpic.length > 1){
+        const s = mpic[1];
+        let data = JSON.parse(s.substr(1, s.length-2));
+        if(data.sources && data.sources.length > 0){
+            listImg = data.sources[0].images.map(img => {
+                const src = img.startsWith("http://lh3.googleusercontent.com")?"https://placehold.co/800x600/jpeg?text=Manga%20Not%20Found":img;
+                return `<img class="lazy" data-src="${src}" />`
+            });
+        }
+        if(data.prevUrl){
+            const nav = data.prevUrl.replace(host,"");
+            htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<button class="btn btnPrev" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ย้อนหลัง">&#8592;</button>`);
+        } else {
+            htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<span class="no-chapter-prev">&nbsp;</span>`);
+        }
+
+        if(data.nextUrl){
+            const nav = data.nextUrl.replace(host,"");
+            htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<button class="btn btnNext" onclick="javascript:window.location.href='/manga/${settings.codeUrl}?q=${nav}'" title="ต่อไป">&#8594;</button>`);
+        } else {
+            htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<span class="no-chapter-next">&nbsp;</span>`);
+        }
+
+    } else {
+
+        htmlContent = htmlContent.replaceAll("<%=BTN_PREV%>",`<span class="no-chapter-prev">&nbsp;</span>`);
+        htmlContent = htmlContent.replaceAll("<%=BTN_NEXT%>",`<span class="no-chapter-next">&nbsp;</span>`);
+    }
+    
+    htmlContent = htmlContent.replace("<%=LIST_IMG_MANGA%>",listImg.join("\n"));
+
+    return htmlContent;
+}
+
+module.exports = {getImage, getGenres, getMangaByPage, reapertrans, manhuathai, tanukimanga};

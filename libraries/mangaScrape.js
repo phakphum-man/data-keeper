@@ -1,7 +1,79 @@
+require('dotenv').config();
+const { Queue, Worker } = require('bullmq');
+const Redis = require('ioredis');
+const os = require('os');
 const fs = require('fs');
 const axios = require('axios');
 const cheerio = require('cheerio');
-const { getConfigByDomain, months_th } = require('./mangaStore');
+const { getConfigByDomain, saveStore, months_th, months_en} = require('./mangaStore');
+
+const QueueNameBinding = `work${os.hostname()}`;
+
+if(!process.env.REDIS_URL) console.warn('REDIS_URL is not defined');
+const connection = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false});
+
+console.log(`Create Queue name: ${QueueNameBinding}`);
+
+const bindingQueue = new Queue(QueueNameBinding, { connection });
+
+// Imprement Logic of Queue
+const workBinding = new Worker(QueueNameBinding, async (job)=>{
+    try{
+        syncAll();
+    }catch (error) {
+        console.log(`Error worth logging: ${error}`);
+        throw error; // still want to crash
+    }
+
+},{ connection, autorun: true, useWorkerThreads: true });
+
+workBinding.on('waiting', async (job) => {
+    console.log(`${job?.id} has waiting!`);
+});
+
+workBinding.on('active', async ( job, prev ) => {
+    console.log(`${job?.id} has active`);
+});
+
+workBinding.on('progress', async ( job, data ) => {
+    console.log(`${job?.id} reported progress ${ JSON.stringify(data)}`);
+});
+
+workBinding.on('completed', async ( job, returnvalue ) => {
+    console.log(`${job?.id} has completed!`);
+});
+
+workBinding.on('failed', async ( job, err ) => {
+    console.log(`job ${job?.id} has failed with ${err.message}`);
+});
+const gracefulShutdown = async (signal) => {
+    console.log(`Received ${signal}, closing server...`);
+
+    await bindingQueue.close();
+    await bindingQueue.disconnect();
+
+    await workBinding.close();
+    await workBinding.disconnect();
+    // Other asynchronous closings
+    process.exit(0);
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
+async function clearAllJobs(){
+    await bindingQueue.obliterate();
+    console.log('clear All Jobs');
+}
+
+async function start() {
+    const job = await bindingQueue.add('jobSyncAll', {});
+    console.log(`Start JobId:${job.id}`);
+}
+//clearAllJobs();
+//start();
+
+/*** Logic Scrap Web ***/
 
 // Use: dateThaiToIsoString("30 มิถุนายน 2022")
 function dateThaiToIsoString(dateThaiString, dateDefault = "") {
@@ -9,15 +81,103 @@ function dateThaiToIsoString(dateThaiString, dateDefault = "") {
     return (dateSplit.length == 3)? `${dateSplit[2]}-${(months_th.indexOf(dateSplit[1])+1)}-${dateSplit[0]}T23:52:38+07:00`: dateDefault;
 }
 
-// Use: dateEngToIsoString("March 3, 2023")
-function dateEngToIsoString(dateThaiString, dateDefault = "") {
-    const months_en = [ "January", "February", "March", "April", "May", "June", "July",
-        "August", "September", "October", "November", "December", ];
+// Use: dateEngToIsoString(months_en, "March 3, 2023")
+function dateEngToIsoString(months, dateThaiString, dateDefault = "") {
     const dateSplit = dateThaiString.split(' ');
-    return (dateSplit.length == 3)? `${dateSplit[1].replace(",","")}-${(months_en.indexOf(dateSplit[0])+1)}-${dateSplit[2]}T23:52:38+07:00`: dateDefault;
+    return (dateSplit.length == 3)? `${dateSplit[1].replace(",","")}-${(months.indexOf(dateSplit[0])+1)}-${dateSplit[2]}T23:52:38+07:00`: dateDefault;
 }
 
-async function manhuathaiGetManga(maxPageSize=200){
+async function reapertransGetManga(maxPageSize=200)
+{
+    const host = "https://reapertrans.com/";
+
+    const settings = getConfigByDomain(host.getDomain());
+    let data = [];
+    for (let p = 1; p < maxPageSize; p++) {
+        const query = `manga/?page=${p}`
+        const url = `${host}${query}`;
+
+        const dataContent = await axios.get(url, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
+
+        if(dataContent === "Request failed with status code 404"){
+            break;
+        }
+        
+        const $ = cheerio.load(dataContent);
+        const mangaItems = $('div.mrgn > .listupd');
+        if(mangaItems.find('div.bs > div.bsx').length === 0){
+            break;
+        }
+        console.log(p);
+        mangaItems.find('div.bs > div.bsx').each((_, el) => {
+            const a = $(el).find('a');
+            const img = a.find('div.limit > img');
+            const score = a.find('div.bigor > div.adds > div.rt > div.rating > div.numscore');
+            const item = $(a).find('div.bigor > div.adds > div.epxs');
+            
+            const no = item.text().getOnlyNumber();
+            const objJson = { 
+                title: a.attr('title'),
+                sourceUrl: a.attr('href'),
+                imgUrl: img.attr('src'),
+                genres: [],
+                score: parseFloat(score.text()),
+                scoreMax: 10,
+                firstChapter: {
+                    no: null,
+                    url: null,
+                    date: null
+                },
+                lastChapter: {
+                    no: (no!==null)? parseInt(no): null,
+                    url: null,
+                    date: null,
+                }
+            };
+            
+            data.push(objJson);
+        });
+    }
+    
+    console.log("Update Last Chapter");
+    //UPDATE lastChapter
+    for (let i = 0; i < data.length; i++) {
+        const dataContent = await axios.get(data[i].sourceUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
+
+        if(dataContent === "Request failed with status code 404"){
+            continue;
+        }
+
+        const $ = cheerio.load(dataContent);
+        
+        const firstCh = $('div#chapterlist > ul > li.first-chapter > .chbox > .eph-num a');
+
+        const noF = firstCh.find('span.chapternum').text().getOnlyFloatNumber();
+        data[i].firstChapter.no = (noF!==null)? parseFloat(noF): null;
+        data[i].firstChapter.url = firstCh.attr('href');
+        data[i].firstChapter.date = dateEngToIsoString(months_en, firstCh.find('span.chapterdate').text());
+
+        const mangaItems = $('div.postbody > article');
+        const lastDateChapter = mangaItems.find('.animefull').find('.bigcontent > .infox > .flex-wrap').last().find('.fmed').last().find('span');
+        const lastChapter = mangaItems.find('.epcheck').find('.lastend > .inepcx > a').last();
+
+        const noL = lastChapter.find('span.epcurlast').text().getOnlyNumber();
+        data[i].lastChapter.no = (noL!==null)? parseInt(noL): null;
+        data[i].lastChapter.url = lastChapter.attr('href');
+        data[i].lastChapter.date = lastDateChapter.find('time').attr('datetime');
+
+        data[i].genres = mangaItems.find('.animefull').find('.bigcontent > .infox > .wd-full > span.mgen > a').map((_,mgen) => $(mgen).text().replace(/[^A-Za-z0-9]/g, '')).get();
+        console.log(`updated => ${(i+1)}/${data.length}`);
+    }
+
+    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
+    let dataJson = JSON.parse(contentJson);
+    dataJson[settings.codeUrl] = data;
+    fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
+}
+
+async function manhuathaiGetManga(maxPageSize=200)
+{
     const host = "https://www.manhuathai.com/";
 
     const settings = getConfigByDomain(host.getDomain());
@@ -103,6 +263,7 @@ async function manhuathaiGetManga(maxPageSize=200){
         data[i].firstChapter.date = dateThaiToIsoString(firstCh.find('span.chapter-release-date > i').text());
 
         data[i].genres = $('div.summary-content > div.genres-content > a').map((_, mgen) => $(mgen).text()).get();
+        data[i].imgUrl = $('div.summary_image > a > img').attr('data-src');
         console.log(`updated => ${(i+1)}/${data.length}`);
     }
 
@@ -112,13 +273,14 @@ async function manhuathaiGetManga(maxPageSize=200){
     fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
 }
 
-async function reapertransGetManga(maxPageSize=200){
-    const host = "https://reapertrans.com/";
+async function tanukimangaGetManga(maxPageSize=300)
+{
+    const host = "https://www.tanuki-manga.com/";
 
     const settings = getConfigByDomain(host.getDomain());
     let data = [];
     for (let p = 1; p < maxPageSize; p++) {
-        const query = `manga/?page=${p}`
+        const query = `manga/?page=${p}&order=update`
         const url = `${host}${query}`;
 
         const dataContent = await axios.get(url, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
@@ -158,12 +320,12 @@ async function reapertransGetManga(maxPageSize=200){
                     date: null,
                 }
             };
-            
             data.push(objJson);
         });
     }
     
     console.log("Update Last Chapter");
+    let x = 0;
     //UPDATE lastChapter
     for (let i = 0; i < data.length; i++) {
         const dataContent = await axios.get(data[i].sourceUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
@@ -174,34 +336,55 @@ async function reapertransGetManga(maxPageSize=200){
 
         const $ = cheerio.load(dataContent);
         
-        const firstCh = $('div#chapterlist > ul > li.first-chapter > .chbox > .eph-num a');
+        const firstCh = $('div#chapterlist > ul > li').last().find('.chbox > .eph-num a');
 
         const noF = firstCh.find('span.chapternum').text().getOnlyFloatNumber();
         data[i].firstChapter.no = (noF!==null)? parseFloat(noF): null;
         data[i].firstChapter.url = firstCh.attr('href');
-        data[i].firstChapter.date = dateEngToIsoString(firstCh.find('span.chapterdate').text());
+        data[i].firstChapter.date = dateEngToIsoString(months_th, firstCh.find('span.chapterdate').text());
 
-        const mangaItems = $('div.postbody > article');
-        const lastDateChapter = mangaItems.find('.animefull').find('.bigcontent > .infox > .flex-wrap').last().find('.fmed').last().find('span');
-        const lastChapter = mangaItems.find('.epcheck').find('.lastend > .inepcx > a').last();
+        const lastChapter = $('div#chapterlist > ul > li').first().find('.chbox > .eph-num a');
 
-        const noL = lastChapter.find('span.epcurlast').text().getOnlyNumber();
+        const noL = lastChapter.find('span.chapternum').text().getOnlyNumber();
         data[i].lastChapter.no = (noL!==null)? parseInt(noL): null;
         data[i].lastChapter.url = lastChapter.attr('href');
-        data[i].lastChapter.date = lastDateChapter.find('time').attr('datetime');
+        data[i].lastChapter.date = dateEngToIsoString(months_th, lastChapter.find('span.chapterdate').text());
 
-        data[i].genres = mangaItems.find('.animefull').find('.bigcontent > .infox > .wd-full > span.mgen > a').map((_,mgen) => $(mgen).text().replace(/[^A-Za-z0-9]/g, '')).get();
+        data[i].genres = $('.main-info > .info-right > .info-desc > .wd-full').first().find('span.mgen > a').map((_,mgen) => $(mgen).text().replace(/[^A-Za-z0-9]/g, '')).get();
+
+        // const found = dataSource.find((manga)=> manga.title.toLowerCase() === data[i].title.toLowerCase());
+        // if(!found){
+        //     const foundUpdate = dataSource.find((manga)=> manga.title.toLowerCase() === data[i].title.toLowerCase()
+        //         && manga.lastChapter !== data[i].lastChapter
+        //     );
+        //     if(!foundUpdate){
+        //         //add new manga
+        //         dataSource.push(manga);
+        //     } else {
+        //         //update existing manga
+        //     }
+        // }
+        
+        if((i+1)% 1000 === 0){
+            const newData = data.slice(x, i+1);
+            saveStore(settings.codeUrl, newData);
+            x = (i+1);
+        }
         console.log(`updated => ${(i+1)}/${data.length}`);
     }
-
-    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
-    let dataJson = JSON.parse(contentJson);
-    dataJson[settings.codeUrl] = data;
-    fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
+    
+    const newData = data.slice(x, data.length);
+    saveStore(settings.codeUrl, newData);
+    
+    // const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
+    // let dataJson = JSON.parse(contentJson);
+    // dataJson[settings.codeUrl] = data;
+    // fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
 }
 
 async function syncAll(){
-    await reapertransGetManga();
-    await manhuathaiGetManga();
+    //await reapertransGetManga();
+    //await manhuathaiGetManga();
+    await tanukimangaGetManga();
 }
 //syncAll();

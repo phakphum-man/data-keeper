@@ -19,6 +19,9 @@ module.exports = function (app) {
         let htmlGenre = "";
         if(g){
             htmlGenre = `&g=${g}`;
+            htmlContent = htmlContent.replace("<%=GROUP>", g);
+        }else{
+            htmlContent = htmlContent.replace("<%=GROUP>","All");
         }
 
         if(pNo > 1){
