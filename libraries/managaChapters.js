@@ -1,7 +1,7 @@
 require("./util.string");
 const axios = require('axios');
 const cheerio = require('cheerio');
-const { getConfigByDomain, mangaStore } = require('./mangaStore');
+const { getConfigByDomain, manga } = require('./mangaStore');
 
 /** Imprement Manga Chapter List **/
 
@@ -9,7 +9,7 @@ async function reapertransChapter(query){
     const host = "https://reapertrans.com/";
     const chAt = query.indexOf('ตอนที่');
     const title = query.substr(0, chAt-1);
-    const store = mangaStore().find(x => x.title === title && x.sourceUrl.startsWith(host));
+    const store = manga["store"].find(x => x.title === title && x.sourceUrl.startsWith(host));
     if (!store.sourceUrl){
         console.log("Found Manga from title " + query);
         return [];
@@ -45,7 +45,7 @@ async function manhuathaiChapter(query){
     const chAt = query.indexOf('ตอนที่');
     const title = query.substr(0, chAt-2).trim().replace(/[^A-Za-z0-9]/g, "");
 
-    const store = mangaStore().find(x => x.title?.replace(/[^A-Za-z0-9]/g, "") === title && x.sourceUrl.startsWith(host));
+    const store = manga["store"].find(x => x.title?.replace(/[^A-Za-z0-9]/g, "") === title && x.sourceUrl.startsWith(host));
     if (!store || !store.sourceUrl){
         console.log("Not Found Manga from title " + query);
         return [];
@@ -92,7 +92,7 @@ async function tanukimangaChapter(query){
     const host = "https://www.tanuki-manga.com/";
     const chAt = query.indexOf('ตอนที่');
     const title = query.substr(0, chAt-1);
-    const store = mangaStore().find(x => x.title === title && x.sourceUrl.startsWith(host));
+    const store = manga["store"].find(x => x.title === title && x.sourceUrl.startsWith(host));
     if (!store?.sourceUrl){
         console.log("Found Manga from title " + query);
         return [];

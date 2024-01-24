@@ -19,7 +19,7 @@ module.exports = function (app) {
         let htmlGenre = "";
         if(g){
             htmlGenre = `&g=${g}`;
-            htmlContent = htmlContent.replace("<%=GROUP>", g);
+            htmlContent = htmlContent.replace("<%=GROUP>", encodeURIComponent(g).replaceAll("%20"," "));
         }else{
             htmlContent = htmlContent.replace("<%=GROUP>","All");
         }

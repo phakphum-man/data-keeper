@@ -11,6 +11,12 @@ const months_th = [ "มกราคม", "กุมภาพันธ์", "ม
 const months_en = [ "January", "February", "March", "April", "May", "June", "July",
         "August", "September", "October", "November", "December", ];
 
+const filePath = `${process.cwd()}/mnt/data/manga.json`
+if(!fs.existsSync(filePath)){
+    fs.writeFileSync(filePath, JSON.stringify("{}"));
+}
+const manga = JSON.parse(fs.readFileSync(filePath,'utf8'));
+    
 function getConfigByDomain(domain){
     const check = domain.toLowerCase();
     const data = configs.filter((config) => config.host.getDomain() === check);
@@ -28,8 +34,8 @@ function getConfigByCode(code){
     return null;
 }
 
-function mangaStore(){
-    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
+function mergeManga(){
+    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga-sources.json`,'utf8');
     const dataJson = JSON.parse(contentJson);
 
     const mergeData = dataJson[configs[0].codeUrl].concat(dataJson[configs[1].codeUrl]).concat(dataJson[configs[2].codeUrl]);
@@ -46,11 +52,25 @@ function mangaStore(){
         }
         return manga
     });
-    return data.filter((data) => data != null && data.title);
+    const allData = data.filter((data) => data != null && data.title);
+
+
+    const bestLayoutColumn = 5;
+    const genres = [].concat(...allData.map((data) => data.genres));
+    let uniqueGenres = [...new Set(genres)];
+    uniqueGenres = uniqueGenres.filter(g => g !== "");
+
+    let ignoreGenres = uniqueGenres.filter((genre) => allData.filter((item)=> item.genres.indexOf(genre) > -1).length < bestLayoutColumn);
+    //ignoreGenres = ignoreGenres.concat(["Martial Arts","School Life","Sci-fi","Slice of Life"]);// have white-space then bad layout
+
+    uniqueGenres = uniqueGenres.filter(g => ignoreGenres.indexOf(g) === -1)
+
+    fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify({ "store": allData, "genres": uniqueGenres }));
+    console.log('Merge manga done.')
 }
 
 function getTotalPage(genre = ""){
-    let allData = mangaStore();
+    let allData = manga["store"];
     if(genre){
         allData = allData.filter((item)=> item.genres.indexOf(genre) > -1);
     }
@@ -58,35 +78,30 @@ function getTotalPage(genre = ""){
 }
 
 function saveStore(codeUrl, newData) {
-    // const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8');
-    // const dataJson = JSON.parse(contentJson);
-    // return dataJson[codeUrl]||[];
-
-    const srcPath = `${process.cwd()}/mnt/data/manga.json`;
+    const srcPath = `${process.cwd()}/mnt/data/manga-sources.json`;
     fs.readFile(srcPath, 'utf8', function (err, contentJson) {
         if (err) throw err;
-        let dataJson = JSON.parse(contentJson);
+        let dataJson = JSON.parse(contentJson||"{}");
         const oldData = dataJson[codeUrl] || [];
-
-        // const data = newData.map(n => 
-        //     oldData.find(o => o.title.toLowerCase() === n.title.toLowerCase()
-        //         && o.lastChapter === n.lastChapter
-        //     ) || n);
 
         let data = oldData;
         newData.forEach(n => {
-            if(data.find(o => o.title.toLowerCase() === n.title?.toLowerCase())){
-                data = data.map(o => (o.title.toLowerCase() === n.title?.toLowerCase() && o.lastChapter !== n.lastChapter? n : o));
-            }else{
-                data.push(n);
+            if(n.title){
+                if(data.find(o => o.title.toLowerCase() === n.title.toLowerCase())){
+                    data = data.map(o => (o.title.toLowerCase() === n.title?.toLowerCase() && o.lastChapter !== n.lastChapter? n : o));
+                }else{
+                    //console.log("add new");
+                    data.push(n);
+                }
             }
         });
 
         dataJson[codeUrl] = data;
         fs.writeFile (srcPath, JSON.stringify(dataJson), function(err) {
             if (err) throw err;
-            console.log(`save file (${codeUrl} complete)`);
+            console.log("...Save.");
+            //console.log(` ...Save file (${codeUrl} is complete ${newData.length} rows.)`);
         });
     });
 }
-module.exports = { configs, pageSize, months_th, months_en, getTotalPage, getConfigByDomain, getConfigByCode, mangaStore, saveStore}
+module.exports = { configs, pageSize, months_th, months_en, getTotalPage, getConfigByDomain, getConfigByCode, manga, saveStore, mergeManga}

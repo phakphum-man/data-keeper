@@ -5,7 +5,7 @@ const os = require('os');
 const fs = require('fs');
 const axios = require('axios');
 const cheerio = require('cheerio');
-const { getConfigByDomain, saveStore, months_th, months_en} = require('./mangaStore');
+const { getConfigByDomain, saveStore, months_th, months_en, mergeManga} = require('./mangaStore');
 
 const QueueNameBinding = `work${os.hostname()}`;
 
@@ -19,7 +19,7 @@ const bindingQueue = new Queue(QueueNameBinding, { connection });
 // Imprement Logic of Queue
 const workBinding = new Worker(QueueNameBinding, async (job)=>{
     try{
-        await syncAll();
+        return await syncAll();
     }catch (error) {
         console.log(`Error worth logging: ${error}`);
         throw error; // still want to crash
@@ -142,6 +142,7 @@ async function reapertransGetManga(maxPageSize=200)
     }
     
     console.log(`\nUpdate Chapters(${data.length})...`);
+    let x = 0;
     //UPDATE lastChapter
     for (let i = 0; i < data.length; i++) {
         const dataContent = await axios.get(data[i].sourceUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
@@ -169,14 +170,24 @@ async function reapertransGetManga(maxPageSize=200)
         data[i].lastChapter.date = lastDateChapter.find('time').attr('datetime');
 
         data[i].genres = mangaItems.find('.animefull').find('.bigcontent > .infox > .wd-full > span.mgen > a').map((_,mgen) => $(mgen).text().replace(/[^A-Za-z0-9]/g, '')).get();
+
+        if((i+1)% 100 === 0){
+            const newData = data.slice(x, i+1);
+            saveStore(settings.codeUrl, newData);
+            x = (i+1);
+        }
+
         process.stdout.write(`${(i+1)} `);
     }
 
-    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8')||"{}";
-    let dataJson = JSON.parse(contentJson);
-    dataJson[settings.codeUrl] = data;
-    fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
-    console.log(`save data ${host} done.`);
+    const newData = data.slice(x, data.length);
+    saveStore(settings.codeUrl, newData);
+
+    // const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8')||"{}";
+    // let dataJson = JSON.parse(contentJson);
+    // dataJson[settings.codeUrl] = data;
+    // fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
+    console.log(`\nSAVE DATA ${host} Done.`);
 }
 
 async function manhuathaiGetManga(maxPageSize=200)
@@ -250,6 +261,7 @@ async function manhuathaiGetManga(maxPageSize=200)
     }
 
     console.log(`\nUpdate Chapters(${data.length})...`);
+    let x = 0;
     //UPDATE lastChapter
     for (let i = 0; i < data.length; i++) {
         const dataContent = await axios.get(data[i].sourceUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
@@ -269,14 +281,23 @@ async function manhuathaiGetManga(maxPageSize=200)
 
         data[i].genres = $('div.summary-content > div.genres-content > a').map((_, mgen) => $(mgen).text()).get();
         data[i].imgUrl = $('div.summary_image > a > img').attr('data-src');
+
+        if((i+1)% 100 === 0){
+            const newData = data.slice(x, i+1);
+            saveStore(settings.codeUrl, newData);
+            x = (i+1);
+        }
         process.stdout.write(`${(i+1)} `);
     }
 
-    const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8')||"{}";
-    let dataJson = JSON.parse(contentJson);
-    dataJson[settings.codeUrl] = data;
-    fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
-    console.log(`save data ${host} done.`);
+    const newData = data.slice(x, data.length);
+    saveStore(settings.codeUrl, newData);
+
+    // const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga.json`,'utf8')||"{}";
+    // let dataJson = JSON.parse(contentJson);
+    // dataJson[settings.codeUrl] = data;
+    // fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
+    console.log(`\nSAVE DATA ${host} Done.`);
 }
 
 async function tanukimangaGetManga(maxPageSize=300)
@@ -377,14 +398,22 @@ async function tanukimangaGetManga(maxPageSize=300)
     // dataJson[settings.codeUrl] = data;
     // fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
 
-    console.log(`save data ${host} done.`);
+    console.log(`\nSAVE DATA ${host} Done.`);
 }
 
 async function syncAll(){
-    //await reapertransGetManga();
-    //await manhuathaiGetManga();
-    await tanukimangaGetManga();
+    try {
+        //await reapertransGetManga();
+        //await manhuathaiGetManga();
+        //await tanukimangaGetManga();
+
+        return true;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
 }
+//mergeManga();
 //syncAll();
 //clearAllJobs();
 //startBackgroundRun();
