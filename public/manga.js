@@ -12,6 +12,7 @@ window.onload = function () {
             let img = document.createElement('img');
             img.src = item.imgUrl;
             img.alt = item.title;
+            img.onclick = () => { window.location.href = item.firstChapter.url; }
             linkshop.appendChild(img);
 
             let h3 = document.createElement('h3');

@@ -3,6 +3,7 @@
 node_modules/
 .fly/
 mnt/data/db.sqlite3
+mnt/data/manga-sources.json
 mnt/servicefiles/
 
 credentials.json

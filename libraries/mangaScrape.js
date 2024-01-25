@@ -90,7 +90,7 @@ async function reapertransGetManga(maxPageSize=200)
 {
     const host = "https://reapertrans.com/";
 
-    console.log(`\nScraping to ${host}`);
+    console.log(`\nScraping to \x1b[33m${host}\x1b[0m`);
     const settings = getConfigByDomain(host.getDomain());
     console.log("fetch html page...");
     let data = [];
@@ -187,14 +187,14 @@ async function reapertransGetManga(maxPageSize=200)
     // let dataJson = JSON.parse(contentJson);
     // dataJson[settings.codeUrl] = data;
     // fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
-    console.log(`\nSAVE DATA ${host} Done.`);
+    console.log(`\n\x1b[33mSAVE DATA ${host} Done.\x1b[0m`);
 }
 
 async function manhuathaiGetManga(maxPageSize=200)
 {
     const host = "https://www.manhuathai.com/";
 
-    console.log(`\nScraping to ${host}`);
+    console.log(`\nScraping to \x1b[33m${host}\x1b[0m`);
     const settings = getConfigByDomain(host.getDomain());
     console.log("fetch html page...");
     let data = [];
@@ -297,14 +297,14 @@ async function manhuathaiGetManga(maxPageSize=200)
     // let dataJson = JSON.parse(contentJson);
     // dataJson[settings.codeUrl] = data;
     // fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
-    console.log(`\nSAVE DATA ${host} Done.`);
+    console.log(`\n\x1b[33mSAVE DATA ${host} Done.\x1b[0m`);
 }
 
 async function tanukimangaGetManga(maxPageSize=300)
 {
     const host = "https://www.tanuki-manga.com/";
 
-    console.log(`\nScraping to ${host}`);
+    console.log(`\nScraping to \x1b[33m${host}\x1b[0m`);
     const settings = getConfigByDomain(host.getDomain());
 
     console.log("fetch html page...");
@@ -398,7 +398,7 @@ async function tanukimangaGetManga(maxPageSize=300)
     // dataJson[settings.codeUrl] = data;
     // fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify(dataJson));
 
-    console.log(`\nSAVE DATA ${host} Done.`);
+    console.log(`\n\x1b[33mSAVE DATA ${host} Done.\x1b[0m`);
 }
 
 async function syncAll(){
@@ -415,5 +415,6 @@ async function syncAll(){
 }
 //mergeManga();
 //syncAll();
+
 //clearAllJobs();
 //startBackgroundRun();

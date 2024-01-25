@@ -100,6 +100,16 @@
             margin-right: 75px;
         }
 
+        .chapter{
+            display: inline-block;
+            color: red;
+            margin-top: 15px;
+        }
+        @media screen and (max-width: 420px) {
+            .chapter {
+                width: 115px;
+            }
+        }
         .no-chapter-next{
             width: 110px;
             display: block;
@@ -114,7 +124,7 @@
 
         a.read-more {
             width: 115px;
-            color: red;
+            color: #222f3d;
             display: inline-block;
             margin-top: 20px;
         }
@@ -495,7 +505,7 @@
             <button onclick="gotoTop()" id="gotoTopBtn" title="Go to top">&#8593;</button>
             <div class="footer">
                 <%=BTN_PREV%>
-                <a class="read-more" href="/manga">Go to Manga</a>
+                <div class="chapter"><%=TITLE%></div>
                 <%=BTN_NEXT%>
             </div>
         </div>
