@@ -1,7 +1,7 @@
 require("./util.string");
 const axios = require('axios');
 const cheerio = require('cheerio');
-const { configs, pageSize, months_th, manga } = require('./mangaStore');
+const { configs, pageSize, months_th, manga, matchGroup } = require('./mangaStore');
 //const puppeteer = require('puppeteer');
 async function getImage(url){
     const imgUrl = url ===''? "https://placehold.co/200x300/jpeg?text=Image%20Not%20Found" : url;
@@ -24,7 +24,7 @@ function viewDate(dbDate){
     return date;
 }
 
-function getMangaByPage(page, search="", genre = ""){
+function getMangaByPage(page, search="", group = ""){
     let allData = manga["store"];
     let limitSize = pageSize;
 
@@ -33,8 +33,9 @@ function getMangaByPage(page, search="", genre = ""){
         limitSize = 10;
     }
 
-    if(genre){
-        allData = allData.filter((item)=> item.genres.indexOf(genre) > -1);
+    if(group){
+
+        allData = allData.filter((item)=> matchGroup(item.genres, group));
     }
 
     return allData.sort((a, b)=> {
@@ -82,16 +83,8 @@ function getMangaByPage(page, search="", genre = ""){
 }
 
 function getGenres(){
-    // const bestLayoutColumn = 6;
-    // const allData = manga;
-    // const genres = [].concat(...allData.map((data) => data.genres));
-    // let uniqueGenres = [...new Set(genres)];
-    // uniqueGenres = uniqueGenres.filter(g => g !== "");
+    return manga["groups"];
 
-    // let ignoreGenres = uniqueGenres.filter((genre) => allData.filter((item)=> item.genres.indexOf(genre) > -1).length < bestLayoutColumn);
-    // ignoreGenres = ignoreGenres.concat(["Martial Arts","School Life","Sci-fi","Slice of Life"]);// have white-space then bad layout
-    // return uniqueGenres.filter(g => ignoreGenres.indexOf(g) === -1);
-    return manga["genres"];
 }
 
 /** Imprement Manga Reader Content **/

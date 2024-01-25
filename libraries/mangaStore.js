@@ -16,7 +16,17 @@ if(!fs.existsSync(filePath)){
     fs.writeFileSync(filePath, JSON.stringify("{}"));
 }
 const manga = JSON.parse(fs.readFileSync(filePath,'utf8'));
-    
+const groups = [
+    {"General":"Action,Comedy,Romance,Drama,Historical,Mystery,Tragedy,Psychological,Manga,Manhwa,Manhua"},
+    {"Fantasy": "Fantasy,Ecchi,Harem,Mature,Yaoi,Yuri,magic"},
+    {"Life":"SchoolLife,School Life,Shounen,Seinen,Shoujo,Josei,ShoujoAi,ShounenAi"},
+    {"Adventure":"Adventure,MartialArts,Martial Arts,revenge,Sport,Sports,DarkFantasy,Isekai"},
+    {"System":"SyStem,Reincarnation,Scifi,Sci-fi,Mecha"},
+    {"Supernatural":"Superhero,Supernatural,Horror,GenderBender,Webtoons,Comic"},
+    {"One Shot":"OneShot,SliceofLife,Slice of Life"},
+    {"Adult":"Adult,Manhwa18,Doujin,Dojin,Doujinshi,Lolicon,smut,Hentai,Shotacon"},
+];
+
 function getConfigByDomain(domain){
     const check = domain.toLowerCase();
     const data = configs.filter((config) => config.host.getDomain() === check);
@@ -40,6 +50,7 @@ function mergeManga(){
 
     const mergeData = dataJson[configs[0].codeUrl].concat(dataJson[configs[1].codeUrl]).concat(dataJson[configs[2].codeUrl]);
 
+    
     const titles = mergeData.map((data) => data.title);
     const uniqueTitles = [...new Set(titles)];
     const data = uniqueTitles.map((title)=> {
@@ -55,17 +66,17 @@ function mergeManga(){
     const allData = data.filter((data) => data != null && data.title);
 
 
-    const bestLayoutColumn = 5;
-    const genres = [].concat(...allData.map((data) => data.genres));
-    let uniqueGenres = [...new Set(genres)];
-    uniqueGenres = uniqueGenres.filter(g => g !== "");
+    // const bestLayoutColumn = 5;
+    // const genres = [].concat(...allData.map((data) => data.genres));
+    // let uniqueGenres = [...new Set(genres)];
+    // uniqueGenres = uniqueGenres.filter(g => g !== "");
 
-    let ignoreGenres = uniqueGenres.filter((genre) => allData.filter((item)=> item.genres.indexOf(genre) > -1).length < bestLayoutColumn);
+    // let ignoreGenres = uniqueGenres.filter((genre) => allData.filter((item)=> item.genres.indexOf(genre) > -1).length < bestLayoutColumn);
     //ignoreGenres = ignoreGenres.concat(["Martial Arts","School Life","Sci-fi","Slice of Life"]);// have white-space then bad layout
 
-    uniqueGenres = uniqueGenres.filter(g => ignoreGenres.indexOf(g) === -1)
+    // uniqueGenres = uniqueGenres.filter(g => ignoreGenres.indexOf(g) === -1)
 
-    fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify({ "store": allData, "genres": uniqueGenres }));
+    fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify({ "store": allData, "groups": groups.map(g => Object.keys(g)[0]) }));
     console.log('Merge manga done.')
 }
 
@@ -77,6 +88,19 @@ function getTotalPage(genre = ""){
     return (allData.length / pageSize);
 }
 
+function matchGroup(genres, group){
+    const configGenres = groups.reduce((ret, entry, i)=>{
+        for (const [key, value] of Object.entries(entry)) {
+            ret[key] = value.split(',').map((v) => v.trim());
+        }
+        return ret;
+    },[]);
+    const g = configGenres[group];
+    if(g && g.length > 0) {
+        return genres.some(item => g.includes(item));
+    }
+    return false;
+}
 function saveStore(codeUrl, newData) {
     const srcPath = `${process.cwd()}/mnt/data/manga-sources.json`;
     fs.readFile(srcPath, 'utf8', function (err, contentJson) {
@@ -104,4 +128,4 @@ function saveStore(codeUrl, newData) {
         });
     });
 }
-module.exports = { configs, pageSize, months_th, months_en, getTotalPage, getConfigByDomain, getConfigByCode, manga, saveStore, mergeManga}
+module.exports = { configs, pageSize, months_th, months_en, matchGroup, getTotalPage, getConfigByDomain, getConfigByCode, manga, saveStore, mergeManga}
