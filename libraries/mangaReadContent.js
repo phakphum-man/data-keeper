@@ -83,7 +83,6 @@ function getMangaByPage(page, search="", groupId = 0){
 
 function getGenres(){
     return manga["groups"];
-
 }
 
 /** Imprement Manga Reader Content **/

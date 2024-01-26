@@ -73,3 +73,8 @@ String.prototype.getOnlyFloatNumber = function() {
     }
     return null;
 }
+
+String.prototype.formatNumberCommas = function() {
+    let str = this;
+    return str.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}

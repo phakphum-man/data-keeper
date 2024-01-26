@@ -2,7 +2,7 @@ require('dotenv').config();
 require("../libraries/util.string");
 const fs = require('fs');
 const path = require('path');
-const { getTotalPage, getConfigByCode } = require('../libraries/mangaStore');
+const { getTotalPage, getConfigByCode, manga } = require('../libraries/mangaStore');
 const mangaChapter = require('../libraries/managaChapters');
 const mangaContent = require('../libraries/mangaReadContent');
 
@@ -28,7 +28,7 @@ module.exports = function (app) {
                 htmlContent = htmlContent.replace("<%=GROUP>", "Not Found");
             }
         }else{
-            htmlContent = htmlContent.replace("<%=GROUP>","All");
+            htmlContent = htmlContent.replace("<%=GROUP>",`All(${manga["store"].length.toString().formatNumberCommas()})`);
         }
 
         if(pNo > 1){
