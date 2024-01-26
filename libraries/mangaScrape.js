@@ -83,7 +83,7 @@ function dateThaiToIsoString(dateThaiString, dateDefault = "") {
 // Use: dateEngToIsoString(months_en, "March 3, 2023")
 function dateEngToIsoString(months, dateThaiString, dateDefault = "") {
     const dateSplit = dateThaiString.split(' ');
-    return (dateSplit.length == 3)? `${dateSplit[1].replace(",","")}-${(months.indexOf(dateSplit[0])+1)}-${dateSplit[2]}T23:52:38+07:00`: dateDefault;
+    return (dateSplit.length == 3)? `${dateSplit[2]}-${(months.indexOf(dateSplit[0])+1)}-${dateSplit[1].replace(",","")}T23:52:38+07:00`: dateDefault;
 }
 
 async function reapertransGetManga(maxPageSize=200)
