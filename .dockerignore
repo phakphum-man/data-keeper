@@ -5,6 +5,12 @@ node_modules/
 mnt/data/db.sqlite3
 mnt/data/manga-sources.json
 mnt/servicefiles/
+reports/docx/
+reports/excel/
+reports/pdf/
 
+fly.toml
+render.yaml
+README.md
 credentials.json
 4bcb9ac3-8de1-4330-9f08-f0046774f7ad.json
