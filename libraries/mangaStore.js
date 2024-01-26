@@ -17,14 +17,19 @@ if(!fs.existsSync(filePath)){
 }
 const manga = JSON.parse(fs.readFileSync(filePath,'utf8'));
 const groups = [
-    {"General":"Action,Comedy,Romance,Drama,Historical,Mystery,Tragedy,Psychological,Manga,Manhwa,Manhua"},
-    {"Fantasy": "Fantasy,Ecchi,Harem,Mature,Yaoi,Yuri,magic"},
-    {"Life":"SchoolLife,School Life,Shounen,Seinen,Shoujo,Josei,ShoujoAi,ShounenAi"},
-    {"Adventure":"Adventure,MartialArts,Martial Arts,revenge,Sport,Sports,DarkFantasy,Isekai"},
-    {"System":"SyStem,Reincarnation,Scifi,Sci-fi,Mecha"},
-    {"Supernatural":"Superhero,Supernatural,Horror,GenderBender,Webtoons,Comic"},
-    {"One Shot":"OneShot,SliceofLife,Slice of Life"},
-    {"Adult":"Adult,Manhwa18,Doujin,Dojin,Doujinshi,Lolicon,smut,Hentai,Shotacon"},
+    {"50 ตอน+":"#50plus#"},
+    {"100 ตอน+":"#100plus#"},
+    {"แนวต่อสู้":"Action"},
+    {"แนว เวทย์ มนต์": "Fantasy,DarkFantasy,magic"},
+    {"แนวฮาเร็ม": "Harem,Mature"},
+    {"แนวอนิเมะ":"SchoolLife,School Life,Ecchi,Shounen,Seinen,Shoujo,Josei,ShoujoAi,ShounenAi,Yaoi,Yuri,Comedy,Romance,Drama"},
+    {"แนวผจญภัย":"Adventure,MartialArts,Martial Arts"},
+    {"แนวลึกลับสืบสวน":"Mystery,Historical,Tragedy,Psychological"},
+    {"แนวกีฬา":"Sport,Sports"},
+    {"แนวเกิดใหม่":"Reincarnation,revenge"},
+    {"แนวต่างโลก":"Isekai"},
+    {"แนวมีระบบ":"SyStem,Scifi,Sci-fi,Mecha"},
+    {"แนวผู้ใหญ่ 18+":"Adult,Manhwa18,Doujin,Dojin,Doujinshi,Lolicon,smut,Hentai,Shotacon"},
 ];
 
 function getConfigByDomain(domain){
@@ -63,32 +68,22 @@ function mergeManga(){
         }
         return manga
     });
-    const allData = data.filter((data) => data != null && data.title);
-
-
-    // const bestLayoutColumn = 5;
-    // const genres = [].concat(...allData.map((data) => data.genres));
-    // let uniqueGenres = [...new Set(genres)];
-    // uniqueGenres = uniqueGenres.filter(g => g !== "");
-
-    // let ignoreGenres = uniqueGenres.filter((genre) => allData.filter((item)=> item.genres.indexOf(genre) > -1).length < bestLayoutColumn);
-    //ignoreGenres = ignoreGenres.concat(["Martial Arts","School Life","Sci-fi","Slice of Life"]);// have white-space then bad layout
-
-    // uniqueGenres = uniqueGenres.filter(g => ignoreGenres.indexOf(g) === -1)
+    const allData = data.filter((data) => data != null && data.title && data.imgUrl);
 
     fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify({ "store": allData, "groups": groups.map(g => Object.keys(g)[0]) }));
     console.log('Merge manga done.')
 }
 
-function getTotalPage(genre = ""){
+function getTotalPage(groupIds = ""){
     let allData = manga["store"];
-    if(genre){
-        allData = allData.filter((item)=> item.genres.indexOf(genre) > -1);
+    if(groupIds){
+        const groupId = parseInt(groupIds.getOnlyNumber())-1;
+        allData = allData.filter((item)=> matchGroup(item.genres, (groupId-1), item.lastChapter));
     }
     return (allData.length / pageSize);
 }
 
-function matchGroup(genres, groupId){
+function matchGroup(genres, groupId, lastChapter){
     const configGenres = groups.reduce((ret, entry, i)=>{
         for (const [key, value] of Object.entries(entry)) {
             let g = {};
@@ -101,11 +96,17 @@ function matchGroup(genres, groupId){
     if(gConfig && typeof gConfig === "object") {
         let g = Object.values(gConfig); 
         if(g.length > 0){
-            return genres.some(item => g[0].includes(item));
+            if(g[0].length == 1 && g[0][0].startsWith("#")){
+                const no = parseInt(g[0][0].replaceAll("#","").getOnlyNumber());
+                return lastChapter.no > no;
+            } else {
+                return genres.some(item => g[0].includes(item));
+            }
         }
     }
     return false;
 }
+
 function saveStore(codeUrl, newData) {
     const srcPath = `${process.cwd()}/mnt/data/manga-sources.json`;
     fs.readFile(srcPath, 'utf8', function (err, contentJson) {

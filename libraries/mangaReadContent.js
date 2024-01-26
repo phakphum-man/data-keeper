@@ -34,7 +34,7 @@ function getMangaByPage(page, search="", groupId = 0){
     }
 
     if(groupId){
-        allData = allData.filter((item)=> matchGroup(item.genres, (groupId-1)));
+        allData = allData.filter((item)=> matchGroup(item.genres, (groupId-1), item.lastChapter));
     }
 
     return allData.sort((a, b)=> {
