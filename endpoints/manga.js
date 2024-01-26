@@ -16,10 +16,17 @@ module.exports = function (app) {
         const pNo = (p)? parseInt(p.getOnlyNumber()) : 1;
         let htmlContent = fs.readFileSync(`${rootPath}/manga.html`, 'utf8');
 
+        const genres =  mangaContent.getGenres();
         let htmlGenre = "";
         if(g){
             htmlGenre = `&g=${g}`;
-            htmlContent = htmlContent.replace("<%=GROUP>", encodeURIComponent(g).replaceAll("%20"," "));
+            const id = parseInt(g.getOnlyNumber())-1;
+            const gItem = genres.find((_,x) => x === id);
+            if(gItem){
+                htmlContent = htmlContent.replace("<%=GROUP>", gItem);
+            } else {
+                htmlContent = htmlContent.replace("<%=GROUP>", "Not Found");
+            }
         }else{
             htmlContent = htmlContent.replace("<%=GROUP>","All");
         }
@@ -37,10 +44,9 @@ module.exports = function (app) {
         }
 
         // for nav menu items
-        const rows =  mangaContent.getGenres();
-        if(rows.length > 0){
-            const links = rows.map((r) =>{
-                return `<li><a href="/manga?g=${r}&p=1">${r}</a></li>`;
+        if(genres.length > 0){
+            const links = genres.map((r,i) =>{
+                return `<li><a href="/manga?g=${(i+1)}&p=1">${r}</a></li>`;
             });
             htmlContent = htmlContent.replace("<%=NAV_LINKS%>",`<ul class="links">${links.join('\n')}</ul>`);
         } else {
@@ -109,7 +115,8 @@ module.exports = function (app) {
             return res.status(404).send("Not Found");
         }
 
-        const rows =  mangaContent.getMangaByPage(parseInt(p), s, g);
+        const id = parseInt(g.getOnlyNumber());
+        const rows =  mangaContent.getMangaByPage(parseInt(p), s, id);
         if(rows) {
             return res.status(200).send({data: rows});
         }

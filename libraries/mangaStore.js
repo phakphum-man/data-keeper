@@ -88,16 +88,21 @@ function getTotalPage(genre = ""){
     return (allData.length / pageSize);
 }
 
-function matchGroup(genres, group){
+function matchGroup(genres, groupId){
     const configGenres = groups.reduce((ret, entry, i)=>{
         for (const [key, value] of Object.entries(entry)) {
-            ret[key] = value.split(',').map((v) => v.trim());
+            let g = {};
+            g[key] = value.split(',').map((v) => v.trim());
+            ret[i] = g;
         }
         return ret;
     },[]);
-    const g = configGenres[group];
-    if(g && g.length > 0) {
-        return genres.some(item => g.includes(item));
+    const gConfig = configGenres[groupId];
+    if(gConfig && typeof gConfig === "object") {
+        let g = Object.values(gConfig); 
+        if(g.length > 0){
+            return genres.some(item => g[0].includes(item));
+        }
     }
     return false;
 }

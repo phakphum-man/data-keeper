@@ -24,7 +24,7 @@ function viewDate(dbDate){
     return date;
 }
 
-function getMangaByPage(page, search="", group = ""){
+function getMangaByPage(page, search="", groupId = 0){
     let allData = manga["store"];
     let limitSize = pageSize;
 
@@ -33,9 +33,8 @@ function getMangaByPage(page, search="", group = ""){
         limitSize = 10;
     }
 
-    if(group){
-
-        allData = allData.filter((item)=> matchGroup(item.genres, group));
+    if(groupId){
+        allData = allData.filter((item)=> matchGroup(item.genres, (groupId-1)));
     }
 
     return allData.sort((a, b)=> {
