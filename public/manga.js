@@ -1,51 +1,22 @@
 window.onload = function () {
-    const mangaList = document.querySelector('.shop-images');
     const params = (new URL(document.location)).searchParams;
     const p = params.get("p")??1;
     const g = params.get("g")??"";
     getAjax('/manga/api', {p:p,g:g}, (data) => {
         const jsData = JSON.parse(data);
-        jsData.data.forEach((item) => {
-            let linkshop = document.createElement('div');
-            linkshop.className = 'shop-link';
-
-            let img = document.createElement('img');
-            img.src = item.imgUrl;
-            img.alt = item.title;
-            img.onclick = () => { window.location.href = item.firstChapter.url; }
-            linkshop.appendChild(img);
-
-            let h3 = document.createElement('h3');
-            h3.innerText = item.title;
-            linkshop.appendChild(h3);
-            
-            let aLast = document.createElement('a');
-            aLast.className = 'btn-link';
-            aLast.href = item.lastChapter.url;
-            aLast.innerHTML = item.lastChapter.title;
-            aLast.alt = "New Chapter";
-
-            let spanLast = document.createElement('span');
-            spanLast.className = 'date';
-            spanLast.innerHTML = item.lastChapter.date;
-            aLast.appendChild(spanLast);
-            linkshop.appendChild(aLast);
-
-            let aFirst = document.createElement('a');
-            aFirst.className = 'btn-link';
-            aFirst.href = item.firstChapter.url;
-            aFirst.innerHTML = item.firstChapter.title;
-            aFirst.alt = "First Chapter";
-
-            let spanFirst = document.createElement('span');
-            spanFirst.className = 'date';
-            spanFirst.innerHTML = item.firstChapter.date;
-            aFirst.appendChild(spanFirst);
-            linkshop.appendChild(aFirst);
-
-            mangaList.appendChild(linkshop);
-        });
+        renderManga(jsData.data, '.shop-images');
     });
+
+    const home = document.querySelector('.shop-section h2');
+    if(home.innerText.startsWith("All")){
+        document.querySelector('.hero-section').style.display = "flex";
+        getAjax('/manga/api/hits', {p:p,g:g}, (data) => {
+            const jsData = JSON.parse(data);
+            renderManga(jsData.data, '.shop-hit-images');
+        });
+    } else {
+        document.querySelector('.hero-section').style.display = "none";
+    }
     /*
     document.querySelector('.search-icon').addEventListener('click', () =>{
         window.location.href = "/manga/host";
@@ -79,5 +50,49 @@ window.onload = function () {
                 });
             });
         }
+    });
+}
+
+function renderManga(jsData, htmlSelector) {
+    const mangaList = document.querySelector(htmlSelector);
+    jsData.forEach((item) => {
+        let linkshop = document.createElement('div');
+        linkshop.className = 'shop-link';
+
+        let img = document.createElement('img');
+        img.src = item.imgUrl;
+        img.alt = item.title;
+        img.onclick = () => { window.location.href = item.firstChapter.url; }
+        linkshop.appendChild(img);
+
+        let h3 = document.createElement('h3');
+        h3.innerText = item.title;
+        linkshop.appendChild(h3);
+        
+        let aLast = document.createElement('a');
+        aLast.className = 'btn-link';
+        aLast.href = item.lastChapter.url;
+        aLast.innerHTML = item.lastChapter.title;
+        aLast.alt = "New Chapter";
+
+        let spanLast = document.createElement('span');
+        spanLast.className = 'date';
+        spanLast.innerHTML = item.lastChapter.date;
+        aLast.appendChild(spanLast);
+        linkshop.appendChild(aLast);
+
+        let aFirst = document.createElement('a');
+        aFirst.className = 'btn-link';
+        aFirst.href = item.firstChapter.url;
+        aFirst.innerHTML = item.firstChapter.title;
+        aFirst.alt = "First Chapter";
+
+        let spanFirst = document.createElement('span');
+        spanFirst.className = 'date';
+        spanFirst.innerHTML = item.firstChapter.date;
+        aFirst.appendChild(spanFirst);
+        linkshop.appendChild(aFirst);
+
+        mangaList.appendChild(linkshop);
     });
 }

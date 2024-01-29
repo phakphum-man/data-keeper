@@ -123,14 +123,15 @@ module.exports = function (app) {
         return res.status(404).send("Not Found");
     });
 
-    // app.get('/manga/api/genres', async (req, res) => {
-    //     // #swagger.ignore = true
-    //     const rows =  mangaContent.getGenres();
-    //     if(rows) {
-    //         return res.status(200).send({data: rows});
-    //     }
-    //     return res.status(404).send("Not Found");
-    // });
+    app.get('/manga/api/hits', async (req, res) => {
+        // #swagger.ignore = true
+
+        const rows =  mangaContent.getMangaHits();
+        if(rows) {
+            return res.status(200).send({data: rows});
+        }
+        return res.status(404).send("Not Found");
+    });
 
     app.get('/manga/getroute', async (req, res) => {
         // #swagger.ignore = true

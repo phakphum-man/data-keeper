@@ -24,6 +24,47 @@ function viewDate(dbDate){
     return date;
 }
 
+function getMangaHits(){
+    const allData = manga["store"];
+    const allHits = ['Magic Emperor','Martial Peak','Chronicles of Heavenly Demon', 'Martial God Asura', 'Jujutsu Kaisen', 'Wudao du Zun', 'Tomb Raider King', 'Escort Warrior','Solo Leveling', 'The Great Mage Returns After 4000 Years'];
+
+    let hitData = allHits.map((hit) => 
+        allData.find((item)=> item.title.toLowerCase() === hit.toLowerCase())
+    );
+
+    return hitData.map((item)=>{
+        let firstChapterUrl = item.firstChapter.url;
+        let lastChapterUrl = item.lastChapter.url;
+        const settings = configs.filter((config) => lastChapterUrl?.removeProtocolUrl().startsWith(config.host.removeProtocolUrl()));
+        let firstUrl = "#";
+        let lastUrl = "#";
+        if( settings.length > 0 ){
+            const navFirst = firstChapterUrl?.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
+            const navLast = lastChapterUrl?.removeProtocolUrl().replace(`${settings[0].host.removeProtocolUrl()}/`,"");
+            firstUrl = `/manga/${settings[0].codeUrl}?q=${navFirst}`;
+            lastUrl = `/manga/${settings[0].codeUrl}?q=${navLast}`;
+        }
+        
+        return {
+            title: item.title,
+            imgUrl: `/manga/view-image?q=${item.imgUrl}`,
+            genres: item.genres,
+            score: item.score,
+            scoreMax : item.scoreMax,
+            firstChapter: {
+                title: `ตอนที่ ${item.firstChapter.no??""}`,
+                date: viewDate(item.firstChapter.date),
+                url: firstUrl,
+            },
+            lastChapter: {
+                title: `ตอนที่ ${item.lastChapter.no}`,
+                date: viewDate(item.lastChapter.date),
+                url: lastUrl,
+            },
+        };
+    });
+}
+
 function getMangaByPage(page, search="", groupId = 0){
     let allData = manga["store"];
     let limitSize = pageSize;
@@ -307,4 +348,4 @@ async function tanukimanga(settings, query, htmlContent){
     return htmlContent;
 }
 
-module.exports = {getImage, getGenres, getMangaByPage, reapertrans, manhuathai, tanukimanga};
+module.exports = {getImage, getGenres, getMangaByPage, getMangaHits, reapertrans, manhuathai, tanukimanga};

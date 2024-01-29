@@ -22,7 +22,7 @@ const groups = [
     {"แนวต่อสู้":"Action"},
     {"แนว เวทย์ มนต์": "Fantasy,DarkFantasy,magic"},
     {"แนวฮาเร็ม": "Harem,Mature"},
-    {"แนวอนิเมะ":"SchoolLife,School Life,Ecchi,Shounen,Seinen,Shoujo,Josei,ShoujoAi,ShounenAi,Yaoi,Yuri,Comedy,Romance,Drama"},
+    {"แนวอนิเมะ":"SchoolLife,School Life,Ecchi,Shounen,Seinen,Shoujo,Josei,ShoujoAi,ShounenAi,Yaoi,Yuri,Comedy"},
     {"แนวผจญภัย":"Adventure,MartialArts,Martial Arts"},
     {"แนวลึกลับสืบสวน":"Mystery,Historical,Tragedy,Psychological"},
     {"แนวกีฬา":"Sport,Sports"},

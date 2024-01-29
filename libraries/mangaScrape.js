@@ -1,4 +1,5 @@
 require('dotenv').config();
+require("./util.string");
 const { Queue, Worker } = require('bullmq');
 const Redis = require('ioredis');
 const os = require('os');
@@ -141,7 +142,7 @@ async function reapertransGetManga(maxPageSize=200)
         });
     }
     
-    console.log(`\nUpdate Chapters(${data.length})...`);
+    console.log(`\nUpdate Chapters(${data.length.toString().formatNumberCommas()})...`);
     let x = 0;
     //UPDATE lastChapter
     for (let i = 0; i < data.length; i++) {
@@ -260,7 +261,7 @@ async function manhuathaiGetManga(maxPageSize=200)
         });
     }
 
-    console.log(`\nUpdate Chapters(${data.length})...`);
+    console.log(`\nUpdate Chapters(${data.length.toString().formatNumberCommas()})...`);
     let x = 0;
     //UPDATE lastChapter
     for (let i = 0; i < data.length; i++) {
@@ -354,7 +355,7 @@ async function tanukimangaGetManga(maxPageSize=300)
         });
     }
     
-    console.log(`\nUpdate Chapters(${data.length})...`);
+    console.log(`\nUpdate Chapters(${data.length.toString().formatNumberCommas()})...`);
     let x = 0;
     //UPDATE lastChapter
     for (let i = 0; i < data.length; i++) {
@@ -403,9 +404,9 @@ async function tanukimangaGetManga(maxPageSize=300)
 
 async function syncAll(){
     try {
-        //await reapertransGetManga();
-        //await manhuathaiGetManga();
-        //await tanukimangaGetManga();
+        // await reapertransGetManga();
+        // await manhuathaiGetManga();
+        // await tanukimangaGetManga();
 
         return true;
     } catch (e) {

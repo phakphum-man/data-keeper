@@ -206,10 +206,16 @@ header {
 
 /* Hero Section */
 .hero-section {
-  height: 400px;
-  background-image: url("images/hero-img.jpg");
-  background-position: center;
+  height: 1220px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  /*background-image: url("images/hero-img.jpg");*/
+  /*background-position: center;*/
   background-size: cover;
+}
+.hero-section > h2 {
+  margin-top: 15px;
 }
 
 /* Shop Section */
@@ -221,7 +227,7 @@ header {
   padding: 50px 0;
 }
 
-.shop-images {
+.shop-hit-images, .shop-images {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
   gap: 10px;
