@@ -49,22 +49,36 @@ function getConfigByCode(code){
     return null;
 }
 
+
+const mergeMangaPattern = /[^a-zA-Z0-9\+]+/g;
+
+function mergeCheckLikeName(data, title){
+    const a = data.title?.toLowerCase();
+    const b = title;
+    if(a){
+        return a.replace(mergeMangaPattern,"") === b;
+    }
+    return false;
+}
+
 function mergeManga(){
     const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga-sources.json`,'utf8');
     const dataJson = JSON.parse(contentJson);
 
     const mergeData = dataJson[configs[0].codeUrl].concat(dataJson[configs[1].codeUrl]).concat(dataJson[configs[2].codeUrl]);
 
-    
-    const titles = mergeData.map((data) => data.title);
+    const titles = mergeData.map((data) => data.title?.toLowerCase().replace(mergeMangaPattern,""));
     const uniqueTitles = [...new Set(titles)];
     const data = uniqueTitles.map((title)=> {
-        const items = mergeData.filter((data) => data.title === title);
+        const items = mergeData.filter((data) => mergeCheckLikeName(data, title));
         let manga = null;
         if(items.length > 0) {
             const lastChapterNo = items.map((item) => item.lastChapter.no);
             const maxChapterNo = Math.max(...lastChapterNo);
-            manga = mergeData.find((data) => data.title === title && data.lastChapter.no === maxChapterNo);
+            if(title === "seasonoflove"){
+                console.log(title);
+            }
+            manga = mergeData.find((data) => mergeCheckLikeName(data, title) && data.lastChapter.no === maxChapterNo);
         }
         return manga
     });
