@@ -75,9 +75,6 @@ function mergeManga(){
         if(items.length > 0) {
             const lastChapterNo = items.map((item) => item.lastChapter.no);
             const maxChapterNo = Math.max(...lastChapterNo);
-            if(title === "seasonoflove"){
-                console.log(title);
-            }
             manga = mergeData.find((data) => mergeCheckLikeName(data, title) && data.lastChapter.no === maxChapterNo);
         }
         return manga

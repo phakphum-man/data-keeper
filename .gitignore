@@ -40,8 +40,12 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
-mnt/data/
+mnt/data/db.sqlite3
+mnt/data/manga-sources.json
 mnt/servicefiles/
+reports/docx/
+reports/excel/
+reports/pdf/
 
 # TypeScript v1 declaration files
 typings/

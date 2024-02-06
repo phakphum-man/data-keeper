@@ -26,7 +26,7 @@ function viewDate(dbDate){
 
 function getMangaHits(){
     const allData = manga["store"];
-    const allHits = ['Magic Emperor','Martial Peak','Chronicles of Heavenly Demon', 'Martial God Asura', 'Jujutsu Kaisen', 'Wudao du Zun', 'Tomb Raider King', 'Escort Warrior','Solo Leveling', 'The Great Mage Returns After 4000 Years'];
+    const allHits = ['Magic Emperor','Martial Peak เทพยุทธ์เหนือโลก','Chronicles of Heavenly Demon', 'Martial God Asura', 'Jujutsu Kaisen', 'Wudao du Zun', 'Tomb Raider King', 'Escort Warrior','Solo Leveling', 'The Great Mage Returns After 4000 Years'];
 
     let hitData = allHits.map((hit) => 
         allData.find((item)=> item.title.toLowerCase() === hit.toLowerCase())
