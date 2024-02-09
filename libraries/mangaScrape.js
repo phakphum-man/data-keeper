@@ -1,79 +1,9 @@
 require('dotenv').config();
 require("./util.string");
-const { Queue, Worker } = require('bullmq');
-const Redis = require('ioredis');
-const os = require('os');
 const fs = require('fs');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { getConfigByDomain, saveStore, months_th, months_en, mergeManga} = require('./mangaStore');
-
-const QueueNameBinding = `work${os.hostname()}`;
-
-if(!process.env.REDIS_URL) console.warn('REDIS_URL is not defined');
-const connection = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false});
-
-console.log(`Create Queue name: ${QueueNameBinding}`);
-
-const bindingQueue = new Queue(QueueNameBinding, { connection });
-
-// Imprement Logic of Queue
-const workBinding = new Worker(QueueNameBinding, async (job)=>{
-    try{
-        return await syncAll();
-    }catch (error) {
-        console.log(`Error worth logging: ${error}`);
-        throw error; // still want to crash
-    }
-
-},{ connection, autorun: true, useWorkerThreads: true });
-
-workBinding.on('waiting', async (job) => {
-    console.log(`${job?.id} has waiting!`);
-});
-
-workBinding.on('active', async ( job, prev ) => {
-    console.log(`${job?.id} has active`);
-});
-
-workBinding.on('progress', async ( job, data ) => {
-    console.log(`${job?.id} reported progress ${ JSON.stringify(data)}`);
-});
-
-workBinding.on('completed', async ( job, returnvalue ) => {
-    console.log(`${job?.id} has completed!`);
-});
-
-workBinding.on('failed', async ( job, err ) => {
-    console.log(`job ${job?.id} has failed with ${err.message}`);
-});
-const gracefulShutdown = async (signal) => {
-    console.log(`Received ${signal}, closing server...`);
-
-    await workBinding.close();
-    await workBinding.disconnect();
-
-    await bindingQueue.close();
-    await bindingQueue.disconnect();
-
-    // Other asynchronous closings
-    process.exit(0);
-}
-
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-
-async function clearAllJobs(){
-    await bindingQueue.obliterate();
-    console.log('...clear All Jobs.');
-}
-
-async function startBackgroundRun() {
-    const job = await bindingQueue.add('jobSyncAll', {});
-    console.log(`Start JobId:${job.id}`);
-}
-
-/*** Logic Scrap Web ***/
 
 // Use: dateThaiToIsoString("30 มิถุนายน 2022")
 function dateThaiToIsoString(dateThaiString, dateDefault = "") {
@@ -404,9 +334,9 @@ async function tanukimangaGetManga(maxPageSize=300)
 
 async function syncAll(){
     try {
-        // await reapertransGetManga();
-        // await manhuathaiGetManga();
-        // await tanukimangaGetManga();
+        await reapertransGetManga();
+        await manhuathaiGetManga();
+        await tanukimangaGetManga();
 
         return true;
     } catch (e) {
@@ -416,6 +346,10 @@ async function syncAll(){
 }
 //mergeManga();
 //syncAll();
-
-//clearAllJobs();
-//startBackgroundRun();
+module.exports = async (job) => {
+    if(job.id){
+        console.log('running...');
+        return await syncAll();
+    }
+    return false;
+};
