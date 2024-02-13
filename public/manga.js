@@ -8,7 +8,7 @@ window.onload = function () {
     });
 
     const home = document.querySelector('.shop-section h2');
-    if(home.innerText.startsWith("All")){
+    if(home.innerText.startsWith("All") && p == 1){
         document.querySelector('.hero-section').style.display = "flex";
         getAjax('/manga/api/hits', {p:p,g:g}, (data) => {
             const jsData = JSON.parse(data);
