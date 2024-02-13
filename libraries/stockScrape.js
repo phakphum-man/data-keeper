@@ -3,6 +3,8 @@ require("./util.string");
 const axios = require('axios');
 const csv = require('csvtojson');
 const fs = require('fs');
+const path = require('path');
+const xlsx = require('xlsx');
 
 const findPath = (ob, key) => {
     const path = [];
@@ -101,7 +103,48 @@ async function jitta(){
     fs.writeFileSync(`${process.cwd()}/jittaData.json`, JSON.stringify({data: histories}));
     console.log(`\n\x1b[33mDone.\x1b[0m`);
 }
+
+function convertJsonToExcel(){
+    console.log(`\nConverting...`);
+    const jittaDataPath = `${process.cwd()}/jittaData.json`;
+    const jittaData = fs.readFileSync(jittaDataPath,'utf8');
+    const fileName = path.basename(jittaDataPath)
+    const jsonData = JSON.parse(jittaData);
+
+    let rows = [];
+    for(const data of jsonData.data){
+
+        const score = (data.jittaScores.length > 0)?data.jittaScores.reduce((max, curren) => (max.year > curren.year || (max.year == curren.year && max.quarter > curren.quarter)) ? {year: max.year, quarter: max.quarter, value: max.value} : {year: curren.year, quarter: curren.quarter, value: curren.value}) : null;
+
+        const positives = data.jittaInfos.filter((info) => info.type === 'good');
+        const negatives = data.jittaInfos.filter((info) => info.type === 'bad');
+        const row = {
+            Name: data.name,
+            Symbol: data.symbol,
+            scoreValue: score?.value,
+            scoreYear: score?.year,
+            scoreQuarter: score?.quarter,
+            "โอกาสการเติบโตของบริษัท": data.scorefactors.growth,
+            "ผลการดำเนินงานของบริษัท ล่าสุด": data.scorefactors.recent,
+            "ความมั่งคงทางการเงิน": data.scorefactors.financial,
+            "ผลตอบแทนสู่ผู้ถือหุ้น": data.scorefactors.return,
+            "ความสามารถในการแข่งขัน": data.scorefactors.management,
+            Industry: data.industry,
+            Summary: data.summary,
+            Market: data.market,
+            Positive: positives.map(i => `- ${i.title}:$${i.value}`).join('\n'),
+            Negative: negatives.map(i => `- ${i.title}:$${i.value}`).join('\n'),
+        };
+        rows.push(row);
+    }
+    const wb = xlsx.utils.book_new();
+    const workSheet = xlsx.utils.json_to_sheet(rows);
+    xlsx.utils.book_append_sheet(wb, workSheet, "review stock");
+    xlsx.writeFile(wb, `${process.cwd()}/${fileName}.xlsx`);
+    console.log(`\n\x1b[33mDone.\x1b[0m`);
+}
 //jitta();
+convertJsonToExcel();
 module.exports = async (job) => {
     if (job.id){
         jitta();
