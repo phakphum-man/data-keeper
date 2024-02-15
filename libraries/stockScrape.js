@@ -132,8 +132,8 @@ function convertJsonToExcel(){
             Industry: data.industry,
             Summary: data.summary,
             Market: data.market,
-            Positive: positives.map(i => `- ${i.title}:$${i.value}`).join('\n'),
-            Negative: negatives.map(i => `- ${i.title}:$${i.value}`).join('\n'),
+            Positive: positives.map(i => `- ${i.title}: ${i.value}`).join('\r\n'),
+            Negative: negatives.map(i => `- ${i.title}: ${i.value}`).join('\r\n'),
         };
         rows.push(row);
     }
@@ -144,7 +144,7 @@ function convertJsonToExcel(){
     console.log(`\n\x1b[33mDone.\x1b[0m`);
 }
 //jitta();
-convertJsonToExcel();
+//convertJsonToExcel();
 module.exports = async (job) => {
     if (job.id){
         jitta();
