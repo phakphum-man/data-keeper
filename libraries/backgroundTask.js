@@ -17,8 +17,8 @@ const bindingQueue = new Queue(QueueNameBinding, { connection });
 //clearAllJobs();
 startBackgroundRun();
 
-//const processorFile = path.join(__dirname, 'mangaScrape.js');
-const processorFile = path.join(__dirname, 'stockScrape.js');
+const processorFile = path.join(__dirname, 'mangaScrape.js');
+//const processorFile = path.join(__dirname, 'stockScrape.js');
 
 // Imprement Logic of Queue
 const workBinding = new Worker(QueueNameBinding, processorFile,{ connection, autorun: true, useWorkerThreads: true });
