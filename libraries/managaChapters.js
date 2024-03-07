@@ -123,4 +123,39 @@ async function tanukimangaChapter(query){
     return ch;
 }
 
-module.exports = { reapertransChapter, manhuathaiChapter, tanukimangaChapter}
+async function toomtammangaChapter(query){
+    const host = "https://www.toomtam-manga.com/";
+    const chAt = query.indexOf('ตอนที่');
+    const title = query.substr(0, chAt-1);
+    const store = manga["store"].find(x => x.title === title && x.sourceUrl.startsWith(host));
+    if (!store?.sourceUrl){
+        console.log("Found Manga from title " + query);
+        return [];
+    }
+    const dataContent = await axios.get(store.sourceUrl, { headers: {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, responseType: 'utf-8' }).then((res) => res.data).catch((err) => err.message);
+    
+    if(dataContent === "Request failed with status code 404"){
+        console.log("HTTP Get Not Found Manga");
+        return [];
+    }
+    const settings = getConfigByDomain(host.getDomain());
+    const $ = cheerio.load(dataContent);
+    const ch = $("div#chapterlist > ul > li").map((_,el) => {
+        const li = $(el);
+        const no = parseInt(li.attr("data-num"));
+        const titles = li.find("a > span.chapternum").map((_,el) => $(el).text());
+        const urls = li.find("a").map((_,el) => $(el).attr("href"));
+        const dates = li.find("a > span.chapterdate").map((_,el) => $(el).text());
+
+        const nav = (urls && urls.length > 0)? urls[0].replace(host,""):"";
+        return {
+            no, 
+            title: (titles && titles.length > 0)? titles[0]: null, 
+            url: `/manga/${settings.codeUrl}?q=${nav}`, 
+            chapterdate: (dates && dates.length > 0)? dates[0] : null, 
+        };
+    }).get();
+    return ch;
+}
+
+module.exports = { reapertransChapter, manhuathaiChapter, tanukimangaChapter, toomtammangaChapter}

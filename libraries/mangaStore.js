@@ -6,6 +6,7 @@ const configs = [
     { codeUrl: 'read-magic-0001', host: 'http://reapertrans.com', method: 'reapertrans', methodChapter: 'reapertransChapter'},
     { codeUrl: 'read-magic-0002', host: 'http://www.manhuathai.com', method: 'manhuathai', methodChapter: 'manhuathaiChapter'},
     { codeUrl: 'read-magic-0003', host: 'http://www.tanuki-manga.com', method: 'tanukimanga', methodChapter: 'tanukimangaChapter'},
+    { codeUrl: 'read-magic-0004', host: 'http://www.toomtam-manga.com', method: 'toomtammanga', methodChapter: 'tanukimangaChapter'},
 ];
 const months_th = [ "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม", ];
 const months_en = [ "January", "February", "March", "April", "May", "June", "July",
