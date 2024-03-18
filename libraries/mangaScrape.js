@@ -338,9 +338,9 @@ async function tanukimangaGetManga(maxPageSize=400)
     console.log(`\n\x1b[33mSAVE DATA ${host} Done.\x1b[0m`);
 }
 
-async function toomtammangaGetManga(maxPageSize=400)
+async function slowmangaGetManga(maxPageSize=400)
 {
-    const host = "https://www.toomtam-manga.com/";
+    const host = "https://www.slow-manga.com/";
 
     console.log(`\nScraping to \x1b[33m${host}\x1b[0m`);
     const settings = getConfigByDomain(host.getDomain());
@@ -366,8 +366,8 @@ async function toomtammangaGetManga(maxPageSize=400)
         mangaItems.find('div.bs > div.bsx').each((_, el) => {
             const a = $(el).find('a');
             const img = a.find('div.limit > img');
-            const score = a.find('div.bigor > div.adds > div.rt > div.rating > div.numscore');
-            const item = $(a).find('div.bigor > div.adds > div.epxs');
+            //const score = a.find('div.bigor > div.adds > div.rt > div.rating > div.numscore');
+            const item = $(a).find('div.limit > div.adds > div.epxs');//$(a).find('div.bigor > div.adds > div.epxs');
             
             const no = item.text().getOnlyNumber();
             const objJson = { 
@@ -375,7 +375,7 @@ async function toomtammangaGetManga(maxPageSize=400)
                 sourceUrl: a.attr('href'),
                 imgUrl: img.attr('src'),
                 genres: [],
-                score: parseFloat(score.text()),
+                score: null,//parseFloat(score.text()),
                 scoreMax: 10,
                 firstChapter: {
                     no: null,
@@ -404,6 +404,8 @@ async function toomtammangaGetManga(maxPageSize=400)
 
         const $ = cheerio.load(dataContent);
         
+        data[i].score = parseFloat($('div.info > div.info-left > div.rating > div.rating-prc > div.num').text());
+
         const firstCh = $('div#chapterlist > ul > li').last().find('.chbox > .eph-num a');
 
         const noF = firstCh.find('span.chapternum').text().getOnlyFloatNumber();
@@ -418,7 +420,7 @@ async function toomtammangaGetManga(maxPageSize=400)
         data[i].lastChapter.url = lastChapter.attr('href');
         data[i].lastChapter.date = dateThai2ToIsoString(lastChapter.find('span.chapterdate').text());
 
-        data[i].genres = $('.main-info > .info-right > .info-desc > .wd-full').first().find('span.mgen > a').map((_,mgen) => $(mgen).text().replace(/[^A-Za-z0-9]/g, '')).get();
+        data[i].genres = $('div.info > div.info-right > div.info-desc > div.wd-full').first().find('span.mgen > a').map((_,mgen) => ($(mgen).text().indexOf(",") < 0) ? $(mgen).text() : "").get();
 
         if((i+1)% 100 === 0){
             const newData = data.slice(x, i+1);
@@ -444,7 +446,7 @@ async function syncAll(){
         await reapertransGetManga();
         await manhuathaiGetManga();
         await tanukimangaGetManga();
-        await toomtammangaGetManga();
+        await slowmangaGetManga();
         return true;
     } catch (e) {
         console.error(e);

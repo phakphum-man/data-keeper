@@ -161,7 +161,7 @@ module.exports = function (app) {
         }
 
         const chAt = query.indexOf('ตอนที่');
-        if(chAt !== -1) {
+        if(chAt !== -1 || /[\s\S]*\d$/.test(query)) {
             //const qTitle = query.substr(0, chAt-1);
             const chList = await mangaChapter[setting.methodChapter](query);
             return res.status(200).send({ chapters : chList});

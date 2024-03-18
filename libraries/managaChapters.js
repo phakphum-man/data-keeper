@@ -123,10 +123,13 @@ async function tanukimangaChapter(query){
     return ch;
 }
 
-async function toomtammangaChapter(query){
-    const host = "https://www.toomtam-manga.com/";
+async function slowmangaChapter(query){
+    const host = "https://www.slow-manga.com/";
     const chAt = query.indexOf('ตอนที่');
-    const title = query.substr(0, chAt-1);
+    let title = query.substr(0, chAt-1);
+    if(title == ""){
+        title = query.replace(/\s\d$/g, "");
+    }
     const store = manga["store"].find(x => x.title === title && x.sourceUrl.startsWith(host));
     if (!store?.sourceUrl){
         console.log("Found Manga from title " + query);
@@ -158,4 +161,4 @@ async function toomtammangaChapter(query){
     return ch;
 }
 
-module.exports = { reapertransChapter, manhuathaiChapter, tanukimangaChapter, toomtammangaChapter}
+module.exports = { reapertransChapter, manhuathaiChapter, tanukimangaChapter, slowmangaChapter}

@@ -348,8 +348,8 @@ async function tanukimanga(settings, query, htmlContent){
     return htmlContent;
 }
 
-async function toomtammanga(settings, query, htmlContent){
-    const host = "https://www.toomtam-manga.com/";
+async function slowmanga(settings, query, htmlContent){
+    const host = "https://www.slow-manga.com/";
     const url = `${host}${query}`;
 
     // HTML set Variable
@@ -367,7 +367,7 @@ async function toomtammanga(settings, query, htmlContent){
 
     const $ = cheerio.load(dataContent);
     const htmBody = $('#readerarea');
-    const mpic = dataContent.match("<script>ts_reader.run(.*);");
+    const mpic = dataContent.match("<script type=\"rocketlazyloadscript\">ts_reader.run(.*);");
     let listImg = [];
     if(mpic && mpic.length > 1){
         const s = mpic[1];
@@ -398,7 +398,7 @@ async function toomtammanga(settings, query, htmlContent){
         // Remove Jquery at Last find
         const listScript = $('div#content > div.wrapper > script')
             .map((_, item) => { 
-                return `<script>${$(item).text()}</script>`;
+                return `<script>${$(item).text()}</scripscript>`;
             }) 
             .toArray();
         const f = listScript[listScript.length-2];
@@ -438,4 +438,4 @@ async function toomtammanga(settings, query, htmlContent){
     return htmlContent;
 }
 
-module.exports = {getImage, getGenres, getMangaByPage, getMangaHits, reapertrans, manhuathai, tanukimanga, toomtammanga};
+module.exports = {getImage, getGenres, getMangaByPage, getMangaHits, reapertrans, manhuathai, tanukimanga, slowmanga};

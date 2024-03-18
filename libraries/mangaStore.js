@@ -6,7 +6,7 @@ const configs = [
     { codeUrl: 'read-magic-0001', host: 'http://reapertrans.com', method: 'reapertrans', methodChapter: 'reapertransChapter'},
     { codeUrl: 'read-magic-0002', host: 'http://www.manhuathai.com', method: 'manhuathai', methodChapter: 'manhuathaiChapter'},
     { codeUrl: 'read-magic-0003', host: 'http://www.tanuki-manga.com', method: 'tanukimanga', methodChapter: 'tanukimangaChapter'},
-    { codeUrl: 'read-magic-0004', host: 'http://www.toomtam-manga.com', method: 'toomtammanga', methodChapter: 'tanukimangaChapter'},
+    { codeUrl: 'read-magic-0004', host: 'http://www.slow-manga.com', method: 'slowmanga', methodChapter: 'slowmangaChapter'},
 ];
 const months_th = [ "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม", ];
 const months_en = [ "January", "February", "March", "April", "May", "June", "July",
@@ -20,16 +20,16 @@ const manga = JSON.parse(fs.readFileSync(filePath,'utf8'));
 const groups = [
     {"50 ตอน+":"#50plus#"},
     {"100 ตอน+":"#100plus#"},
-    {"แนวต่อสู้":"Action"},
-    {"แนว เวทย์ มนต์": "Fantasy,DarkFantasy,magic"},
-    {"แนวฮาเร็ม": "Harem,Mature"},
-    {"แนวอนิเมะ":"SchoolLife,School Life,Ecchi,Shounen,Seinen,Shoujo,Josei,ShoujoAi,ShounenAi,Yaoi,Yuri,Comedy"},
+    {"แนวต่อสู้":"Action,แอ็คชั่น,ต่อสู้,มูริม,มังงะต่อสู้,ซอมบี้,หมวดหมู่:"},
+    {"แนว เวทย์ มนต์": "Fantasy,DarkFantasy,magic,แฟนตาซี,แฟนตาซ,เวทมนตร์,เวทย์มนต์"},
+    {"แนวฮาเร็ม": "Harem,Mature,ดราม่า"},
+    {"แนวอนิเมะ":"SchoolLife,School Life,Ecchi,Shounen,Seinen,Shoujo,Josei,ShoujoAi,ShounenAi,Yaoi,Yuri,Comedy,โรงเรียน,Comic,โรแมนติก"},
     {"แนวผจญภัย":"Adventure,MartialArts,Martial Arts"},
-    {"แนวลึกลับสืบสวน":"Mystery,Historical,Tragedy,Psychological"},
-    {"แนวกีฬา":"Sport,Sports"},
-    {"แนวเกิดใหม่":"Reincarnation,revenge"},
-    {"แนวต่างโลก":"Isekai"},
-    {"แนวมีระบบ":"SyStem,Scifi,Sci-fi,Mecha"},
+    {"แนวลึกลับสืบสวน":"Mystery,Historical,Tragedy,Psychological,สืบสวน"},
+    {"แนวกีฬา":"Sport,Sports,เกม"},
+    {"แนวเกิดใหม่":"Reincarnation,revenge,ย้อนยุค"},
+    {"แนวต่างโลก":"Isekai,ต่างโลก"},
+    {"แนวมีระบบ":"SyStem,Scifi,Sci-fi,Mecha,ระบบ"},
     {"แนวผู้ใหญ่ 18+":"Adult,Manhwa18,Doujin,Dojin,Doujinshi,Lolicon,smut,Hentai,Shotacon"},
 ];
 
@@ -66,7 +66,7 @@ function mergeManga(){
     const contentJson = fs.readFileSync(`${process.cwd()}/mnt/data/manga-sources.json`,'utf8');
     const dataJson = JSON.parse(contentJson);
 
-    const mergeData = dataJson[configs[0].codeUrl].concat(dataJson[configs[1].codeUrl]).concat(dataJson[configs[2].codeUrl]);
+    const mergeData = dataJson[configs[0].codeUrl].concat(dataJson[configs[1].codeUrl]).concat(dataJson[configs[2].codeUrl]).concat(dataJson[configs[3].codeUrl]);
 
     const titles = mergeData.map((data) => data.title?.toLowerCase().replace(mergeMangaPattern,""));
     const uniqueTitles = [...new Set(titles)];
@@ -81,6 +81,19 @@ function mergeManga(){
         return manga
     });
     const allData = data.filter((data) => data != null && data.title && data.imgUrl);
+
+    let uniqGenres = [];
+    for(let i = 0; i < allData.length; i++){
+        for(let g = 0; g < allData[i].genres.length; g++){
+            if(uniqGenres.indexOf(allData[i].genres[g]) == -1 && allData[i].genres[g] != ""){
+                if(allData[i].genres[g] =="เกม ,ต่างโลก"){
+                    console.log(allData[i].genres[g]);
+                }
+                uniqGenres.push(allData[i].genres[g]);
+            }
+        }
+    }
+    //console.log(uniqGenres);
 
     fs.writeFileSync(`${process.cwd()}/mnt/data/manga.json`, JSON.stringify({ "store": allData, "groups": groups.map(g => Object.keys(g)[0]) }));
     console.log('Merge manga done.')
