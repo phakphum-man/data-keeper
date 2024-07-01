@@ -446,14 +446,14 @@ async function syncAll(){
         await reapertransGetManga();
         await manhuathaiGetManga();
         await tanukimangaGetManga();
-        await slowmangaGetManga();
+        //await slowmangaGetManga();
         return true;
     } catch (e) {
         console.error(e);
         return false;
     }
 }
-//mergeManga();
+mergeManga();
 //syncAll();
 module.exports = async (job) => {
     if(job.id){
